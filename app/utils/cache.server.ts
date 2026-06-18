@@ -6,7 +6,6 @@ import {
 	verboseReporter,
 	mergeReporters,
 	type CacheEntry,
-	type Cache as CachifiedCache,
 	type CachifiedOptions,
 	type Cache,
 	totalTtl,
@@ -78,6 +77,23 @@ const lru = remember(
 	() => new LRUCache<string, CacheEntry<unknown>>({ max: 5000 }),
 )
 
+/**
+ * A cache backend the admin surface can enumerate: the cachified `Cache`
+ * (get/set/delete) plus the key-listing the admin UI needs (`keys`/`search`).
+ * Two backends satisfy it — the in-process LRU and the distributed SQLite cache —
+ * so it is a real seam, named here once. `cacheBackends` is the registry the
+ * admin enumerate/delete paths iterate instead of hardcoding each backend.
+ */
+type CacheBackend = Cache & {
+	keys: (limit: number) => Array<string> | Promise<Array<string>>
+	search: (
+		query: string,
+		limit: number,
+	) => Array<string> | Promise<Array<string>>
+}
+
+export type CacheBackendName = 'lru' | 'sqlite'
+
 export const lruCache = {
 	name: 'app-memory-cache',
 	set: (key, value) => {
@@ -90,7 +106,10 @@ export const lruCache = {
 	},
 	get: (key) => lru.get(key),
 	delete: (key) => lru.delete(key),
-} satisfies Cache
+	keys: (limit) => [...lru.keys()].slice(0, limit),
+	search: (query, limit) =>
+		[...lru.keys()].filter((key) => key.includes(query)).slice(0, limit),
+} satisfies CacheBackend
 
 const isBuffer = (obj: unknown): obj is Buffer =>
 	Buffer.isBuffer(obj) || obj instanceof Uint8Array
@@ -206,7 +225,7 @@ async function writeToPrimary({
 	})
 }
 
-export const cache: CachifiedCache = {
+export const cache = {
 	name: 'SQLite cache',
 	async get(key) {
 		const result = getStatement.get(key)
@@ -241,24 +260,35 @@ export const cache: CachifiedCache = {
 			},
 		})
 	},
+	keys: (limit) =>
+		getAllKeysStatement.all(limit).map((row) => (row as { key: string }).key),
+	search: (query, limit) =>
+		searchKeysStatement
+			.all(`%${query}%`, limit)
+			.map((row) => (row as { key: string }).key),
+} satisfies CacheBackend
+
+export const cacheBackends = {
+	lru: lruCache,
+	sqlite: cache,
+} satisfies Record<CacheBackendName, CacheBackend>
+
+async function collectBackendKeys(
+	list: (backend: CacheBackend) => Array<string> | Promise<Array<string>>,
+) {
+	const names = Object.keys(cacheBackends) as Array<CacheBackendName>
+	const entries = await Promise.all(
+		names.map(async (name) => [name, await list(cacheBackends[name])] as const),
+	)
+	return Object.fromEntries(entries) as Record<CacheBackendName, Array<string>>
 }
 
 export async function getAllCacheKeys(limit: number) {
-	return {
-		sqlite: getAllKeysStatement
-			.all(limit)
-			.map((row) => (row as { key: string }).key),
-		lru: [...lru.keys()],
-	}
+	return collectBackendKeys((backend) => backend.keys(limit))
 }
 
 export async function searchCacheKeys(search: string, limit: number) {
-	return {
-		sqlite: searchKeysStatement
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key),
-		lru: [...lru.keys()].filter((key) => key.includes(search)),
-	}
+	return collectBackendKeys((backend) => backend.search(search, limit))
 }
 
 export async function cachified<Value>(

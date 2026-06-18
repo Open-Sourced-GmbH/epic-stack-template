@@ -66,3 +66,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 052 | [Verify-Session Handshake & 2FA Lifecycle in Util](052-verify-session-handshake-and-2fa-lifecycle-in-util.md) | Accepted                          |
 | 053 | [Cache Write-Back Lives in Cache Util](053-cache-writeback-lives-in-cache-util.md) | Accepted                          |
 | 054 | [Single-Writer Cache Fork Is One Seam](054-single-writer-cache-fork-is-one-seam.md) | Accepted                          |
+| 055 | [Cache Backends Are a Named Registry](055-cache-backend-is-a-named-registry.md) | Accepted                          |
