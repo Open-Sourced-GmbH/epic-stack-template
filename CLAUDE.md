@@ -24,8 +24,8 @@ pnpm validate          # test + lint + typecheck + e2e (full CI check)
 - [Git workflow](docs/agents/git-workflow.md) - conventional commits,
   develop → staging → main promote flow, release-please
 - [Issue conventions](docs/agents/linear-issues.md) - labels, priorities, PRDs
-- [Skills pipeline](docs/agents/skills-pipeline.md) - PRD → grill → issues →
-  implement → PR
+- [Skills](docs/agents/skills-pipeline.md) - process skills (PRD → grill →
+  issues → implement → PR) and the `epic-*` domain skills
 
 ## Operational references
 
@@ -33,6 +33,7 @@ pnpm validate          # test + lint + typecheck + e2e (full CI check)
   mapping
 - [Triage label mapping](docs/agents/triage-labels.md) - canonical roles ↔
   Linear statuses/labels
-- [Domain docs](docs/agents/domain.md) - project domain notes (ADRs live in
-  `docs/decisions/`)
-- [docs/claude/](docs/claude/) - Epic Stack conventions, deployment, database
+- [Domain docs](docs/agents/domain.md) - project domain notes
+- [Operational runbooks](docs/claude/README.md) - deployment, database, and
+  environment specifics for this Cloudron app
+- [Architecture decisions](docs/decisions/README.md) - indexed ADRs

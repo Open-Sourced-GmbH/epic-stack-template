@@ -54,5 +54,5 @@ Set these in repo settings for the deploy workflows to work:
 The GHCR image is published with the built-in `GITHUB_TOKEN`; enable GitHub
 Packages write for Actions.
 
-See [docs/decisions/024-cloudron-deploy-branch-model.md](../decisions/024-cloudron-deploy-branch-model.md)
+See [docs/decisions/048-cloudron-deploy-branch-model.md](../decisions/048-cloudron-deploy-branch-model.md)
 for the rationale.

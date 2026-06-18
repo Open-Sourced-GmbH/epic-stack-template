@@ -27,4 +27,4 @@ See the in-repo guides for the details:
 ## Decision record
 
 The rationale for Cloudron over Fly and the branch model lives in
-[docs/decisions/024-cloudron-deploy-branch-model.md](decisions/024-cloudron-deploy-branch-model.md).
+[docs/decisions/048-cloudron-deploy-branch-model.md](decisions/048-cloudron-deploy-branch-model.md).

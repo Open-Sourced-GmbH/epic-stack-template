@@ -27,8 +27,11 @@ the content conventions.
 
 ## Defaults
 
-- **Status**: `Backlog` on creation. Set to `Todo` directly only if the issue is
-  clear, self-contained, and doable without human input.
+- **Status**: `Backlog` on creation. Set to `Todo` only when the issue is clear
+  and self-contained — i.e. ready to be picked up, whether by a human or an
+  agent. `Todo` means "ready to work"; the `Ralph Ready` label (not the status)
+  is what marks an issue as agent-actionable. See
+  [`triage-labels.md`](./triage-labels.md) for the full role mapping.
 - **Ralph Ready**: Add the label (exact spelling: `Ralph Ready` - space, not
   hyphen, not underscore) whenever the issue is well-scoped enough for an LLM to
   implement autonomously. Pair with `Todo` status. The issue description must

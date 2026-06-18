@@ -29,16 +29,10 @@ roles to what's actually configured - adjust the table to your team's labels.
   renamed (e.g. `Cancelled` → `Canceled`), update this file rather than
   guessing.
 
-## Existing labels in this repo
+## Labels
 
-These are the suggested labels (per
-[`linear-issues.md`](./linear-issues.md)):
-
-- **Bug** - something is broken or behaves incorrectly
-- **Feature** - net-new functionality
-- **Improvement** - enhancement to existing functionality (perf, UX, DX)
-- **Audit** - auto-discovered by audit scans (a11y, perf, SEO)
-- **Ralph Ready** - issue is small, self-contained, and AFK-ready for an LLM
-
-A triaged issue typically carries one of `Bug`/`Feature`/`Improvement`/`Audit`
-plus optionally `Ralph Ready`.
+The label set (`Bug` / `Feature` / `Improvement` / `Audit` / `Ralph Ready`) is
+defined once in [`linear-issues.md`](./linear-issues.md#labels) — that's the
+single source of truth, so it isn't re-documented here. A triaged issue
+typically carries one of `Bug`/`Feature`/`Improvement`/`Audit`, plus optionally
+`Ralph Ready`.
