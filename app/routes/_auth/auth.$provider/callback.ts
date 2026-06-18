@@ -20,10 +20,13 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import {
+	onboardingEmailSessionKey,
+	prefilledProfileKey,
+	providerIdKey,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { handleNewSession } from '../login.server.ts'
-import { prefilledProfileKey, providerIdKey } from '../onboarding/$provider.tsx'
-import { onboardingEmailSessionKey } from '../onboarding/index.tsx'
 import { type Route } from './+types/callback.ts'
 
 const destroyRedirectTo = { 'set-cookie': destroyRedirectToHeader }

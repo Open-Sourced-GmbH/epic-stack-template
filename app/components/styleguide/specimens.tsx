@@ -325,7 +325,10 @@ export const specimens: Specimen[] = [
 		subtitle: 'label / items / separator',
 		viewport: { width: 480, height: 280 },
 		render: () => (
-			<DropdownMenu open>
+			// modal={false} so the always-open specimen doesn't engage Radix's
+			// scroll-lock (react-remove-scroll), which would freeze mouse-wheel
+			// scrolling of the whole styleguide page.
+			<DropdownMenu open modal={false}>
 				<DropdownMenuTrigger asChild>
 					<Button variant="outline">Open menu</Button>
 				</DropdownMenuTrigger>

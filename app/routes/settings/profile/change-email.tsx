@@ -14,6 +14,7 @@ import { useIsPending } from '#app/utils/misc.tsx'
 import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
 import { EmailSchema } from '#app/utils/user-validation.ts'
 import {
+	newEmailAddressSessionKey,
 	prepareVerification,
 	verifySessionStorage,
 } from '#app/utils/verification.server.ts'
@@ -24,8 +25,6 @@ export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="envelope-closed">Change Email</Icon>,
 	getSitemapEntries: () => null,
 }
-
-export const newEmailAddressSessionKey = 'new-email-address'
 
 const ChangeEmailSchema = z.object({
 	email: EmailSchema,

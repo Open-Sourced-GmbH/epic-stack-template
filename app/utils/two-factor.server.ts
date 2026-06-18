@@ -1,7 +1,9 @@
 import { getUserId, requireUserId } from './auth.server.ts'
+import { prisma } from './db.server.ts'
 import { authSessionStorage } from './session.server.ts'
 import { redirectWithToast } from './toast.server.ts'
-import { twoFAVerificationType } from './two-factor.ts'
+import { generateTOTP } from './totp.server.ts'
+import { twoFAVerificationType, twoFAVerifyVerificationType } from './two-factor.ts'
 import {
 	getRedirectToUrl,
 	getVerification,
@@ -27,6 +29,63 @@ export async function isTwoFactorEnabled(userId: string) {
 		target: userId,
 	})
 	return Boolean(verification)
+}
+
+/**
+ * The Two-Factor Authenticator enrollment lifecycle (see the domain glossary for
+ * Pending Two-Factor Authenticator vs Two-Factor Authenticator). These own every
+ * write to the `verification` table for the two `2fa*` types, so the
+ * pending-vs-permanent transition is one named operation here rather than raw
+ * column writes scattered across the settings routes.
+ */
+
+/**
+ * Begin enrolling: create (or replace) the Pending Two-Factor Authenticator — a
+ * transient `2fa-verify` row holding a fresh TOTP secret. The QR / manual-entry
+ * config is read back from this row by the verify route's loader.
+ */
+export async function prepareTwoFactorEnrollment(userId: string) {
+	const { otp: _otp, ...config } = await generateTOTP()
+	const verificationData = {
+		...config,
+		type: twoFAVerifyVerificationType,
+		target: userId,
+	}
+	await prisma.verification.upsert({
+		where: {
+			target_type: { target: userId, type: twoFAVerifyVerificationType },
+		},
+		create: verificationData,
+		update: verificationData,
+	})
+}
+
+/**
+ * Confirm enrollment: promote the Pending Two-Factor Authenticator *in place*
+ * into the permanent Two-Factor Authenticator — its `type` flips `2fa-verify` →
+ * `2fa`. The row (and its secret) is preserved; only the discriminant changes.
+ */
+export async function confirmTwoFactorEnrollment(userId: string) {
+	await prisma.verification.update({
+		where: {
+			target_type: { type: twoFAVerifyVerificationType, target: userId },
+		},
+		data: { type: twoFAVerificationType },
+	})
+}
+
+/** Abandon enrollment: delete the Pending Two-Factor Authenticator. */
+export async function cancelTwoFactorEnrollment(userId: string) {
+	await prisma.verification.deleteMany({
+		where: { type: twoFAVerifyVerificationType, target: userId },
+	})
+}
+
+/** Disable 2FA: delete the permanent Two-Factor Authenticator. */
+export async function disableTwoFactor(userId: string) {
+	await prisma.verification.delete({
+		where: { target_type: { target: userId, type: twoFAVerificationType } },
+	})
 }
 
 export async function shouldRequestTwoFA(request: Request) {

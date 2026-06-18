@@ -75,7 +75,9 @@ policy. Concretely:
   `consumeVerification` call each re-open one of the seams closed here. A route
   importing `VerifyFunctionArgs` from another route is the smell to watch for.
 
-- **Out of scope.** The per-flow session keys (`onboardingEmailSessionKey`,
-  `resetPasswordUsernameSessionKey`, `newEmailAddressSessionKey`) are still
+- **Out of scope (since resolved by [ADR-052](052-verify-session-handshake-and-2fa-lifecycle-in-util.md)).**
+  The per-flow session keys (`onboardingEmailSessionKey`,
+  `resetPasswordUsernameSessionKey`, `newEmailAddressSessionKey`) were still
   defined in route `.tsx` files and imported by sibling `.server` handlers — the
   same class of leak in the cross-step session handshake, not addressed here.
+  ADR-052 moved them into the util layer.

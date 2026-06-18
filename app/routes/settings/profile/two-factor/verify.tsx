@@ -13,9 +13,10 @@ import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { getTOTPAuthUri } from '#app/utils/totp.server.ts'
 import {
-	twoFAVerificationType,
-	twoFAVerifyVerificationType,
-} from '#app/utils/two-factor.ts'
+	cancelTwoFactorEnrollment,
+	confirmTwoFactorEnrollment,
+} from '#app/utils/two-factor.server.ts'
+import { twoFAVerifyVerificationType } from '#app/utils/two-factor.ts'
 import { isCodeValid } from '#app/utils/verification.server.ts'
 import { type BreadcrumbHandle } from '../../profile/_layout.tsx'
 import { type Route } from './+types/verify.ts'
@@ -101,18 +102,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	switch (submission.value.intent) {
 		case 'cancel': {
-			await prisma.verification.deleteMany({
-				where: { type: twoFAVerifyVerificationType, target: userId },
-			})
+			await cancelTwoFactorEnrollment(userId)
 			return redirect('/settings/profile/two-factor')
 		}
 		case 'verify': {
-			await prisma.verification.update({
-				where: {
-					target_type: { type: twoFAVerifyVerificationType, target: userId },
-				},
-				data: { type: twoFAVerificationType },
-			})
+			await confirmTwoFactorEnrollment(userId)
 			return redirectWithToast('/settings/profile/two-factor', {
 				type: 'success',
 				title: 'Enabled',

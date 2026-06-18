@@ -23,6 +23,25 @@ export const verifySessionStorage = createCookieSessionStorage({
 	},
 })
 
+/**
+ * Slot names for the cross-step verify-session handshake. Each Verification flow
+ * is two steps: step 1 (a route action) stashes state in `verifySessionStorage`,
+ * step 2 (the flow's `/verify` handler, or the destination route) reads it back
+ * to finalize. These keys are the *vehicle* for that state, so they live with the
+ * session that holds them rather than in the route that happens to write them.
+ *
+ * They live here (not in route `.tsx` modules) so the `.server` handlers and
+ * destination routes import them *down* from the util layer — the same
+ * dependency direction ADR-049 set for auth vocabulary and ADR-051 set for the
+ * handler contract. The 2FA login handshake keys are the matching case, owned by
+ * `two-factor.server.ts`.
+ */
+export const onboardingEmailSessionKey = 'onboardingEmail'
+export const providerIdKey = 'providerId'
+export const prefilledProfileKey = 'prefilledProfile'
+export const resetPasswordUsernameSessionKey = 'resetPasswordUsername'
+export const newEmailAddressSessionKey = 'new-email-address'
+
 export function getRedirectToUrl({
 	request,
 	type,

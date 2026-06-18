@@ -123,7 +123,14 @@ export default function Styleguide({ loaderData }: Route.ComponentProps) {
 										title={email.label}
 										srcDoc={email.html}
 										className="w-full bg-white"
-										style={{ height: 780, border: 'none' }}
+										// pointer-events:none lets the mouse wheel scroll the page
+										// instead of being swallowed by the iframe when the cursor is
+										// over it - these are static, non-interactive previews.
+										style={{
+											height: 780,
+											border: 'none',
+											pointerEvents: 'none',
+										}}
 									/>
 								</div>
 							</div>

@@ -5,9 +5,11 @@ import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import {
+	newEmailAddressSessionKey,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from '#app/utils/verification.ts'
-import { newEmailAddressSessionKey } from './change-email'
 
 export async function handleVerification({
 	request,
