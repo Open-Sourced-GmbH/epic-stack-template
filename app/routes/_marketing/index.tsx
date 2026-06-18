@@ -3,10 +3,14 @@ import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
 import { CodeSample } from './__code-sample.tsx'
 import { Faq } from './__faq.tsx'
+import { FinalCta } from './__final-cta.tsx'
 import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
 import { Hero } from './__hero.tsx'
+import { HowItWorks } from './__how-it-works.tsx'
 import { Pricing } from './__pricing.tsx'
+import { Services } from './__services.tsx'
+import { Work } from './__work.tsx'
 
 const SITE_TITLE = 'Open Sourced — Product engineering studio'
 const SITE_DESCRIPTION =
@@ -52,6 +56,8 @@ function SectionStub({ id, title }: { id: string; title: string }) {
 const sectionComponents: Partial<
 	Record<(typeof navSections)[number]['id'], React.ComponentType>
 > = {
+	work: Work,
+	services: Services,
 	pricing: Pricing,
 	faq: Faq,
 }
@@ -68,12 +74,13 @@ export default function Index() {
 			<main className="flex-1">
 				<Hero />
 				{/*
-				 * Showpiece sections that aren't nav targets (no `navSections` entry)
-				 * are mounted explicitly here. Final page ordering is settled in a
-				 * later assembly slice; for now the proof-of-craft code sample rides
-				 * directly under the hero.
+				 * Showpiece + narrative sections that aren't nav targets (no
+				 * `navSections` entry) are mounted explicitly here. Final page ordering
+				 * is settled in a later assembly slice; for now the proof-of-craft code
+				 * sample rides directly under the hero, then the process timeline.
 				 */}
 				<CodeSample />
+				<HowItWorks />
 				{navSections.map((section) => {
 					const Section = sectionComponents[section.id]
 					return Section ? (
@@ -86,6 +93,12 @@ export default function Index() {
 						/>
 					)
 				})}
+				{/*
+				 * The closing CTA is the `#contact` anchor the hero/header CTAs point
+				 * to. It isn't a `navSections` target, so it's mounted explicitly after
+				 * the nav sections, just before the footer.
+				 */}
+				<FinalCta />
 			</main>
 			<MarketingFooter />
 		</div>

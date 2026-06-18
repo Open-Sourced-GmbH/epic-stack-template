@@ -261,6 +261,26 @@
 		transform: none;
 	}
 
+	/* How-it-works timeline draw (EPT-13). Keyed on the JS-added `.rv` row class,
+	   so without JS / under reduced motion the resting state (node visible, line
+	   full) stands. The connector line draws top-down and the node pops once its
+	   row enters view. */
+	.hiw .rv .hiw-node {
+		transform: scale(0.6);
+		transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) 0.08s;
+	}
+	.hiw .rv.rv-in .hiw-node {
+		transform: none;
+	}
+	.hiw .rv .hiw-line {
+		transform: scaleY(0);
+		transform-origin: top;
+		transition: transform 0.55s cubic-bezier(0.4, 0.7, 0.3, 1) 0.2s;
+	}
+	.hiw .rv.rv-in .hiw-line {
+		transform: scaleY(1);
+	}
+
 	/* Hero entrance: children rise/fade once JS sets `data-in` on mount. */
 	.hero[data-in] .anim {
 		animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.25, 1) both;
