@@ -18,7 +18,7 @@ import {
 } from '#tests/playwright-utils.ts'
 
 const URL_REGEX = /(?<url>https?:\/\/[^\s$.?#].[^\s]*)/
-const CODE_REGEX = /Here's your verification code: (?<code>[\d\w]+)/
+const CODE_REGEX = /Here's your verification code:\s*(?<code>[\d\w]+)/
 function extractUrl(text: string) {
 	const match = text.match(URL_REGEX)
 	return match?.groups?.url
