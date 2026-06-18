@@ -73,3 +73,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 059 | [Seed Derives Permission Matrix from Registry](059-seed-derives-permission-matrix-from-registry.md) | Accepted                          |
 | 060 | [New-Session Finalization in Util](060-new-session-finalization-in-util.md) | Accepted                          |
 | 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |
+| 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |

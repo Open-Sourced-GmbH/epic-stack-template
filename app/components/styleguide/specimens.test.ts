@@ -27,10 +27,16 @@ function rootBlock(css: string): string {
 	return css.slice(open + 1, close)
 }
 
-/** Names of the color tokens defined in `:root` (i.e. the `oklch()` vars). */
+/**
+ * Names of the color tokens defined in `:root`. A color value is an `oklch()`
+ * literal, a `color-mix()` (e.g. `--brand-soft`), or a `var()` alias onto
+ * another color token (e.g. `--primary`/`--ring` follow `--brand`, ADR 062).
+ */
 function cssColorTokens(css: string): Set<string> {
 	const tokens = new Set<string>()
-	for (const m of rootBlock(css).matchAll(/--([a-z0-9-]+)\s*:\s*oklch/g)) {
+	for (const m of rootBlock(css).matchAll(
+		/--([a-z0-9-]+)\s*:\s*(?:oklch|color-mix|var)\(/g,
+	)) {
 		tokens.add(m[1]!)
 	}
 	return tokens
@@ -55,12 +61,19 @@ function cssRadiusTokens(css: string): Set<string> {
 }
 
 /**
- * Real `:root` color tokens that intentionally have no swatch in the Colors
- * specimen: state/utility colors without a surface bg/fg pairing. Listing them
- * here is the explicit, reviewed curation decision — a *new* token is never
- * silently dropped.
+ * Real `:root` color tokens that intentionally have no swatch in the semantic
+ * Colors specimen. `input-invalid`/`foreground-destructive` are state/utility
+ * colors without a surface bg/fg pairing; the `brand*` accent tokens have their
+ * own dedicated `brand-accent` specimen (ADR 062). Listing them here is the
+ * explicit, reviewed curation decision — a *new* token is never silently dropped.
  */
-const COLORS_NOT_SHOWN = new Set(['input-invalid', 'foreground-destructive'])
+const COLORS_NOT_SHOWN = new Set([
+	'input-invalid',
+	'foreground-destructive',
+	'brand',
+	'brand-soft',
+	'brand-glow',
+])
 
 test('Colors specimen covers every semantic color token', async () => {
 	const inCss = cssColorTokens(await readCss())

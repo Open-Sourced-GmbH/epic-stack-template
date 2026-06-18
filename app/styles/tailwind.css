@@ -6,6 +6,14 @@
 :root {
 	--radius: 0.5rem;
 
+	/* Brand accent (ADR 062). Pine is the default; the runtime customizer
+	   overrides --brand (and the vars that follow it) per-request via SSR
+	   inline styles. --brand-soft/-glow derive from --brand so one edit
+	   re-tints the whole accent. */
+	--brand: oklch(60% 0.135 172);
+	--brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
+	--brand-glow: oklch(from var(--brand) l c h / 0.32);
+
 	--background: oklch(100% 0 0);
 	--foreground: oklch(13.71% 0.036 258.53);
 
@@ -15,7 +23,10 @@
 	--popover: oklch(100% 0 0);
 	--popover-foreground: oklch(13.71% 0.036 258.53);
 
-	--primary: oklch(20.79% 0.0399 265.73);
+	/* --primary follows --brand: the default <Button> and every focus ring are
+	   brand-colored with no component edits. --primary-foreground stays a fixed
+	   near-white token (constrained-picker decision — no runtime contrast math). */
+	--primary: var(--brand);
 	--primary-foreground: oklch(98.38% 0.0035 247.86);
 
 	--secondary: oklch(86.48% 0.0153 248);
@@ -36,10 +47,16 @@
 	/* prefixed with foreground because it should look good on the background */
 	--foreground-destructive: oklch(51.46% 0.1979 16.57);
 
-	--ring: oklch(71.07% 0.0351 256.79);
+	--ring: var(--brand);
 }
 
 .dark {
+	/* Brand accent is mode-independent: the same Pine in light and dark, so the
+	   customizer's per-request override needs no dark variant (ADR 062). */
+	--brand: oklch(60% 0.135 172);
+	--brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
+	--brand-glow: oklch(from var(--brand) l c h / 0.32);
+
 	--background: oklch(13.71% 0.036 258.53);
 	--foreground: oklch(98.38% 0.0035 247.86);
 
@@ -49,8 +66,11 @@
 	--popover: oklch(13.71% 0.036 258.53);
 	--popover-foreground: oklch(98.38% 0.0035 247.86);
 
-	--primary: oklch(98.38% 0.0035 247.86);
-	--primary-foreground: oklch(20.79% 0.0399 265.73);
+	/* --primary follows --brand here too, so the near-white foreground from
+	   :root holds in dark mode (the old dark-on-light pairing would be unreadable
+	   on the Pine button). */
+	--primary: var(--brand);
+	--primary-foreground: oklch(98.38% 0.0035 247.86);
 
 	--secondary: oklch(34.74% 0.0295 260.13);
 	--secondary-foreground: oklch(98.38% 0.0035 247.86);
@@ -70,7 +90,7 @@
 	/* prefixed with foreground because it should look good on the background */
 	--foreground-destructive: oklch(63.72% 0.2071 21.89);
 
-	--ring: oklch(65.28% 0.0684 260.07);
+	--ring: var(--brand);
 }
 
 @theme inline {
@@ -84,6 +104,9 @@
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
 	--color-popover-foreground: var(--popover-foreground);
+	--color-brand: var(--brand);
+	--color-brand-soft: var(--brand-soft);
+	--color-brand-glow: var(--brand-glow);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
 	--color-secondary: var(--secondary);

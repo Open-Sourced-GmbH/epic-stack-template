@@ -159,6 +159,45 @@ export const specimens: Specimen[] = [
 		),
 	},
 	{
+		name: 'brand-accent',
+		group: 'Colors',
+		subtitle: 'Accent + brand tokens (Pine default) — drives --primary / --ring',
+		viewport: { width: 720 },
+		render: () => (
+			<div className="flex flex-col gap-4">
+				{/* The accent itself, carrying the fixed near-white --primary-foreground
+				    it pairs with everywhere (ADR 062). */}
+				<div className="bg-brand text-primary-foreground flex h-20 flex-col justify-between rounded-md p-3">
+					<span className="text-body-xs font-medium">accent</span>
+					<span className="text-body-2xs opacity-80">
+						--brand → --primary / --ring
+					</span>
+				</div>
+				<div className="grid grid-cols-3 gap-3">
+					{[
+						{ cls: 'bg-brand', label: 'bg-brand' },
+						{ cls: 'bg-brand-soft', label: 'bg-brand-soft' },
+						{ cls: 'bg-brand-glow', label: 'bg-brand-glow' },
+					].map(({ cls, label }) => (
+						<div key={label} className="border-border rounded-md border p-3">
+							<div className={`mb-2 h-10 rounded-md ${cls}`} />
+							<span className="text-body-2xs font-mono">{label}</span>
+						</div>
+					))}
+				</div>
+				<div className="flex flex-wrap items-center gap-4">
+					<span className="text-brand text-body-sm font-medium">text-brand</span>
+					<span className="border-brand text-body-sm rounded-md border px-3 py-1">
+						border-brand
+					</span>
+					<span className="ring-brand text-body-sm rounded-md px-3 py-1 ring-2">
+						ring-brand
+					</span>
+				</div>
+			</div>
+		),
+	},
+	{
 		name: 'typography',
 		group: 'Type',
 		subtitle: 'mega → caption → button',
