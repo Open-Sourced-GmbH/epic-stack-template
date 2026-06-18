@@ -63,8 +63,10 @@ The styleguide is the contract both sync directions share:
   color/space/radius to an existing token, and flag anything genuinely net-new
   (a new foundational token may warrant an [ADR](../decisions/README.md)).
 
-Both directions exist: the publish lane (this doc) and the grounding step
-[`/to-grounded-design`](../../.claude/skills/to-grounded-design/SKILL.md), which
-reconciles a Claude Design handoff against this styleguide before
-[`/to-issues`](./skills-pipeline.md). The remaining lane to author is
-`/to-design` (PRD → seeded design brief).
+Both directions are wired into the pipeline:
+[`/to-design`](../../.claude/skills/to-design/SKILL.md) seeds a Claude Design
+exploration from the real system, and
+[`/to-grounded-design`](../../.claude/skills/to-grounded-design/SKILL.md)
+reconciles the handoff that comes back against this styleguide before
+[`/to-issues`](./skills-pipeline.md). See the
+[skills pipeline](./skills-pipeline.md) for the full flow.

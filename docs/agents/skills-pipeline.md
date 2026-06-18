@@ -62,11 +62,10 @@ Per feature, design slots into the lifecycle between the PRD and issues:
 - `/to-grounded-design` — reconciles the Claude Design handoff against the
   [styleguide](./styleguide.md): maps each element to an existing component and
   every color/space/radius to an existing token, and flags net-new pieces so the
-  issues carry concrete component/token references. Lives in-repo at
-  `.claude/skills/to-grounded-design/` so template instances inherit it.
+  issues carry concrete component/token references.
 
-> `/to-grounded-design` is built. `/to-design` is **not built yet** — it's the
-> next skill to author.
+Both live in-repo at `.claude/skills/` (alongside the `epic-*` skills) so
+template instances inherit them.
 
 ## Domain skills (Epic Stack know-how)
 
