@@ -59,6 +59,68 @@ export function init() {
 	}
 }
 
+type FeatureRow = { label: string; enabled: boolean; hint: string }
+
+/**
+ * A presence-gated integration: active only when *all* of its `vars` are set.
+ * When disabled, the hint names exactly which vars are still missing.
+ */
+function presenceFeature(label: string, vars: string[]): FeatureRow {
+	const missing = vars.filter((name) => !process.env[name])
+	return { label, enabled: missing.length === 0, hint: `set ${missing.join(', ')}` }
+}
+
+/**
+ * The optional, feature-toggling environment variables, resolved against the
+ * current `process.env`. Required variables are already guaranteed present by
+ * `init()`, so they are not reported here.
+ */
+function getFeatureRows(): FeatureRow[] {
+	return [
+		presenceFeature('Sentry error monitoring', ['SENTRY_DSN']),
+		presenceFeature('Resend email', ['RESEND_API_KEY']),
+		presenceFeature('GitHub auth', ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET']),
+		presenceFeature('Matomo analytics', ['MATOMO_URL', 'MATOMO_SITE_ID']),
+		presenceFeature('Turnstile bot challenge', [
+			'TURNSTILE_SITE_KEY',
+			'TURNSTILE_SECRET_KEY',
+		]),
+		{
+			// A value flag, not a presence toggle: indexing is allowed unless
+			// ALLOW_INDEXING is explicitly 'false' (matches server/index.ts).
+			label: 'Search-engine indexing',
+			enabled: process.env.ALLOW_INDEXING !== 'false',
+			hint: 'unset ALLOW_INDEXING or set it to "true"',
+		},
+	]
+}
+
+/**
+ * Prints a readable startup summary of which optional integrations are
+ * configured.
+ */
+export function logEnvStatus() {
+	const dim = (s: string) => `\x1b[2m${s}\x1b[0m`
+	const green = (s: string) => `\x1b[32m${s}\x1b[0m`
+	const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`
+
+	const lines = getFeatureRows().map(({ label, enabled, hint }) => {
+		const marker = enabled ? green('✓') : yellow('○')
+		const status = enabled ? green('enabled') : yellow(`disabled (${hint})`)
+		return `  ${marker} ${label.padEnd(26)} ${status}`
+	})
+
+	console.log(
+		[
+			dim('┌─ Environment'),
+			dim(`│  mode: ${process.env.NODE_ENV}`),
+			dim('├─ Optional integrations'),
+			...lines,
+			dim('└─'),
+		].join('\n'),
+	)
+}
+
 /**
  * This is used in both `entry.server.ts` and `root.tsx` to ensure that
  * the environment variables are set and globally available before the app is

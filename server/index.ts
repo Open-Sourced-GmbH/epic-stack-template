@@ -8,6 +8,9 @@ import express from 'express'
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import morgan from 'morgan'
+import { logEnvStatus } from '#app/utils/env.server.ts'
+
+logEnvStatus()
 
 const MODE = process.env.NODE_ENV ?? 'development'
 const IS_PROD = MODE === 'production'
