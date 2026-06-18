@@ -3,6 +3,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { NoteEditor } from './+shared/note-editor.tsx'
+import { noteImageSelect } from './+shared/note.server.ts'
 import { type Route } from './+types/$noteId_.edit.ts'
 
 export { action } from './+shared/note-editor.server.tsx'
@@ -14,13 +15,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			id: true,
 			title: true,
 			content: true,
-			images: {
-				select: {
-					id: true,
-					altText: true,
-					objectKey: true,
-				},
-			},
+			images: { select: noteImageSelect },
 		},
 		where: {
 			id: params.noteId,

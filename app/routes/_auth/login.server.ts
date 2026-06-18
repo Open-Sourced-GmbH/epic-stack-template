@@ -3,81 +3,15 @@ import { redirect } from 'react-router'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { combineResponseInits } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import {
-	isTwoFactorEnabled,
 	rememberKey,
 	unverifiedSessionIdKey,
 	verifiedTimeKey,
 } from '#app/utils/two-factor.server.ts'
-import { twoFAVerificationType } from '#app/utils/two-factor.ts'
-import {
-	getRedirectToUrl,
-	verifySessionStorage,
-} from '#app/utils/verification.server.ts'
+import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from '#app/utils/verification.ts'
-
-export async function handleNewSession(
-	{
-		request,
-		session,
-		redirectTo,
-		remember,
-	}: {
-		request: Request
-		session: { userId: string; id: string; expirationDate: Date }
-		redirectTo?: string
-		remember: boolean
-	},
-	responseInit?: ResponseInit,
-) {
-	const userHasTwoFactor = await isTwoFactorEnabled(session.userId)
-
-	if (userHasTwoFactor) {
-		const verifySession = await verifySessionStorage.getSession()
-		verifySession.set(unverifiedSessionIdKey, session.id)
-		verifySession.set(rememberKey, remember)
-		const redirectUrl = getRedirectToUrl({
-			request,
-			type: twoFAVerificationType,
-			target: session.userId,
-			redirectTo,
-		})
-		return redirect(
-			`${redirectUrl.pathname}?${redirectUrl.searchParams}`,
-			combineResponseInits(
-				{
-					headers: {
-						'set-cookie':
-							await verifySessionStorage.commitSession(verifySession),
-					},
-				},
-				responseInit,
-			),
-		)
-	} else {
-		const authSession = await authSessionStorage.getSession(
-			request.headers.get('cookie'),
-		)
-		authSession.set(sessionKey, session.id)
-
-		return redirect(
-			safeRedirect(redirectTo),
-			combineResponseInits(
-				{
-					headers: {
-						'set-cookie': await authSessionStorage.commitSession(authSession, {
-							expires: remember ? session.expirationDate : undefined,
-						}),
-					},
-				},
-				responseInit,
-			),
-		)
-	}
-}
 
 export async function handleVerification({
 	request,

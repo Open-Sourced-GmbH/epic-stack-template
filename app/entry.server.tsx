@@ -74,6 +74,7 @@ export default async function handleRequest(...args: DocRequestArgs) {
 									'connect-src': [
 										MODE === 'development' ? 'ws:' : undefined,
 										process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
+										process.env.MATOMO_URL ?? undefined,
 										"'self'",
 									],
 									'font-src': ["'self'"],
@@ -83,6 +84,7 @@ export default async function handleRequest(...args: DocRequestArgs) {
 										"'strict-dynamic'",
 										"'self'",
 										`'nonce-${nonce}'`,
+										process.env.MATOMO_URL ?? undefined,
 									],
 									'script-src-attr': [`'nonce-${nonce}'`],
 								},

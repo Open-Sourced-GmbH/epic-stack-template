@@ -3,6 +3,7 @@ import { requireUserId } from './auth.server.ts'
 import { prisma } from './db.server.ts'
 import {
 	type PermissionString,
+	type RoleName,
 	parsePermissionString,
 	userHasPermission,
 } from './user.ts'
@@ -38,7 +39,7 @@ export async function requireUserWithPermission(
 	return user.id
 }
 
-export async function requireUserWithRole(request: Request, name: string) {
+export async function requireUserWithRole(request: Request, name: RoleName) {
 	const userId = await requireUserId(request)
 	const user = await prisma.user.findFirst({
 		select: { id: true },

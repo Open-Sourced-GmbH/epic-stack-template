@@ -58,7 +58,11 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   = anyone's). The set of valid actions/entities/access levels is the **RBAC
   vocabulary**, named once as value-level registries (`permissionActions`,
   `permissionEntities`, `permissionAccesses`) in `app/utils/user.ts`; the
-  database `Permission` rows must mirror it.
+  database `Permission` rows must mirror it. The **own-vs-any idiom** — acting on
+  a resource needs `:own` if you own it, `:any` otherwise — is the helper
+  `permissionForOwnership(action, entity, isOwner)`, used by both a server guard
+  and its client check (see
+  [ADR-061](../decisions/061-ownership-permission-rule-and-note-select.md)).
 - **Permission String** — the textual form a guard names, `action:entity` or
   `action:entity:access` (e.g. `delete:note:own`). The access segment may be
   comma-joined (`own,any`) to mean "any of these satisfy the requirement";
@@ -69,9 +73,14 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   when entity and action match and the granted access is among those required (or
   none is required). Both the server guard (`requireUserWithPermission`) and the
   client check (`userHasPermission`) go through it, so the two cannot diverge.
-- **Role** — a named bundle of Permissions a user holds (e.g. `user`, `admin`).
-  Role identity is still a bare string at the guard (`requireUserWithRole`); a
-  typed role registry is a known follow-up, not yet done.
+- **Role** — a named bundle of Permissions a user holds. The set is the typed
+  registry `roleNames` (`user`, `admin`) in `app/utils/user.ts`; guards take a
+  `RoleName`, so a mistyped role is a compile error (see
+  [ADR-058](../decisions/058-role-name-is-a-typed-registry.md)). Each role's
+  grant is the **role→access policy** `roleGrantedAccess` (admin → `any`,
+  user → `own`); the seed derives the `Permission` matrix and role grants from
+  these registries, so the database rows cannot drift from the vocabulary (see
+  [ADR-059](../decisions/059-seed-derives-permission-matrix-from-registry.md)).
 
 ### Identity & Verification
 
@@ -90,7 +99,11 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   verify** — it is a standing credential, re-checked on login and after a 2-hour
   recency window. Distinct concept from a Verification despite the shared table;
   conflating the two is what made the `2fa` case the lone switch arm that skips
-  deletion.
+  deletion. The **login↔2FA handshake** — stash the unverified session and
+  redirect to `/verify` when 2FA is enabled — is *written* by `handleNewSession`
+  in `two-factor.server.ts` (beside the handshake keys) and *read* by the login
+  route's 2FA `handleVerification` (see
+  [ADR-060](../decisions/060-new-session-finalization-in-util.md)).
 - **Pending Two-Factor Authenticator** — the *in-progress* row written while a
   user is enabling 2FA (type `2fa-verify`, target = user id). It is **not** a
   `VerificationTypes` member: it never flows through `/verify`, and is exercised

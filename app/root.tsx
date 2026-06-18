@@ -15,6 +15,7 @@ import { type Route } from './+types/root.ts'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { Matomo } from './components/matomo.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { SearchBar } from './components/search-bar.tsx'
 import { useToast } from './components/toaster.tsx'
@@ -160,6 +161,9 @@ function Document({
 			</head>
 			<body className="bg-background text-foreground">
 				{children}
+				{env.MATOMO_URL && env.MATOMO_SITE_ID ? (
+					<Matomo url={env.MATOMO_URL} siteId={env.MATOMO_SITE_ID} />
+				) : null}
 				<script
 					nonce={nonce}
 					dangerouslySetInnerHTML={{

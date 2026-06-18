@@ -8,6 +8,7 @@ const schema = z.object({
 	INTERNAL_COMMAND_TOKEN: z.string(),
 	HONEYPOT_SECRET: z.string(),
 	CACHE_DATABASE_PATH: z.string(),
+	LITEFS_DIR: z.string(),
 	// If you plan on using Sentry, remove the .optional()
 	SENTRY_DSN: z.string().optional(),
 	// If you plan to use Resend, remove the .optional()
@@ -19,6 +20,11 @@ const schema = z.object({
 	GITHUB_TOKEN: z.string().optional(),
 
 	ALLOW_INDEXING: z.enum(['true', 'false']).optional(),
+
+	// Matomo analytics (self-hosted, cookieless). When both are set the
+	// tracker mounts; leave unset to disable analytics entirely.
+	MATOMO_URL: z.string().url().optional(),
+	MATOMO_SITE_ID: z.string().optional(),
 
 	// Tigris Object Storage Configuration
 	AWS_ACCESS_KEY_ID: z.string(),
@@ -61,6 +67,8 @@ export function getEnv() {
 		MODE: process.env.NODE_ENV,
 		SENTRY_DSN: process.env.SENTRY_DSN,
 		ALLOW_INDEXING: process.env.ALLOW_INDEXING,
+		MATOMO_URL: process.env.MATOMO_URL,
+		MATOMO_SITE_ID: process.env.MATOMO_SITE_ID,
 	}
 }
 

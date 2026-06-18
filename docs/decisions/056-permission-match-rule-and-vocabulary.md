@@ -64,11 +64,14 @@ seam ADRs closed elsewhere ([ADR-049](049-shared-vocabulary-in-util-layer.md),
   already loads exactly this shape on every request — so the cost is negligible
   and buys a single rule.
 
-- **Out of scope.** The runtime `Permission`/`Role` rows are still created by the
-  init migration and connected by name in `prisma/seed.ts`; deriving that matrix
-  from the registry is a possible follow-up, not done here. Role identity is also
-  still a bare string at `requireUserWithRole` — a typed role registry is the
-  natural next deepening in this domain. The `note` entity is unchanged; the
+- **Out of scope (since resolved by [ADR-059](059-seed-derives-permission-matrix-from-registry.md)).**
+  The runtime `Permission`/`Role` rows were still created by the init migration
+  and connected by name in `prisma/seed.ts`; deriving that matrix from the
+  registry was a follow-up, since done — the seed now generates it from
+  `getPermissionMatrix()` and `roleGrantedAccess`. Role identity was
+  also still a bare string at `requireUserWithRole` — a typed role registry was
+  the natural next deepening, since resolved by
+  [ADR-058](058-role-name-is-a-typed-registry.md). The `note` entity is unchanged; the
   Note → Post rename ([ADR-050](050-blog-cms-replaces-notes.md)) is a separate
   migration and adding `'post'` here is a one-line registry edit when it lands.
 

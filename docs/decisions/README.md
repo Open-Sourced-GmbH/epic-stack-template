@@ -51,7 +51,7 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 037 | [Generated Internal Command Env Var](037-generated-internal-command.md) | Accepted                                            |
 | 038 | [Remove Cleanup DB](038-remove-cleanup-db.md)                          | Accepted                                            |
 | 039 | [Passkeys](039-passkeys.md)                                              | Accepted                                            |
-| 040 | [Switch to Tigris for Image Storage](040-tigris-image-storage.md)       | Accepted                                            |
+| 040 | [Switch to Tigris for Image Storage](040-tigris-image-storage.md)       | Accepted (amended by [057](057-pluggable-storage-driver.md)) |
 | 041 | [Introduce Image Optimization](041-image-optimization.md)              | Accepted                                            |
 | 042 | [Node's Built-in SQLite Support](042-node-sqlite.md)                    | Accepted                                            |
 | 043 | [PwnedPasswords Integration](043-pwnedpasswords.md)                    | Accepted                                            |
@@ -68,3 +68,8 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 054 | [Single-Writer Cache Fork Is One Seam](054-single-writer-cache-fork-is-one-seam.md) | Accepted                          |
 | 055 | [Cache Backends Are a Named Registry](055-cache-backend-is-a-named-registry.md) | Accepted                          |
 | 056 | [Permission Match Rule & RBAC Vocabulary](056-permission-match-rule-and-vocabulary.md) | Accepted                          |
+| 057 | [Pluggable Storage Driver](057-pluggable-storage-driver.md)              | Proposed (amends [040](040-tigris-image-storage.md)) |
+| 058 | [Role Identity Is a Typed Registry](058-role-name-is-a-typed-registry.md) | Accepted                          |
+| 059 | [Seed Derives Permission Matrix from Registry](059-seed-derives-permission-matrix-from-registry.md) | Accepted                          |
+| 060 | [New-Session Finalization in Util](060-new-session-finalization-in-util.md) | Accepted                          |
+| 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |

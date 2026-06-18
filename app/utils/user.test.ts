@@ -1,7 +1,14 @@
 import { expect, test } from 'vitest'
 import {
+	getPermissionMatrix,
 	parsePermissionString,
+	permissionAccesses,
+	permissionActions,
+	permissionEntities,
+	permissionForOwnership,
 	permissionSatisfies,
+	roleGrantedAccess,
+	roleNames,
 	userHasPermission,
 	type PermissionString,
 } from './user.ts'
@@ -75,6 +82,35 @@ test('a comma-joined requirement matches any of its access levels', () => {
 	expect(permissionSatisfies(grant('delete', 'note', 'any'), required)).toBe(
 		true,
 	)
+})
+
+test('getPermissionMatrix is the full entity × action × access cross product', () => {
+	const matrix = getPermissionMatrix()
+	expect(matrix).toHaveLength(
+		permissionEntities.length *
+			permissionActions.length *
+			permissionAccesses.length,
+	)
+	// every entry draws from the vocabulary, and the set is unique
+	const keys = new Set<string>()
+	for (const { action, entity, access } of matrix) {
+		expect(permissionActions).toContain(action)
+		expect(permissionEntities).toContain(entity)
+		expect(permissionAccesses).toContain(access)
+		keys.add(`${action}:${entity}:${access}`)
+	}
+	expect(keys.size).toBe(matrix.length)
+})
+
+test('every Role has a granted access level', () => {
+	for (const name of roleNames) {
+		expect(permissionAccesses).toContain(roleGrantedAccess[name])
+	}
+})
+
+test('permissionForOwnership picks :own when owner, :any otherwise', () => {
+	expect(permissionForOwnership('delete', 'note', true)).toBe('delete:note:own')
+	expect(permissionForOwnership('delete', 'note', false)).toBe('delete:note:any')
 })
 
 test('userHasPermission scans every role and is false without a user', () => {

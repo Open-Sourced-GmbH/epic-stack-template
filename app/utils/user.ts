@@ -37,6 +37,37 @@ export type PermissionAction = (typeof permissionActions)[number]
 export type PermissionEntity = (typeof permissionEntities)[number]
 export type PermissionAccess = (typeof permissionAccesses)[number]
 
+// The set of Roles a user can hold, named once here (the database `Role` rows
+// must mirror it). Guards take a `RoleName`, so a mistyped role is a compile
+// error rather than a silent 403 at runtime.
+export const roleNames = ['user', 'admin'] as const
+export type RoleName = (typeof roleNames)[number]
+
+// The access level each Role is granted across every entity/action. Exhaustive
+// over RoleName (a role without a grant is a compile error). This is the policy
+// the init migration hard-coded — "admin gets every `any` permission, user every
+// `own`" — which until now lived only as commented-out SQL; naming it here gives
+// that folklore a home and lets the seed derive role grants from it.
+export const roleGrantedAccess = {
+	admin: 'any',
+	user: 'own',
+} satisfies Record<RoleName, PermissionAccess>
+
+// The full permission matrix derived from the vocabulary: every
+// entity × action × access. The database `Permission` rows are exactly this set,
+// so the seed generates them from here rather than from a hand-maintained list.
+export function getPermissionMatrix(): Array<{
+	action: PermissionAction
+	entity: PermissionEntity
+	access: PermissionAccess
+}> {
+	return permissionEntities.flatMap((entity) =>
+		permissionActions.flatMap((action) =>
+			permissionAccesses.map((access) => ({ action, entity, access })),
+		),
+	)
+}
+
 // An access segment of a PermissionString names a single stored access level or
 // a comma-joined set meaning "any of these satisfy the requirement".
 type AccessSegment =
@@ -106,9 +137,22 @@ export function userHasPermission(
 	)
 }
 
+// The permission required to act on a resource you may or may not own: the
+// narrower `:own` when you own it, the broader `:any` otherwise. This is the
+// own-vs-any RBAC idiom (the reason the access levels exist, see ADR-028); naming
+// it keeps the ownership→permission rule in one place rather than re-spelled at a
+// server guard and its mirroring client check.
+export function permissionForOwnership(
+	action: PermissionAction,
+	entity: PermissionEntity,
+	isOwner: boolean,
+): PermissionString {
+	return `${action}:${entity}:${isOwner ? 'own' : 'any'}`
+}
+
 export function userHasRole(
 	user: Pick<ReturnType<typeof useUser>, 'roles'> | null,
-	role: string,
+	role: RoleName,
 ) {
 	if (!user) return false
 	return user.roles.some((r) => r.name === role)

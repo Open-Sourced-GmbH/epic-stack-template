@@ -1,5 +1,8 @@
-import { getUserId, requireUserId } from './auth.server.ts'
+import { redirect } from 'react-router'
+import { safeRedirect } from 'remix-utils/safe-redirect'
+import { getUserId, requireUserId, sessionKey } from './auth.server.ts'
 import { prisma } from './db.server.ts'
+import { combineResponseInits } from './misc.tsx'
 import { authSessionStorage } from './session.server.ts'
 import { redirectWithToast } from './toast.server.ts'
 import { generateTOTP } from './totp.server.ts'
@@ -29,6 +32,76 @@ export async function isTwoFactorEnabled(userId: string) {
 		target: userId,
 	})
 	return Boolean(verification)
+}
+
+/**
+ * Finalize a newly authenticated session — the writer of the login↔2FA
+ * handshake. If the user has a Two-Factor Authenticator, it stashes the
+ * unverified session id and the remember flag in the verify session (the keys
+ * above) and redirects to the 2FA `/verify` step; otherwise it commits the auth
+ * session immediately. Shared by every login entrypoint (password login, OAuth
+ * callback, passkey), which import it down from here rather than across from a
+ * sibling route. The reader of the handshake is the login route's 2FA
+ * `handleVerification`.
+ */
+export async function handleNewSession(
+	{
+		request,
+		session,
+		redirectTo,
+		remember,
+	}: {
+		request: Request
+		session: { userId: string; id: string; expirationDate: Date }
+		redirectTo?: string
+		remember: boolean
+	},
+	responseInit?: ResponseInit,
+) {
+	const userHasTwoFactor = await isTwoFactorEnabled(session.userId)
+
+	if (userHasTwoFactor) {
+		const verifySession = await verifySessionStorage.getSession()
+		verifySession.set(unverifiedSessionIdKey, session.id)
+		verifySession.set(rememberKey, remember)
+		const redirectUrl = getRedirectToUrl({
+			request,
+			type: twoFAVerificationType,
+			target: session.userId,
+			redirectTo,
+		})
+		return redirect(
+			`${redirectUrl.pathname}?${redirectUrl.searchParams}`,
+			combineResponseInits(
+				{
+					headers: {
+						'set-cookie':
+							await verifySessionStorage.commitSession(verifySession),
+					},
+				},
+				responseInit,
+			),
+		)
+	} else {
+		const authSession = await authSessionStorage.getSession(
+			request.headers.get('cookie'),
+		)
+		authSession.set(sessionKey, session.id)
+
+		return redirect(
+			safeRedirect(redirectTo),
+			combineResponseInits(
+				{
+					headers: {
+						'set-cookie': await authSessionStorage.commitSession(authSession, {
+							expires: remember ? session.expirationDate : undefined,
+						}),
+					},
+				},
+				responseInit,
+			),
+		)
+	}
 }
 
 /**

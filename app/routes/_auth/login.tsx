@@ -18,9 +18,9 @@ import {
 } from '#app/utils/connections.tsx'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { getErrorMessage, useIsPending } from '#app/utils/misc.tsx'
+import { handleNewSession } from '#app/utils/two-factor.server.ts'
 import { PasswordSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { type Route } from './+types/login.ts'
-import { handleNewSession } from './login.server.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
