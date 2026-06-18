@@ -8,6 +8,7 @@ import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
 import { Hero } from './__hero.tsx'
 import { HowItWorks } from './__how-it-works.tsx'
+import { Playground } from './__playground.tsx'
 import { Pricing } from './__pricing.tsx'
 import { Services } from './__services.tsx'
 import { Work } from './__work.tsx'
@@ -81,6 +82,7 @@ export default function Index() {
 				 */}
 				<CodeSample />
 				<HowItWorks />
+				<Playground />
 				{navSections.map((section) => {
 					const Section = sectionComponents[section.id]
 					return Section ? (

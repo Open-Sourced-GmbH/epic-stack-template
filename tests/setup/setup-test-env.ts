@@ -8,6 +8,16 @@ import { afterEach, beforeEach, vi, type MockInstance } from 'vitest'
 import { server } from '#tests/mocks/index.ts'
 import './custom-matchers.ts'
 
+// jsdom ships no ResizeObserver; components built on it (e.g. `input-otp`) call
+// it on mount. A no-op stub lets those render in component tests.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+	globalThis.ResizeObserver = class {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	}
+}
+
 afterEach(() => server.resetHandlers())
 afterEach(() => cleanup())
 

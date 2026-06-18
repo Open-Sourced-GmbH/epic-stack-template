@@ -351,4 +351,23 @@
 			box-shadow: 0 0 0 5px transparent;
 		}
 	}
+
+	/* Live playground carousel (EPT-16). The per-slide progress fill grows
+	   0 → 100% over the autoplay dwell while running; the viewport height eases
+	   to the active slide. Both are gated here, so reduced-motion / no-JS
+	   visitors get an instant, fill-less swap with no fixed height. */
+	.carousel-viewport {
+		transition: height 0.4s cubic-bezier(0.2, 0.7, 0.25, 1);
+	}
+	.carousel-fill[data-running] {
+		animation: carousel-fill var(--carousel-ms, 7000ms) linear forwards;
+	}
+	@keyframes carousel-fill {
+		from {
+			width: 0;
+		}
+		to {
+			width: 100%;
+		}
+	}
 }
