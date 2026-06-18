@@ -15,8 +15,11 @@ import {
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { z } from 'zod'
-import { updatePrimaryCacheValue } from '#app/routes/admin/cache/sqlite.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './litefs.server.ts'
+import {
+	getInstanceInfo,
+	getInstanceInfoSync,
+	getInternalInstanceDomain,
+} from './litefs.server.ts'
 import { cachifiedTimingReporter, type Timings } from './timing.server.ts'
 
 const CACHE_DATABASE_PATH = process.env.CACHE_DATABASE_PATH
@@ -138,6 +141,38 @@ const getAllKeysStatement = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 const searchKeysStatement = cacheDb.prepare(
 	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
 )
+
+/**
+ * Propagate a cache write to the primary instance. On a non-primary instance the
+ * SQLite cache is read-only, so `cache.set`/`cache.delete` forward the write over
+ * the internal network to the primary's `/admin/cache/sqlite` action, which
+ * applies it locally. This is the outbound half of that handoff; the route action
+ * is the inbound half.
+ */
+async function updatePrimaryCacheValue({
+	key,
+	cacheValue,
+}: {
+	key: string
+	cacheValue: any
+}) {
+	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	if (currentIsPrimary) {
+		throw new Error(
+			`updatePrimaryCacheValue should not be called on the primary instance (${primaryInstance})}`,
+		)
+	}
+	const domain = getInternalInstanceDomain(primaryInstance)
+	const token = process.env.INTERNAL_COMMAND_TOKEN
+	return fetch(`${domain}/admin/cache/sqlite`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ key, cacheValue }),
+	})
+}
 
 export const cache: CachifiedCache = {
 	name: 'SQLite cache',

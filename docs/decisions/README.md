@@ -64,3 +64,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 050 | [Blog/CMS Replaces Notes](050-blog-cms-replaces-notes.md)                | Accepted                                            |
 | 051 | [Verify Dispatch Registry](051-verify-dispatch-registry.md)             | Accepted                                            |
 | 052 | [Verify-Session Handshake & 2FA Lifecycle in Util](052-verify-session-handshake-and-2fa-lifecycle-in-util.md) | Accepted                          |
+| 053 | [Cache Write-Back Lives in Cache Util](053-cache-writeback-lives-in-cache-util.md) | Accepted                          |
