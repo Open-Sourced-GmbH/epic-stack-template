@@ -1,15 +1,15 @@
 import { createCookieSessionStorage } from 'react-router'
+import { prisma } from './db.server.ts'
+import { getDomainUrl } from './misc.tsx'
+import { generateTOTP, verifyTOTP } from './totp.server.ts'
+import { type twoFAVerifyVerificationType } from './two-factor.ts'
 import {
 	codeQueryParam,
 	redirectToQueryParam,
 	targetQueryParam,
 	typeQueryParam,
 	type VerificationTypes,
-} from '#app/routes/_auth/verify.tsx'
-import { type twoFAVerifyVerificationType } from '#app/routes/settings/profile/two-factor/verify.tsx'
-import { prisma } from './db.server.ts'
-import { getDomainUrl } from './misc.tsx'
-import { generateTOTP, verifyTOTP } from './totp.server.ts'
+} from './verification.ts'
 
 export const verifySessionStorage = createCookieSessionStorage({
 	cookie: {

@@ -30,3 +30,11 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   recency window. Distinct concept from a Verification despite the shared table;
   conflating the two is what made the `2fa` case the lone switch arm that skips
   deletion.
+- **Pending Two-Factor Authenticator** — the *in-progress* row written while a
+  user is enabling 2FA (type `2fa-verify`, target = user id). It is **not** a
+  `VerificationTypes` member: it never flows through `/verify`, and is exercised
+  only by the 2FA settings route. Once the user confirms a code it is
+  **promoted** in place into a Two-Factor Authenticator (its `type` flips to
+  `2fa`); abandoning setup deletes it. Naming it separately is what lets the
+  permanent and pending states stay distinct rather than being one fuzzy "2fa"
+  row.

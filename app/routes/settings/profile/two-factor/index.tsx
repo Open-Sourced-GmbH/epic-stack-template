@@ -5,9 +5,11 @@ import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { generateTOTP } from '#app/utils/totp.server.ts'
+import {
+	twoFAVerificationType,
+	twoFAVerifyVerificationType,
+} from '#app/utils/two-factor.ts'
 import { type Route } from './+types/index.ts'
-import { twoFAVerificationType } from './_layout.tsx'
-import { twoFAVerifyVerificationType } from './verify.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,

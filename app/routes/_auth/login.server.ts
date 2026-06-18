@@ -1,7 +1,6 @@
 import { invariant } from '@epic-web/invariant'
 import { redirect } from 'react-router'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-import { twoFAVerificationType } from '#app/routes/settings/profile/two-factor/_layout.tsx'
 import { sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { combineResponseInits } from '#app/utils/misc.tsx'
@@ -13,6 +12,7 @@ import {
 	unverifiedSessionIdKey,
 	verifiedTimeKey,
 } from '#app/utils/two-factor.server.ts'
+import { twoFAVerificationType } from '#app/utils/two-factor.ts'
 import {
 	getRedirectToUrl,
 	verifySessionStorage,

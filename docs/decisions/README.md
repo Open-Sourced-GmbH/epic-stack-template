@@ -60,3 +60,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 046 | [Remove Path Aliases](046-remove-path-aliases.md)                      | Accepted                                            |
 | 047 | [Mock Cache Server in Tests](047-mock-cache-server-in-tests.md)        | Accepted                                            |
 | 048 | [Cloudron deploy + branch model](048-cloudron-deploy-branch-model.md)   | Accepted                                            |
+| 049 | [Shared Auth Vocabulary in Util Layer](049-shared-vocabulary-in-util-layer.md) | Accepted                                     |

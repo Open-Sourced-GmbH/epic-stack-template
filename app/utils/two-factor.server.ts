@@ -1,7 +1,7 @@
-import { twoFAVerificationType } from '#app/routes/settings/profile/two-factor/_layout.tsx'
 import { getUserId, requireUserId } from './auth.server.ts'
 import { authSessionStorage } from './session.server.ts'
 import { redirectWithToast } from './toast.server.ts'
+import { twoFAVerificationType } from './two-factor.ts'
 import {
 	getRedirectToUrl,
 	getVerification,

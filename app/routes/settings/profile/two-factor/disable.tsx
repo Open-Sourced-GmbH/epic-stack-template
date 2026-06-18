@@ -7,9 +7,9 @@ import { prisma } from '#app/utils/db.server.ts'
 import { useDoubleCheck } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
+import { twoFAVerificationType } from '#app/utils/two-factor.ts'
 import { type BreadcrumbHandle } from '../../profile/_layout.tsx'
 import { type Route } from './+types/disable.ts'
-import { twoFAVerificationType } from './_layout.tsx'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="lock-open-1">Disable</Icon>,

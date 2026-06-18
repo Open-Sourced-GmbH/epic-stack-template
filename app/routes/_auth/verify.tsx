@@ -3,34 +3,27 @@ import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { Form, useSearchParams } from 'react-router'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, OTPField } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
+import {
+	VerificationTypeSchema,
+	VerifySchema,
+	codeQueryParam,
+	redirectToQueryParam,
+	targetQueryParam,
+	typeQueryParam,
+	type VerificationTypes,
+} from '#app/utils/verification.ts'
 import { type Route } from './+types/verify.ts'
 import { validateRequest } from './verify.server.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
 }
-
-export const codeQueryParam = 'code'
-export const targetQueryParam = 'target'
-export const typeQueryParam = 'type'
-export const redirectToQueryParam = 'redirectTo'
-const types = ['onboarding', 'reset-password', 'change-email', '2fa'] as const
-const VerificationTypeSchema = z.enum(types)
-export type VerificationTypes = z.infer<typeof VerificationTypeSchema>
-
-export const VerifySchema = z.object({
-	[codeQueryParam]: z.string().min(6).max(6),
-	[typeQueryParam]: VerificationTypeSchema,
-	[targetQueryParam]: z.string(),
-	[redirectToQueryParam]: z.string().optional(),
-})
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()

@@ -4,15 +4,15 @@ import { data } from 'react-router'
 import { z } from 'zod'
 import { handleVerification as handleChangeEmailVerification } from '#app/routes/settings/profile/change-email.server.tsx'
 import { isCodeValid } from '#app/utils/verification.server.ts'
-import { handleVerification as handleLoginTwoFactorVerification } from './login.server.ts'
-import { handleVerification as handleOnboardingVerification } from './onboarding/index.server.ts'
-import { handleVerification as handleResetPasswordVerification } from './reset-password.server.ts'
 import {
 	VerifySchema,
 	codeQueryParam,
 	targetQueryParam,
 	typeQueryParam,
-} from './verify.tsx'
+} from '#app/utils/verification.ts'
+import { handleVerification as handleLoginTwoFactorVerification } from './login.server.ts'
+import { handleVerification as handleOnboardingVerification } from './onboarding/index.server.ts'
+import { handleVerification as handleResetPasswordVerification } from './reset-password.server.ts'
 
 export type VerifyFunctionArgs = {
 	request: Request
