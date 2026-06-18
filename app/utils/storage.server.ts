@@ -26,15 +26,35 @@ async function uploadToStorage(file: File | FileUpload, key: string) {
 	return key
 }
 
+/**
+ * Where an uploaded image belongs in storage. The path each variant produces is
+ * scope-bearing — a note image lives under its owning user *and* note — so the
+ * mapping from target to key is the security-relevant part and lives in one
+ * tested place (`buildImageKey`) rather than being re-spelled per upload helper.
+ */
+export type ImageUploadTarget =
+	| { kind: 'profile'; userId: string }
+	| { kind: 'note'; userId: string; noteId: string }
+
+export function buildImageKey(
+	target: ImageUploadTarget,
+	file: File | FileUpload,
+): string {
+	const fileId = createId()
+	const fileExtension = file.name.split('.').pop() || ''
+	const timestamp = Date.now()
+	const dir =
+		target.kind === 'profile'
+			? `users/${target.userId}/profile-images`
+			: `users/${target.userId}/notes/${target.noteId}/images`
+	return `${dir}/${timestamp}-${fileId}.${fileExtension}`
+}
+
 export async function uploadProfileImage(
 	userId: string,
 	file: File | FileUpload,
 ) {
-	const fileId = createId()
-	const fileExtension = file.name.split('.').pop() || ''
-	const timestamp = Date.now()
-	const key = `users/${userId}/profile-images/${timestamp}-${fileId}.${fileExtension}`
-	return uploadToStorage(file, key)
+	return uploadToStorage(file, buildImageKey({ kind: 'profile', userId }, file))
 }
 
 export async function uploadNoteImage(
@@ -42,11 +62,10 @@ export async function uploadNoteImage(
 	noteId: string,
 	file: File | FileUpload,
 ) {
-	const fileId = createId()
-	const fileExtension = file.name.split('.').pop() || ''
-	const timestamp = Date.now()
-	const key = `users/${userId}/notes/${noteId}/images/${timestamp}-${fileId}.${fileExtension}`
-	return uploadToStorage(file, key)
+	return uploadToStorage(
+		file,
+		buildImageKey({ kind: 'note', userId, noteId }, file),
+	)
 }
 
 function hmacSha256(key: string | Buffer, message: string) {
