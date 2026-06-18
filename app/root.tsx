@@ -24,11 +24,17 @@ import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
 import { UserDropdown } from './components/user-dropdown.tsx'
 import {
+	AccentSwitch,
+	useOptimisticAccent,
+} from './routes/resources/accent.tsx'
+import {
 	ThemeSwitch,
 	useOptionalTheme,
 	useTheme,
 } from './routes/resources/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
+import { getAccent } from './utils/accent.server.ts'
+import { accentVars, DEFAULT_ACCENT } from './utils/accent.ts'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { prisma } from './utils/db.server.ts'
@@ -118,6 +124,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				path: new URL(request.url).pathname,
 				userPrefs: {
 					theme: getTheme(request),
+					accent: getAccent(request)?.accent ?? null,
 				},
 			},
 			ENV: getEnv(),
@@ -139,16 +146,22 @@ function Document({
 	children,
 	nonce,
 	theme = 'light',
+	accentStyle,
 	env = {},
 }: {
 	children: React.ReactNode
 	nonce: string
 	theme?: Theme
+	accentStyle?: React.CSSProperties
 	env?: Record<string, string | undefined>
 }) {
 	const allowIndexing = ENV.ALLOW_INDEXING !== 'false'
 	return (
-		<html lang="en" className={`${theme} h-full overflow-x-hidden`}>
+		<html
+			lang="en"
+			className={`${theme} h-full overflow-x-hidden`}
+			style={accentStyle}
+		>
 			<head>
 				<ClientHintCheck nonce={nonce} />
 				<Meta />
@@ -182,8 +195,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const data = useLoaderData<typeof loader | null>()
 	const nonce = useNonce()
 	const theme = useOptionalTheme()
+	// Apply the chosen accent as inline CSS vars on <html> server-side (no flash),
+	// re-tinting optimistically while an accent switch is in flight (ADR 062).
+	const accent =
+		useOptimisticAccent(data?.requestInfo.userPrefs.accent ?? undefined) ??
+		DEFAULT_ACCENT
+	const accentStyle = accentVars(accent) as React.CSSProperties
 	return (
-		<Document nonce={nonce} theme={theme} env={data?.ENV}>
+		<Document
+			nonce={nonce}
+			theme={theme}
+			accentStyle={accentStyle}
+			env={data?.ENV}
+		>
 			{children}
 		</Document>
 	)
@@ -227,9 +251,14 @@ function App() {
 					<Outlet />
 				</div>
 
-				<div className="container flex justify-between pb-5">
+				<div className="container flex items-center justify-between pb-5">
 					<Logo />
-					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+					<div className="flex items-center gap-4">
+						<AccentSwitch
+							userPreference={data.requestInfo.userPrefs.accent ?? undefined}
+						/>
+						<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+					</div>
 				</div>
 			</div>
 			<EpicToaster closeButton position="top-center" theme={theme} />
