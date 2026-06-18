@@ -174,6 +174,38 @@ async function updatePrimaryCacheValue({
 	})
 }
 
+/**
+ * Apply a cache write under the single-writer rule: the SQLite cache may only be
+ * written on the primary instance. On the primary we run `writeLocally`; on a
+ * replica the cache database is read-only, so the write is forwarded to the
+ * primary's `/admin/cache/sqlite` action via `updatePrimaryCacheValue`
+ * (fire-and-forget). This is the one place the primary-vs-replica fork for cache
+ * writes lives — `cache.set` and `cache.delete` both go through it.
+ */
+async function writeToPrimary({
+	key,
+	cacheValue,
+	writeLocally,
+}: {
+	key: string
+	cacheValue: any
+	writeLocally: () => void
+}) {
+	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	if (currentIsPrimary) {
+		writeLocally()
+		return
+	}
+	void updatePrimaryCacheValue({ key, cacheValue }).then((response) => {
+		if (!response.ok) {
+			console.error(
+				`Error forwarding cache write for key "${key}" to primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+				{ cacheValue },
+			)
+		}
+	})
+}
+
 export const cache: CachifiedCache = {
 	name: 'SQLite cache',
 	async get(key) {
@@ -191,44 +223,23 @@ export const cache: CachifiedCache = {
 		return { metadata, value }
 	},
 	async set(key, entry) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-
-		if (currentIsPrimary) {
-			const value = JSON.stringify(entry.value, bufferReplacer)
-			setStatement.run(key, value, JSON.stringify(entry.metadata))
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue({
-				key,
-				cacheValue: entry,
-			}).then((response) => {
-				if (!response.ok) {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						{ entry },
-					)
-				}
-			})
-		}
+		await writeToPrimary({
+			key,
+			cacheValue: entry,
+			writeLocally: () => {
+				const value = JSON.stringify(entry.value, bufferReplacer)
+				setStatement.run(key, value, JSON.stringify(entry.metadata))
+			},
+		})
 	},
 	async delete(key) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-
-		if (currentIsPrimary) {
-			deleteStatement.run(key)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue({
-				key,
-				cacheValue: undefined,
-			}).then((response) => {
-				if (!response.ok) {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-					)
-				}
-			})
-		}
+		await writeToPrimary({
+			key,
+			cacheValue: undefined,
+			writeLocally: () => {
+				deleteStatement.run(key)
+			},
+		})
 	},
 }
 
