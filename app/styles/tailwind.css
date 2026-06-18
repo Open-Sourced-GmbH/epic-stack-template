@@ -241,3 +241,94 @@
 		border-color: hsl(var(--border));
 	}
 }
+
+/* Marketing landing motion (EPT-12). Every entrance + ambient loop here is
+   progressive enhancement: the resting/final state renders server-side and these
+   rules apply only when the visitor has not asked to reduce motion. The
+   `.rv` / `.rv-in` scroll-reveal pair is the reusable utility consumed by later
+   sections via the `useReveal` hook; the `.hero` rules drive the hero entrance. */
+@media (prefers-reduced-motion: no-preference) {
+	/* Scroll-reveal: useReveal() tags targets `.rv`, then `.rv-in` as they enter. */
+	.rv {
+		opacity: 0;
+		transform: translateY(22px);
+		transition:
+			opacity 0.6s cubic-bezier(0.2, 0.7, 0.25, 1),
+			transform 0.6s cubic-bezier(0.2, 0.7, 0.25, 1);
+	}
+	.rv.rv-in {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Hero entrance: children rise/fade once JS sets `data-in` on mount. */
+	.hero[data-in] .anim {
+		animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+	}
+	.hero[data-in] .anim.d1 {
+		animation-delay: 0.05s;
+	}
+	.hero[data-in] .anim.d2 {
+		animation-delay: 0.13s;
+	}
+	.hero[data-in] .anim.d3 {
+		animation-delay: 0.21s;
+	}
+	.hero[data-in] .anim.d4 {
+		animation-delay: 0.29s;
+	}
+	.hero[data-in] .anim.d5 {
+		animation-delay: 0.4s;
+	}
+
+	/* Hero ambient loops. */
+	.hero .breathe {
+		animation: hero-breathe 7s ease-in-out infinite;
+	}
+	.hero .floaty {
+		animation: hero-floaty 5s ease-in-out infinite;
+	}
+	.hero .dotpulse {
+		animation: hero-dotpulse 2.6s ease-in-out infinite;
+	}
+
+	@keyframes hero-rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@keyframes hero-breathe {
+		0%,
+		100% {
+			transform: scale(1);
+			opacity: 0.7;
+		}
+		50% {
+			transform: scale(1.06);
+			opacity: 1;
+		}
+	}
+	@keyframes hero-floaty {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-8px);
+		}
+	}
+	@keyframes hero-dotpulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 var(--brand-soft);
+		}
+		50% {
+			box-shadow: 0 0 0 5px transparent;
+		}
+	}
+}

@@ -3,6 +3,7 @@ import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
 import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
+import { Hero } from './__hero.tsx'
 
 const SITE_TITLE = 'Open Sourced — Product engineering studio'
 const SITE_DESCRIPTION =
@@ -50,25 +51,7 @@ export default function Index() {
 				}
 			/>
 			<main className="flex-1">
-				<section
-					id="hero"
-					aria-labelledby="hero-heading"
-					className="container py-24 text-center"
-				>
-					<p className="text-brand text-sm font-medium tracking-wide uppercase">
-						Product engineering studio
-					</p>
-					<h1
-						id="hero-heading"
-						className="mx-auto mt-4 max-w-3xl text-5xl font-bold text-balance"
-					>
-						Ship production software, faster.
-					</h1>
-					<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg text-pretty">
-						We partner with teams to design and build web apps that go all the
-						way to launch.
-					</p>
-				</section>
+				<Hero />
 				{navSections.map((section) => (
 					<SectionStub
 						key={section.id}
