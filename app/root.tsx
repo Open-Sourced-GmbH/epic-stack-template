@@ -219,6 +219,11 @@ function App() {
 	const theme = useTheme()
 	const matches = useMatches()
 	const isOnSearchPage = matches.find((m) => m.id === 'routes/users/index')
+	// Routes can opt out of the generic app chrome via `handle.hideChrome` (e.g.
+	// the marketing landing, which ships its own branded header/footer — EPT-11).
+	const hideChrome = matches.some(
+		(m) => (m.handle as { hideChrome?: boolean } | undefined)?.hideChrome,
+	)
 	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
 	useToast(data.toast)
 
@@ -228,38 +233,42 @@ function App() {
 			getSrc={getImgSrc}
 		>
 			<div className="flex min-h-screen flex-col justify-between">
-				<header className="container py-6">
-					<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
-						<Logo />
-						<div className="ml-auto hidden max-w-sm flex-1 sm:block">
-							{searchBar}
-						</div>
-						<div className="flex items-center gap-10">
-							{user ? (
-								<UserDropdown />
-							) : (
-								<Button asChild variant="default" size="lg">
-									<Link to="/login">Log In</Link>
-								</Button>
-							)}
-						</div>
-						<div className="block w-full sm:hidden">{searchBar}</div>
-					</nav>
-				</header>
+				{hideChrome ? null : (
+					<header className="container py-6">
+						<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
+							<Logo />
+							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
+								{searchBar}
+							</div>
+							<div className="flex items-center gap-10">
+								{user ? (
+									<UserDropdown />
+								) : (
+									<Button asChild variant="default" size="lg">
+										<Link to="/login">Log In</Link>
+									</Button>
+								)}
+							</div>
+							<div className="block w-full sm:hidden">{searchBar}</div>
+						</nav>
+					</header>
+				)}
 
 				<div className="flex flex-1 flex-col">
 					<Outlet />
 				</div>
 
-				<div className="container flex items-center justify-between pb-5">
-					<Logo />
-					<div className="flex items-center gap-4">
-						<AccentSwitch
-							userPreference={data.requestInfo.userPrefs.accent ?? undefined}
-						/>
-						<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+				{hideChrome ? null : (
+					<div className="container flex items-center justify-between pb-5">
+						<Logo />
+						<div className="flex items-center gap-4">
+							<AccentSwitch
+								userPreference={data.requestInfo.userPrefs.accent ?? undefined}
+							/>
+							<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+						</div>
 					</div>
-				</div>
+				)}
 			</div>
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
