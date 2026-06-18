@@ -5,6 +5,7 @@ import { Faq } from './__faq.tsx'
 import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
 import { Hero } from './__hero.tsx'
+import { Pricing } from './__pricing.tsx'
 
 const SITE_TITLE = 'Open Sourced — Product engineering studio'
 const SITE_DESCRIPTION =
@@ -50,6 +51,7 @@ function SectionStub({ id, title }: { id: string; title: string }) {
 const sectionComponents: Partial<
 	Record<(typeof navSections)[number]['id'], React.ComponentType>
 > = {
+	pricing: Pricing,
 	faq: Faq,
 }
 
