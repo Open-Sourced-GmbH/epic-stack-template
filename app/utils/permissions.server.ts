@@ -1,37 +1,35 @@
 import { data } from 'react-router'
 import { requireUserId } from './auth.server.ts'
 import { prisma } from './db.server.ts'
-import { type PermissionString, parsePermissionString } from './user.ts'
+import {
+	type PermissionString,
+	parsePermissionString,
+	userHasPermission,
+} from './user.ts'
 
 export async function requireUserWithPermission(
 	request: Request,
 	permission: PermissionString,
 ) {
 	const userId = await requireUserId(request)
-	const permissionData = parsePermissionString(permission)
 	const user = await prisma.user.findFirst({
-		select: { id: true },
-		where: {
-			id: userId,
+		select: {
+			id: true,
 			roles: {
-				some: {
+				select: {
 					permissions: {
-						some: {
-							...permissionData,
-							access: permissionData.access
-								? { in: permissionData.access }
-								: undefined,
-						},
+						select: { entity: true, action: true, access: true },
 					},
 				},
 			},
 		},
+		where: { id: userId },
 	})
-	if (!user) {
+	if (!user || !userHasPermission(user, permission)) {
 		throw data(
 			{
 				error: 'Unauthorized',
-				requiredPermission: permissionData,
+				requiredPermission: parsePermissionString(permission),
 				message: `Unauthorized: required permissions: ${permission}`,
 			},
 			{ status: 403 },

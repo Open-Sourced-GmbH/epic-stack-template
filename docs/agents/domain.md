@@ -46,6 +46,33 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
 > **Retired:** **Note** / **NoteImage** — the upstream Epic Stack per-user notes
 > example. Removed in this template; the `note` RBAC entity becomes `post`.
 
+### Access Control (RBAC)
+
+> See [ADR-028](../decisions/028-permissions-rbac.md) for the role/permission
+> model and [ADR-056](../decisions/056-permission-match-rule-and-vocabulary.md)
+> for where the vocabulary and the match rule live.
+
+- **Permission** — a granted capability stored as a row of three columns:
+  **action** (`create`/`read`/`update`/`delete`), **entity** (the noun acted on,
+  e.g. `user`, `note`), and **access** (`own` = only the actor's own rows, `any`
+  = anyone's). The set of valid actions/entities/access levels is the **RBAC
+  vocabulary**, named once as value-level registries (`permissionActions`,
+  `permissionEntities`, `permissionAccesses`) in `app/utils/user.ts`; the
+  database `Permission` rows must mirror it.
+- **Permission String** — the textual form a guard names, `action:entity` or
+  `action:entity:access` (e.g. `delete:note:own`). The access segment may be
+  comma-joined (`own,any`) to mean "any of these satisfy the requirement";
+  omitting it means any access satisfies. `parsePermissionString` turns it into a
+  **Required Permission** `{ action, entity, access? }`.
+- **Match rule** — the single predicate `permissionSatisfies(granted, required)`
+  in `app/utils/user.ts`: a granted Permission satisfies a Required Permission
+  when entity and action match and the granted access is among those required (or
+  none is required). Both the server guard (`requireUserWithPermission`) and the
+  client check (`userHasPermission`) go through it, so the two cannot diverge.
+- **Role** — a named bundle of Permissions a user holds (e.g. `user`, `admin`).
+  Role identity is still a bare string at the guard (`requireUserWithRole`); a
+  typed role registry is a known follow-up, not yet done.
+
 ### Identity & Verification
 
 - **Verification** — an *ephemeral, one-time* proof of control over an
