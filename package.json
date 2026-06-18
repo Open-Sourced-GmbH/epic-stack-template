@@ -24,6 +24,7 @@
     "email:theme": "tsx scripts/generate-email-theme.ts",
     "styleguide:snapshot": "tsx scripts/snapshot-styleguide.ts",
     "design-sync:css": "tsx scripts/sync-design-css.ts",
+    "design-sync:prepare": "tsx scripts/design-sync-prepare.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:e2e": "npm run test:e2e:dev --silent",

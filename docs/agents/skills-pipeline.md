@@ -42,7 +42,7 @@ in sync with the real components, so feature design starts grounded in the
 shipping system instead of a parallel mockup:
 
 ```
-ui/* or token change → pnpm styleguide:snapshot → /design-sync (publish, incremental)
+ui/* or token change → pnpm design-sync:prepare → /design-sync (publish, incremental)
 ```
 
 The living [`/styleguide`](./styleguide.md) route is the source of truth; the

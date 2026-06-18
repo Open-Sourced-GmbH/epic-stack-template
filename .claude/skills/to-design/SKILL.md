@@ -41,10 +41,12 @@ The exploration should start from the real components. If any `ui/*` component o
 the Claude Design Foundation first:
 
 ```
-pnpm dev → pnpm styleguide:snapshot → /design-sync
+pnpm design-sync:prepare → /design-sync
 ```
 
-If nothing has changed, note that the Foundation is already current.
+`pnpm design-sync:prepare` builds, refreshes the compiled CSS, and snapshots the
+`/styleguide` route in one step; `/design-sync` publishes incrementally. If
+nothing has changed, note that the Foundation is already current.
 
 ### 3. Derive the surfaces from the PRD
 

@@ -86,6 +86,36 @@ jobs:
       - name: ⚡ Run vitest
         run: pnpm test -- --run
 
+  design-sync-css:
+    name: 🎨 Design-sync CSS freshness
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 🏗 Build
+        run: pnpm build
+
+      # Regenerate the compiled Tailwind stylesheet the /design-sync bundler
+      # consumes, then fail if it differs from what's committed. The lockstep
+      # vitest guards the component *set*; this guards the *CSS* — without it a
+      # token change ships stale styles to Claude Design with no error.
+      - name: 🎨 Refresh compiled CSS
+        run: pnpm design-sync:css
+
+      - name: 🧪 Verify committed CSS is fresh
+        run: |
+          if ! git diff --quiet -- .design-sync/styles.compiled.css; then
+            echo "::error file=.design-sync/styles.compiled.css::Compiled CSS is stale. Run 'pnpm build && pnpm design-sync:css' and commit the result."
+            git diff --stat -- .design-sync/styles.compiled.css
+            exit 1
+          fi
+
   playwright:
     name: 🎭 Playwright
     runs-on: ubuntu-latest

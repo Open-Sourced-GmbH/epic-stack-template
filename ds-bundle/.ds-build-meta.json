@@ -1,9 +1,0 @@
-{
-  "namespace": "EpicUI",
-  "source": "epic-stack-template@0.1.0",
-  "shape": "package",
-  "provider": null,
-  "componentCount": 9,
-  "skippedStoryIds": [],
-  "runtimeFontPrefixes": []
-}

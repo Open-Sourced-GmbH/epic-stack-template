@@ -29,6 +29,15 @@ node_modules
 # styleguide snapshot bundle (published to Claude Design via /design-sync)
 /styleguide/
 
+# /design-sync converter toolchain — staged at the repo root by the /design-sync
+# skill, not part of the template. The tracked, reviewable inputs live in
+# .design-sync/ and design-sync.config.json; these generated/vendored files must
+# never be committed.
+/package-build.mjs
+/package-validate.mjs
+/lib/
+/ds-bundle/
+
 # developer environment / agent mounts (not part of the template).
 # .claude/skills and .claude/settings.json ARE tracked — only ignore the mounts.
 /.bash_profile

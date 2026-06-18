@@ -59,7 +59,7 @@ Present the net-new components and tokens. For each, decide with the user:
 - Add it: new component under `app/components/ui/`, new token in
   `app/styles/tailwind.css`. Accepted additions must also get a specimen in
   `app/components/styleguide/specimens.tsx` and be re-published via
-  `pnpm styleguide:snapshot` → `/design-sync`, so the styleguide stays the
+  `pnpm design-sync:prepare` → `/design-sync`, so the styleguide stays the
   source of truth. Foundational tokens get an ADR.
 
 Iterate until the net-new list is minimal and agreed.

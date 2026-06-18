@@ -25,23 +25,63 @@ snapshot consume the same specimens, so there is **zero drift**.
 
 ## Publish cadence: code → Claude Design
 
-Re-publish whenever a `ui/*` component or a `tailwind.css` token changes:
+Re-publish whenever a `ui/*` component or a `tailwind.css` token changes. One
+command does the deterministic prep; `/design-sync` is the only manual step:
 
 ```bash
-pnpm dev                  # the /styleguide route is dev-only, so the server must run
-pnpm styleguide:snapshot  # writes styleguide/ (light + dark, + manifest.json + index.html)
+pnpm design-sync:prepare  # build → compiled CSS → boot dev server → snapshot → teardown
 # review styleguide/index.html, then:
 /design-sync              # pushes to the Claude Design project, one component at a time
 ```
+
+`pnpm design-sync:prepare` ([`scripts/design-sync-prepare.ts`](../../scripts/design-sync-prepare.ts))
+runs the four-step middle of the pipeline so you don't have to juggle two
+terminals:
+
+1. `react-router build` → `build/client/assets/tailwind-<hash>.css`
+2. `pnpm design-sync:css` → copies that hashed file into
+   `.design-sync/styles.compiled.css` (the `cssEntry` the bundler reads)
+3. boots a dev server (the `/styleguide` route is dev-only) — or reuses one
+   already running on `STYLEGUIDE_URL`
+4. `pnpm styleguide:snapshot` → writes `styleguide/` (light + dark +
+   `manifest.json` + `index.html`), then tears the server back down
+
+The two ends stay manual on purpose: **reviewing `styleguide/index.html`** is a
+human judgement call, and **`/design-sync`** is an interactive Claude Code skill
+(OAuth + incremental diff), not a CLI — so neither belongs in an npm script. The
+individual steps (`pnpm styleguide:snapshot`, `pnpm design-sync:css`) remain
+available for re-running a single stage.
 
 `/design-sync` syncs **incrementally, never as a wholesale replace** — it diffs
 the bundle against the remote project and updates only what changed. The
 `styleguide/manifest.json` carries the card metadata (name, group, subtitle,
 viewport) it registers in the Design System pane.
 
-Requirements: a running dev server (`pnpm dev`) and Playwright's chromium
-(`pnpm test:e2e:install`, or `npx playwright install chromium`). `styleguide/`
-is a build artifact and is gitignored.
+Requirements: Playwright's chromium (`pnpm test:e2e:install`, or
+`npx playwright install chromium`). `styleguide/` is a build artifact and is
+gitignored.
+
+### What's enforced vs. manual
+
+The code side is kept honest automatically; publishing is not (it can't be —
+`/design-sync` needs a human + OAuth):
+
+| Guard | Where | Catches |
+| --- | --- | --- |
+| Component set in lockstep (config ↔ barrel ↔ specimens ↔ previews) | `app/components/styleguide/design-sync.test.ts` (vitest, CI) | Adding a `ui/*` component to one place but not another |
+| Compiled CSS freshness | `🎨 Design-sync CSS freshness` job in [`ci.yml`](../../.github/workflows/ci.yml) | A token/utility change that wasn't re-synced into `.design-sync/styles.compiled.css` |
+| Converter toolchain never committed | `.gitignore` (`package-build.mjs`, `package-validate.mjs`, `/lib/`, `/ds-bundle/`) | The staged `/design-sync` `.mjs` toolchain leaking into the repo |
+
+> **Not automated:** nothing republishes to (or drift-checks against) the Claude
+> Design project itself — that's a deliberate manual step. CI guarantees the
+> *inputs* to `/design-sync` are internally consistent and fresh; the human runs
+> the publish.
+
+The `/design-sync` converter (`package-build.mjs`, `package-validate.mjs`,
+`lib/`) is **staged at the repo root by the `/design-sync` skill**, not vendored
+here, so it is gitignored and not reproducible from a clean checkout without the
+skill. The reviewable, tracked inputs are `design-sync.config.json` and
+everything under `.design-sync/`.
 
 ## Adding a specimen
 
