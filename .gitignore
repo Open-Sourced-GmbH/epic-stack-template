@@ -28,3 +28,19 @@ node_modules
 
 # styleguide snapshot bundle (published to Claude Design via /design-sync)
 /styleguide/
+
+# developer environment / agent mounts (not part of the template).
+# .claude/skills and .claude/settings.json ARE tracked — only ignore the mounts.
+/.bash_profile
+/.bashrc
+/.profile
+/.zprofile
+/.zshrc
+/.gitconfig
+/.ripgreprc
+/.idea
+/.mcp.json
+/.gitmodules
+/.claude/agents
+/.claude/commands
+/.claude/hooks
