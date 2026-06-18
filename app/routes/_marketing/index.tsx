@@ -1,6 +1,7 @@
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
+import { Faq } from './__faq.tsx'
 import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
 import { Hero } from './__hero.tsx'
@@ -41,6 +42,17 @@ function SectionStub({ id, title }: { id: string; title: string }) {
 	)
 }
 
+/**
+ * Real section components, keyed by their `navSections` id. Ids absent here fall
+ * back to `SectionStub`, so each slice ships a section by adding one entry — no
+ * edits to the render loop. Each component owns its own `id`/landmark markup.
+ */
+const sectionComponents: Partial<
+	Record<(typeof navSections)[number]['id'], React.ComponentType>
+> = {
+	faq: Faq,
+}
+
 export default function Index() {
 	const requestInfo = useOptionalRequestInfo()
 	return (
@@ -52,13 +64,18 @@ export default function Index() {
 			/>
 			<main className="flex-1">
 				<Hero />
-				{navSections.map((section) => (
-					<SectionStub
-						key={section.id}
-						id={section.id}
-						title={section.label}
-					/>
-				))}
+				{navSections.map((section) => {
+					const Section = sectionComponents[section.id]
+					return Section ? (
+						<Section key={section.id} />
+					) : (
+						<SectionStub
+							key={section.id}
+							id={section.id}
+							title={section.label}
+						/>
+					)
+				})}
 			</main>
 			<MarketingFooter />
 		</div>
