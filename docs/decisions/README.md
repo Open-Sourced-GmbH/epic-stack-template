@@ -61,3 +61,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 047 | [Mock Cache Server in Tests](047-mock-cache-server-in-tests.md)        | Accepted                                            |
 | 048 | [Cloudron deploy + branch model](048-cloudron-deploy-branch-model.md)   | Accepted                                            |
 | 049 | [Shared Auth Vocabulary in Util Layer](049-shared-vocabulary-in-util-layer.md) | Accepted                                     |
+| 050 | [Blog/CMS Replaces Notes](050-blog-cms-replaces-notes.md)                | Accepted                                            |

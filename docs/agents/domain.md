@@ -17,6 +17,37 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
 
 ## Glossary
 
+### Content (Blog / CMS)
+
+> The canonical content domain. This **replaces the retired `Note` example
+> domain** (per-user notes) with an admin-authored blog/changelog. See the ADR
+> under [`docs/decisions/`](../decisions/README.md) for the rationale.
+
+- **Post** — the unit of published content: an admin-authored blog article with
+  a title, a URL **slug**, a Markdown **body** (rendered with syntax-highlighted
+  code blocks), a **cover image**, **tags**, an **author**, and a publication
+  state. Replaces the legacy `Note`. Owned/authored only by users with the
+  authoring permission; it is **not** per-user content — there is one canonical
+  feed, not one feed per user.
+- **Draft** — a Post in the unpublished state. Visible only in the admin
+  authoring surface; never appears on the public feed or via public URLs.
+- **Published** — a Post that has been released: it has a `publishedAt` instant
+  and is readable by the public (unauthenticated) at its slug. Publishing is the
+  transition Draft → Published; it can be reversed (unpublish) back to Draft.
+- **Author** — the user credited on a Post. Only users holding the `post`
+  authoring permission (admins, via RBAC) can author or edit Posts. Regular
+  logged-in users are **readers only** — they have no content-creation ability
+  (account management only).
+- **Tag** — a free-form taxonomy label attached to a Post for grouping/filtering
+  on the public feed.
+- **Cover image** — the lead image of a Post (a `PostImage`), reusing the
+  Stack's existing image-upload/storage machinery (formerly `NoteImage`).
+
+> **Retired:** **Note** / **NoteImage** — the upstream Epic Stack per-user notes
+> example. Removed in this template; the `note` RBAC entity becomes `post`.
+
+### Identity & Verification
+
 - **Verification** — an *ephemeral, one-time* proof of control over an
   identifier (email/username), backed by a row in the `verification` table and a
   TOTP code. Created by `prepareVerification`, emailed, then **consumed**
