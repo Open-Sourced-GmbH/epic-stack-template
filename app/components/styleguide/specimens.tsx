@@ -1,4 +1,10 @@
 import { type ReactNode } from 'react'
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from '#app/components/ui/accordion.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import {
@@ -395,6 +401,36 @@ export const specimens: Specimen[] = [
 					<TooltipContent>Helpful hint</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
+		),
+	},
+	{
+		name: 'accordion',
+		group: 'Disclosure',
+		subtitle: 'single-open — first item open, rest collapsed',
+		viewport: { width: 560, height: 280 },
+		render: () => (
+			<Accordion defaultValue="item-1" className="w-full">
+				<AccordionItem value="item-1">
+					<AccordionTrigger>Is it accessible?</AccordionTrigger>
+					<AccordionContent>
+						Yes. It is built on Radix and follows the WAI-ARIA disclosure
+						pattern, with full keyboard support.
+					</AccordionContent>
+				</AccordionItem>
+				<AccordionItem value="item-2">
+					<AccordionTrigger>Is it themeable?</AccordionTrigger>
+					<AccordionContent>
+						Yes. It is styled with design tokens only, so it follows the brand
+						accent and light/dark theme automatically.
+					</AccordionContent>
+				</AccordionItem>
+				<AccordionItem value="item-3">
+					<AccordionTrigger>Does it animate?</AccordionTrigger>
+					<AccordionContent>
+						Yes — a grid-rows height transition, with a reduced-motion fallback.
+					</AccordionContent>
+				</AccordionItem>
+			</Accordion>
 		),
 	},
 ]
