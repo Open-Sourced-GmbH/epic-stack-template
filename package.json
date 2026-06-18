@@ -23,6 +23,7 @@
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true node index.ts",
     "email:theme": "tsx scripts/generate-email-theme.ts",
     "styleguide:snapshot": "tsx scripts/snapshot-styleguide.ts",
+    "design-sync:css": "tsx scripts/sync-design-css.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:e2e": "npm run test:e2e:dev --silent",

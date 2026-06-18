@@ -31,19 +31,27 @@ export type Specimen = {
 
 // --- Foundations: color tokens ------------------------------------------------
 
-const semanticColors: Array<{ bg: string; fg?: string; label: string }> = [
-	{ bg: 'background', fg: 'foreground', label: 'background' },
-	{ bg: 'card', fg: 'card-foreground', label: 'card' },
-	{ bg: 'popover', fg: 'popover-foreground', label: 'popover' },
-	{ bg: 'primary', fg: 'primary-foreground', label: 'primary' },
-	{ bg: 'secondary', fg: 'secondary-foreground', label: 'secondary' },
-	{ bg: 'muted', fg: 'muted-foreground', label: 'muted' },
-	{ bg: 'accent', fg: 'accent-foreground', label: 'accent' },
-	{ bg: 'destructive', fg: 'destructive-foreground', label: 'destructive' },
-	{ bg: 'border', label: 'border' },
-	{ bg: 'input', label: 'input' },
-	{ bg: 'ring', label: 'ring' },
-]
+/**
+ * The token catalogs below (`semanticColors`, `typeScale`, `radii`) are the
+ * exported source of truth for the foundation specimens. A drift test
+ * (`specimens.test.ts`) asserts they stay in sync with the tokens defined in
+ * `app/styles/tailwind.css`, so adding/removing a token there fails CI until
+ * the styleguide reflects it (or it is explicitly listed as not-shown).
+ */
+export const semanticColors: Array<{ bg: string; fg?: string; label: string }> =
+	[
+		{ bg: 'background', fg: 'foreground', label: 'background' },
+		{ bg: 'card', fg: 'card-foreground', label: 'card' },
+		{ bg: 'popover', fg: 'popover-foreground', label: 'popover' },
+		{ bg: 'primary', fg: 'primary-foreground', label: 'primary' },
+		{ bg: 'secondary', fg: 'secondary-foreground', label: 'secondary' },
+		{ bg: 'muted', fg: 'muted-foreground', label: 'muted' },
+		{ bg: 'accent', fg: 'accent-foreground', label: 'accent' },
+		{ bg: 'destructive', fg: 'destructive-foreground', label: 'destructive' },
+		{ bg: 'border', label: 'border' },
+		{ bg: 'input', label: 'input' },
+		{ bg: 'ring', label: 'ring' },
+	]
 
 // Static class names so Tailwind's compiler sees every utility used here.
 const swatchBg: Record<string, string> = {
@@ -72,7 +80,7 @@ const swatchFg: Record<string, string> = {
 
 // --- Foundations: typography scale -------------------------------------------
 
-const typeScale: Array<{ cls: string; label: string }> = [
+export const typeScale: Array<{ cls: string; label: string }> = [
 	{ cls: 'text-mega', label: 'mega' },
 	{ cls: 'text-h1', label: 'h1' },
 	{ cls: 'text-h2', label: 'h2' },
@@ -80,17 +88,20 @@ const typeScale: Array<{ cls: string; label: string }> = [
 	{ cls: 'text-h4', label: 'h4' },
 	{ cls: 'text-h5', label: 'h5' },
 	{ cls: 'text-h6', label: 'h6' },
+	{ cls: 'text-body-2xl', label: 'body-2xl' },
+	{ cls: 'text-body-xl', label: 'body-xl' },
 	{ cls: 'text-body-lg', label: 'body-lg' },
 	{ cls: 'text-body-md', label: 'body-md' },
 	{ cls: 'text-body-sm', label: 'body-sm' },
 	{ cls: 'text-body-xs', label: 'body-xs' },
+	{ cls: 'text-body-2xs', label: 'body-2xs' },
 	{ cls: 'text-caption', label: 'caption' },
 	{ cls: 'text-button', label: 'button' },
 ]
 
 // --- Foundations: radii -------------------------------------------------------
 
-const radii: Array<{ cls: string; label: string }> = [
+export const radii: Array<{ cls: string; label: string }> = [
 	{ cls: 'rounded-sm', label: 'radius-sm' },
 	{ cls: 'rounded-md', label: 'radius-md' },
 	{ cls: 'rounded-lg', label: 'radius-lg' },
