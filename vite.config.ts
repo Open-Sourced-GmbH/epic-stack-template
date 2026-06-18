@@ -55,7 +55,7 @@ export default defineConfig((config) => {
 		cacheServerStubPlugin,
 		envOnlyMacros(),
 		tailwindcss(),
-		reactRouterDevTools(),
+		reactRouterDevTools({ pluginDir: './other/rdt-plugins' }),
 
 		iconsSpritesheet({
 			inputDir: './other/svg-icons',
