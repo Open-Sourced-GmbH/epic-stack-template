@@ -8,7 +8,7 @@ Status: accepted (supersedes the Fly.io deploy of
 ## Context
 
 The upstream Epic Stack deploys to Fly.io with LiteFS and a single monolithic
-`deploy.yml`. The Open-Sourced fleet deploys to self-hosted
+`deploy.yml`. The Open Sourced fleet deploys to self-hosted
 [Cloudron](https://cloudron.io/) instead, and runs a conventional-commits +
 release-please release flow across three long-lived branches. This template
 codifies that setup so every new project starts from it.

@@ -1,8 +1,8 @@
 <div align="center">
-  <h1 align="center">Open-Sourced Epic Stack Template 🚀</h1>
+  <h1 align="center">Open Sourced Epic Stack Template 🚀</h1>
   <strong align="center">
     A <a href="https://www.epicweb.dev/epic-stack">Epic Stack</a> starter
-    pre-wired the Open-Sourced way: pnpm, Cloudron deployment, a
+    pre-wired the Open Sourced way: pnpm, Cloudron deployment, a
     conventional-commits release flow, and a full Claude/AI setup.
   </strong>
 </div>
@@ -11,11 +11,11 @@
 
 This template extends
 [Kent C. Dodds' Epic Stack](https://www.epicweb.dev/epic-stack) with three
-things every Open-Sourced project needs from day one:
+things every Open Sourced project needs from day one:
 
 1. **Git workflows** — conventional commits, `release-please`, and a
    `develop → staging → main` promote flow with reusable CI/deploy workflows.
-2. **Open-sourced deployment** — ship a Docker image to GHCR and deploy to
+2. **Open Sourced deployment** — ship a Docker image to GHCR and deploy to
    self-hosted [Cloudron](https://cloudron.io/) (no Fly.io/LiteFS).
 3. **AI setup** — `CLAUDE.md`, agent docs under `docs/agents/`, the Epic Stack
    `epic-*` skills, and a grill → PRD → design → issues → implement pipeline
