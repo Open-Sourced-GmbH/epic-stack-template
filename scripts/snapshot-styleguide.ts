@@ -150,12 +150,19 @@ async function main() {
 		throw reachErr()
 	}
 
-	await rm(OUT_DIR, { recursive: true, force: true })
-
 	const sprite = await extractSprite(page)
-	// Specimen metadata is theme-independent; capture once for the manifest.
-	let manifestSpecimens: SpecimenCapture[] = []
 
+	// Capture ALL page-dependent data BEFORE touching the filesystem. The output
+	// dir lives inside the project the dev server watches, so writing into it
+	// triggers vite's HMR page reload — which navigates the live page and
+	// destroys Playwright's execution context mid-capture (the dark pass would
+	// crash with "Execution context was destroyed"). Read everything first,
+	// close the browser, then write.
+	const captures: Array<{
+		theme: Theme
+		css: string
+		specimens: SpecimenCapture[]
+	}> = []
 	for (const theme of THEMES) {
 		await page.evaluate((t) => {
 			document.documentElement.classList.toggle('dark', t === 'dark')
@@ -165,13 +172,22 @@ async function main() {
 
 		const css = await extractCss(page)
 		const specimens = await captureSpecimens(page)
-		if (theme === 'light') manifestSpecimens = specimens
+		captures.push({ theme, css, specimens })
+		process.stderr.write(`captured ${specimens.length} specimens (${theme})\n`)
+	}
 
+	await browser.close()
+
+	// The live page is gone — now it's safe to write (HMR reloads can't hurt us).
+	await rm(OUT_DIR, { recursive: true, force: true })
+	// Specimen metadata is theme-independent; use the light pass for the manifest.
+	let manifestSpecimens: SpecimenCapture[] = []
+	for (const { theme, css, specimens } of captures) {
+		if (theme === 'light') manifestSpecimens = specimens
 		for (const s of specimens) {
 			const html = buildHtml({ theme, css, sprite, body: s.html })
 			await write(join(OUT_DIR, theme, `${s.name}.html`), html)
 		}
-		process.stderr.write(`captured ${specimens.length} specimens (${theme})\n`)
 	}
 
 	// Manifest for `/design-sync` → DesignSync register_assets. Cards point at the
@@ -208,7 +224,6 @@ ${manifestSpecimens
 </body></html>`
 	await write(join(OUT_DIR, 'index.html'), index)
 
-	await browser.close()
 	process.stderr.write(
 		`\nWrote ${manifestSpecimens.length} specimens × ${THEMES.length} themes to ${OUT_DIR}/\n` +
 			`Open ${OUT_DIR}/index.html to review, then run /design-sync to publish.\n`,

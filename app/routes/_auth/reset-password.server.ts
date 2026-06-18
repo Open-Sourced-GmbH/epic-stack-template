@@ -1,22 +1,16 @@
 import { invariant } from '@epic-web/invariant'
 import { data, redirect } from 'react-router'
 import { prisma } from '#app/utils/db.server.ts'
-import {
-	consumeVerification,
-	verifySessionStorage,
-} from '#app/utils/verification.server.ts'
+import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import { type VerifyFunctionArgs } from '#app/utils/verification.ts'
 import { resetPasswordUsernameSessionKey } from './reset-password.tsx'
-import { type VerifyFunctionArgs } from './verify.server.ts'
 
 export async function handleVerification({ submission }: VerifyFunctionArgs) {
 	invariant(
 		submission.status === 'success',
 		'Submission should be successful by now',
 	)
-	await consumeVerification({
-		type: submission.value.type,
-		target: submission.value.target,
-	})
+	// The Verification was already consumed by the `/verify` dispatcher.
 	const target = submission.value.target
 	const user = await prisma.user.findFirst({
 		where: { OR: [{ email: target }, { username: target }] },

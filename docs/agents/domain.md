@@ -53,7 +53,10 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   TOTP code. Created by `prepareVerification`, emailed, then **consumed**
   (validated and deleted) on use. Types: `onboarding`, `reset-password`,
   `change-email`. A Verification is always deleted once consumed — it never
-  persists past a single successful use.
+  persists past a single successful use. The `/verify` dispatcher
+  (`validateRequest`) owns this: it consumes the row for every type flagged in
+  `consumedOnVerify` (`app/utils/verification.ts`) *before* the per-type handler
+  runs, so consumption is the seam's job, not each handler's.
 - **Two-Factor Authenticator** — a *permanent credential* belonging to a user
   who has enabled 2FA. It shares the `verification` table and TOTP machinery
   with Verifications (type `2fa`, target = user id) but is **never deleted on

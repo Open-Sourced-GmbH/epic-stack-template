@@ -17,7 +17,7 @@ import {
 	getRedirectToUrl,
 	verifySessionStorage,
 } from '#app/utils/verification.server.ts'
-import { type VerifyFunctionArgs } from './verify.server.ts'
+import { type VerifyFunctionArgs } from '#app/utils/verification.ts'
 
 export async function handleNewSession(
 	{
