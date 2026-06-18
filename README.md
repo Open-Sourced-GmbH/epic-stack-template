@@ -47,6 +47,20 @@ the tree for `example.com` and `com.example.app` to find them all.
 The GHCR image name is derived automatically from the GitHub repository — no edit
 needed.
 
+### Agent skills config
+
+The agent config under `docs/agents/` (issue tracker, triage labels, domain doc
+layout) ships **pre-filled for Linear**, so the engineering skills work out of
+the box once you replace `<YOUR_TEAM>`.
+
+- **Keeping Linear** → just swap the `<YOUR_TEAM>` placeholders above. Nothing
+  else to run.
+- **Switching tracker, labels, or domain layout** → run
+  `/setup-matt-pocock-skills` to regenerate
+  `docs/agents/{issue-tracker,triage-labels,domain}.md`. It defaults to GitHub
+  (this repo's remote) — pick **Other** to keep Linear, or GitHub/GitLab/local
+  to switch.
+
 ### Repo & infra setup (one-time, can't be scripted)
 
 - **Branches**: make `develop` the default branch; create `staging`. Protect all

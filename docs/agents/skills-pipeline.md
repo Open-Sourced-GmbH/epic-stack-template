@@ -3,6 +3,20 @@
 Two kinds of skills are available in this repo: **process skills** that drive the
 feature lifecycle, and **domain skills** that carry Epic Stack know-how.
 
+## Setup: `/setup-matt-pocock-skills`
+
+The process skills below read their config from `docs/agents/` (issue tracker,
+triage labels, domain layout) and the `## Agent skills` block in
+[`../../CLAUDE.md`](../../CLAUDE.md). This template ships those **pre-filled for
+Linear**, so nothing needs running to get started — just replace the
+`<YOUR_TEAM>` placeholders.
+
+Run `/setup-matt-pocock-skills` only to **reconfigure** — switching issue
+tracker, triage-label vocabulary, or domain-doc layout. It regenerates
+`docs/agents/{issue-tracker,triage-labels,domain}.md` and the CLAUDE.md block.
+It defaults to GitHub (this repo's remote); pick **Other** to keep Linear, or
+GitHub/GitLab/local to switch.
+
 ## Process skills (feature lifecycle)
 
 ```

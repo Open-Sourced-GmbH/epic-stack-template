@@ -37,3 +37,25 @@ pnpm validate          # test + lint + typecheck + e2e (full CI check)
 - [Operational runbooks](docs/claude/README.md) - deployment, database, and
   environment specifics for this Cloudron app
 - [Architecture decisions](docs/decisions/README.md) - indexed ADRs
+
+## Agent skills
+
+Config the engineering skills (`to-issues`, `to-prd`, `triage`, `tdd`,
+`grill-with-docs`, …) read to learn this repo's conventions. Re-run
+`/setup-matt-pocock-skills` to regenerate these (see
+[skills-pipeline.md](docs/agents/skills-pipeline.md)).
+
+### Issue tracker
+
+Issues and PRDs live in **Linear** (`mcp__linear__*` tools, not `gh`). See
+[`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+Canonical triage roles map to this repo's Linear statuses/labels. See
+[`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context, flat: domain notes plus `docs/decisions/` ADRs. See
+[`docs/agents/domain.md`](docs/agents/domain.md).
