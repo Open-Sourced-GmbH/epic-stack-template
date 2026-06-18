@@ -1,25 +1,30 @@
 import { invariant } from '@epic-web/invariant'
 import { data } from 'react-router'
 import { EmailChangeNoticeEmail } from '#app/components/emails/change-email-notice.tsx'
-import {
-	requireRecentVerification,
-	type VerifyFunctionArgs,
-} from '#app/routes/_auth/verify.server.ts'
+import { type VerifyFunctionArgs } from '#app/routes/_auth/verify.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
+import {
+	consumeVerification,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { newEmailAddressSessionKey } from './change-email'
 
 export async function handleVerification({
 	request,
 	submission,
 }: VerifyFunctionArgs) {
-	await requireRecentVerification(request)
 	invariant(
 		submission.status === 'success',
 		'Submission should be successful by now',
 	)
+	await consumeVerification({
+		type: submission.value.type,
+		target: submission.value.target,
+	})
+	await requireRecentVerification(request)
 
 	const verifySession = await verifySessionStorage.getSession(
 		request.headers.get('cookie'),

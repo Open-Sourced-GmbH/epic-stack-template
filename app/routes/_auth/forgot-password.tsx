@@ -12,8 +12,8 @@ import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts'
+import { prepareVerification } from '#app/utils/verification.server.ts'
 import { type Route } from './+types/forgot-password.ts'
-import { prepareVerification } from './verify.server.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,

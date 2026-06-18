@@ -7,16 +7,16 @@ import { EmailChangeEmail } from '#app/components/emails/change-email-verificati
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import {
-	prepareVerification,
-	requireRecentVerification,
-} from '#app/routes/_auth/verify.server.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
+import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
 import { EmailSchema } from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import {
+	prepareVerification,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { type Route } from './+types/change-email.ts'
 import { type BreadcrumbHandle } from './_layout.tsx'
 
