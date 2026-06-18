@@ -26,6 +26,12 @@ const schema = z.object({
 	MATOMO_URL: z.string().url().optional(),
 	MATOMO_SITE_ID: z.string().optional(),
 
+	// Cloudflare Turnstile bot challenge. When both are set the widget mounts on
+	// signup and the action verifies the token; leave unset to disable entirely.
+	// The site key is public (sent to the client); the secret key never is.
+	TURNSTILE_SITE_KEY: z.string().optional(),
+	TURNSTILE_SECRET_KEY: z.string().optional(),
+
 	// Tigris Object Storage Configuration
 	AWS_ACCESS_KEY_ID: z.string(),
 	AWS_SECRET_ACCESS_KEY: z.string(),
@@ -69,6 +75,7 @@ export function getEnv() {
 		ALLOW_INDEXING: process.env.ALLOW_INDEXING,
 		MATOMO_URL: process.env.MATOMO_URL,
 		MATOMO_SITE_ID: process.env.MATOMO_SITE_ID,
+		TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY,
 	}
 }
 

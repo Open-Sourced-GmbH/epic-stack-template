@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { SignupEmail } from '#app/components/emails/signup-verification.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
+import { TurnstileWidget } from '#app/components/turnstile.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireAnonymous } from '#app/utils/auth.server.ts'
 import {
@@ -17,6 +18,7 @@ import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
+import { checkTurnstile } from '#app/utils/turnstile.server.ts'
 import { EmailSchema } from '#app/utils/user-validation.ts'
 import { prepareVerification } from '#app/utils/verification.server.ts'
 import { type Route } from './+types/signup.ts'
@@ -38,6 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	await checkHoneypot(formData)
+	await checkTurnstile(formData, request)
 
 	const submission = await parseWithZod(formData, {
 		schema: SignupSchema.superRefine(async (data, ctx) => {
@@ -133,6 +136,7 @@ export default function SignupRoute({ actionData }: Route.ComponentProps) {
 						}}
 						errors={fields.email.errors}
 					/>
+					<TurnstileWidget />
 					<ErrorList errors={form.errors} id={form.errorId} />
 					<StatusButton
 						className="w-full"

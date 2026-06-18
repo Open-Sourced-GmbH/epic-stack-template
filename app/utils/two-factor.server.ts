@@ -174,7 +174,7 @@ export async function shouldRequestTwoFA(request: Request) {
 	// if it's over two hours since they last verified, we should request 2FA again
 	if (!(await isTwoFactorEnabled(userId))) return false
 	const verifiedTime = authSession.get(verifiedTimeKey) ?? new Date(0)
-	const twoHours = 1000 * 60 * 2
+	const twoHours = 1000 * 60 * 60 * 2
 	return Date.now() - verifiedTime > twoHours
 }
 

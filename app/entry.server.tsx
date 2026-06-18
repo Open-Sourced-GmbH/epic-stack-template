@@ -75,16 +75,27 @@ export default async function handleRequest(...args: DocRequestArgs) {
 										MODE === 'development' ? 'ws:' : undefined,
 										process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
 										process.env.MATOMO_URL ?? undefined,
+										process.env.TURNSTILE_SITE_KEY
+											? 'https://challenges.cloudflare.com'
+											: undefined,
 										"'self'",
 									],
 									'font-src': ["'self'"],
-									'frame-src': ["'self'"],
+									'frame-src': [
+										process.env.TURNSTILE_SITE_KEY
+											? 'https://challenges.cloudflare.com'
+											: undefined,
+										"'self'",
+									],
 									'img-src': ["'self'", 'data:'],
 									'script-src': [
 										"'strict-dynamic'",
 										"'self'",
 										`'nonce-${nonce}'`,
 										process.env.MATOMO_URL ?? undefined,
+										process.env.TURNSTILE_SITE_KEY
+											? 'https://challenges.cloudflare.com'
+											: undefined,
 									],
 									'script-src-attr': [`'nonce-${nonce}'`],
 								},
