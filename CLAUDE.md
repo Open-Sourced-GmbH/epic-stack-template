@@ -21,11 +21,13 @@ pnpm validate          # test + lint + typecheck + e2e (full CI check)
 
 - [Code conventions](docs/agents/code-conventions.md) - path aliases, file
   naming, SSR, design tokens
-- [Git workflow](docs/agents/git-workflow.md) - conventional commits,
-  develop → staging → main promote flow, release-please
+- [Git workflow](docs/agents/git-workflow.md) - conventional commits, develop →
+  staging → main promote flow, release-please
 - [Issue conventions](docs/agents/linear-issues.md) - labels, priorities, PRDs
 - [Skills](docs/agents/skills-pipeline.md) - process skills (PRD → grill →
   issues → implement → PR) and the `epic-*` domain skills
+- [Styleguide & Claude Design](docs/agents/styleguide.md) - the design-system
+  source of truth and the `/to-design` → `/to-grounded-design` design lane
 
 ## Operational references
 
@@ -41,9 +43,13 @@ pnpm validate          # test + lint + typecheck + e2e (full CI check)
 ## Agent skills
 
 Config the engineering skills (`to-issues`, `to-prd`, `triage`, `tdd`,
-`grill-with-docs`, …) read to learn this repo's conventions. Re-run
-`/setup-matt-pocock-skills` to regenerate these (see
+`grill-with-docs`, `to-design`, `to-grounded-design`, …) read to learn this
+repo's conventions. Re-run `/setup-matt-pocock-skills` to regenerate these (see
 [skills-pipeline.md](docs/agents/skills-pipeline.md)).
+
+The design lane (`to-design` → [Claude Design](https://claude.ai/design) →
+`to-grounded-design`) grounds feature design in the living `/styleguide` route;
+see [styleguide.md](docs/agents/styleguide.md).
 
 ### Issue tracker
 
