@@ -1,4 +1,4 @@
-import * as E from '@react-email/components'
+import { Button, EmailLayout, Heading, OtpCode, Paragraph } from './_layout.tsx'
 
 export function SignupEmail({
 	onboardingUrl,
@@ -8,21 +8,12 @@ export function SignupEmail({
 	otp: string
 }) {
 	return (
-		<E.Html lang="en" dir="ltr">
-			<E.Container>
-				<h1>
-					<E.Text>Welcome to Epic Notes!</E.Text>
-				</h1>
-				<p>
-					<E.Text>
-						Here's your verification code: <strong>{otp}</strong>
-					</E.Text>
-				</p>
-				<p>
-					<E.Text>Or click the link to get started:</E.Text>
-				</p>
-				<E.Link href={onboardingUrl}>{onboardingUrl}</E.Link>
-			</E.Container>
-		</E.Html>
+		<EmailLayout preview="Welcome to Epic Notes! Verify your email to get started.">
+			<Heading>Welcome to Epic Notes!</Heading>
+			<Paragraph>Here's your verification code:</Paragraph>
+			<OtpCode code={otp} />
+			<Paragraph>Or click the link to get started:</Paragraph>
+			<Button href={onboardingUrl}>Verify email</Button>
+		</EmailLayout>
 	)
 }

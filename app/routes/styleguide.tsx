@@ -2,6 +2,10 @@ import {
 	specimens,
 	type Specimen,
 } from '#app/components/styleguide/specimens.tsx'
+import {
+	listEmailTemplates,
+	renderEmailTemplate,
+} from '#app/utils/email-preview.server.tsx'
 import { type Route } from './+types/styleguide.ts'
 
 /**
@@ -10,13 +14,27 @@ import { type Route } from './+types/styleguide.ts'
  * drift from what ships. `scripts/snapshot-styleguide.ts` snapshots this page
  * into the bundle published to Claude Design via `/design-sync`.
  *
+ * The Emails section renders the transactional templates from the same registry
+ * as the devtools "Emails" tab (`#app/utils/email-preview.server.tsx`), so they
+ * are snapshotted to Claude Design alongside the UI components. Emails are
+ * embedded via `srcDoc` iframes because they are self-contained HTML documents
+ * (inline-styled from the email-safe token projection).
+ *
  * Dev-only: the loader 404s in production so the page never ships to users.
  */
 export async function loader(_: Route.LoaderArgs) {
 	if (process.env.NODE_ENV === 'production') {
 		throw new Response('Not found', { status: 404 })
 	}
-	return {}
+	const emails = await Promise.all(
+		listEmailTemplates().map(async (t) => ({
+			name: t.name,
+			label: t.label,
+			group: t.group,
+			html: (await renderEmailTemplate(t.name)) ?? '',
+		})),
+	)
+	return { emails }
 }
 
 export const meta: Route.MetaFunction = () => [{ title: 'Styleguide' }]
@@ -27,7 +45,7 @@ function groupOrder(items: Specimen[]) {
 	return seen
 }
 
-export default function Styleguide() {
+export default function Styleguide({ loaderData }: Route.ComponentProps) {
 	const groups = groupOrder(specimens)
 	return (
 		<main className="container py-12">
@@ -76,6 +94,42 @@ export default function Styleguide() {
 						</div>
 					</section>
 				))}
+
+				<section>
+					<h2 className="text-h5 border-border mb-6 border-b pb-2">Emails</h2>
+					<p className="text-muted-foreground text-body-2xs mb-6 max-w-prose">
+						Transactional emails from the same registry as the devtools “Emails”
+						tab, styled from the design tokens via the email-safe projection (
+						<code className="text-foreground">email-theme.generated.ts</code>).
+					</p>
+					<div className="flex flex-col gap-8">
+						{loaderData.emails.map((email) => (
+							<div key={email.name}>
+								<div className="mb-3 flex items-baseline gap-3">
+									<h3 className="text-body-sm font-medium">{email.label}</h3>
+									<span className="text-muted-foreground text-body-2xs">
+										{email.group}
+									</span>
+								</div>
+								<div
+									data-specimen={`email-${email.name}`}
+									data-group="Emails"
+									data-subtitle={email.label}
+									data-vw={600}
+									data-vh={780}
+									className="border-border overflow-hidden rounded-lg border"
+								>
+									<iframe
+										title={email.label}
+										srcDoc={email.html}
+										className="w-full bg-white"
+										style={{ height: 780, border: 'none' }}
+									/>
+								</div>
+							</div>
+						))}
+					</div>
+				</section>
 			</div>
 		</main>
 	)

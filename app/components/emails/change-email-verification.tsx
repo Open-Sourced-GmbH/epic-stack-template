@@ -1,4 +1,4 @@
-import * as E from '@react-email/components'
+import { Button, EmailLayout, Heading, OtpCode, Paragraph } from './_layout.tsx'
 
 export function EmailChangeEmail({
 	verifyUrl,
@@ -8,21 +8,12 @@ export function EmailChangeEmail({
 	otp: string
 }) {
 	return (
-		<E.Html lang="en" dir="ltr">
-			<E.Container>
-				<h1>
-					<E.Text>Epic Notes Email Change</E.Text>
-				</h1>
-				<p>
-					<E.Text>
-						Here's your verification code: <strong>{otp}</strong>
-					</E.Text>
-				</p>
-				<p>
-					<E.Text>Or click the link:</E.Text>
-				</p>
-				<E.Link href={verifyUrl}>{verifyUrl}</E.Link>
-			</E.Container>
-		</E.Html>
+		<EmailLayout preview="Confirm your Epic Notes email change.">
+			<Heading>Epic Notes Email Change</Heading>
+			<Paragraph>Here's your verification code:</Paragraph>
+			<OtpCode code={otp} />
+			<Paragraph>Or click the link to confirm the change:</Paragraph>
+			<Button href={verifyUrl}>Confirm email change</Button>
+		</EmailLayout>
 	)
 }
