@@ -62,3 +62,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 048 | [Cloudron deploy + branch model](048-cloudron-deploy-branch-model.md)   | Accepted                                            |
 | 049 | [Shared Auth Vocabulary in Util Layer](049-shared-vocabulary-in-util-layer.md) | Accepted                                     |
 | 050 | [Blog/CMS Replaces Notes](050-blog-cms-replaces-notes.md)                | Accepted                                            |
+| 051 | [Verify Dispatch Registry](051-verify-dispatch-registry.md)             | Accepted                                            |
