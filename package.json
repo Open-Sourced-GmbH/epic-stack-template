@@ -21,6 +21,7 @@
     "setup": "npm run build && prisma migrate deploy && prisma generate --sql && playwright install",
     "start": "cross-env NODE_ENV=production node index.ts",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true node index.ts",
+    "styleguide:snapshot": "tsx scripts/snapshot-styleguide.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:e2e": "npm run test:e2e:dev --silent",

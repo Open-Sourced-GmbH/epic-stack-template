@@ -35,6 +35,38 @@ These skills publish to the issue tracker described in
 [`issue-tracker.md`](./issue-tracker.md) and follow the conventions in
 [`linear-issues.md`](./linear-issues.md).
 
+## Design foundation (styleguide → Claude Design)
+
+A separate, occasional lane that keeps [Claude Design](https://claude.ai/design)
+in sync with the real components, so feature design starts grounded in the
+shipping system instead of a parallel mockup:
+
+```
+ui/* or token change → pnpm styleguide:snapshot → /design-sync (publish, incremental)
+```
+
+The living [`/styleguide`](./styleguide.md) route is the source of truth; the
+snapshot is its published mirror. Re-run after any `ui/*` component or
+`tailwind.css` token change. See [`styleguide.md`](./styleguide.md) for the full
+cadence and requirements.
+
+Per feature, design slots into the lifecycle between the PRD and issues:
+
+```
+/grill-with-docs → /to-prd → /to-design → [Claude Design: explore + export handoff]
+                                → /to-grounded-design → /to-issues → implement → PR
+```
+
+- `/to-design` — turns the PRD into a design brief seeded with the repo's
+  existing tokens + `ui/*` components, so exploration starts grounded.
+- `/to-grounded-design` — reconciles the Claude Design handoff against the
+  [styleguide](./styleguide.md): maps each element to an existing component and
+  every color/space/radius to an existing token, and flags net-new pieces so the
+  issues carry concrete component/token references.
+
+> `/to-design` and `/to-grounded-design` are **not built yet** — the publish
+> lane above is. They're the next skills to author.
+
 ## Domain skills (Epic Stack know-how)
 
 Reach for these when working in the matching area — each one carries the Epic

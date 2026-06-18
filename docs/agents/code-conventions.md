@@ -19,7 +19,9 @@ All routes are server-rendered by default. Only opt out with a clear reason.
 ## Design tokens
 
 Use `@theme` tokens from `app/styles/tailwind.css`. Never hardcode colors,
-fonts, or radii.
+fonts, or radii. The living [styleguide](./styleguide.md) (`/styleguide`,
+dev-only) renders every token and `ui/*` component and is the design-system
+source of truth — it's what gets published to Claude Design.
 
 ## Localization
 
