@@ -1,6 +1,7 @@
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
+import { CodeSample } from './__code-sample.tsx'
 import { Faq } from './__faq.tsx'
 import { MarketingFooter } from './__footer.tsx'
 import { MarketingHeader, navSections } from './__header.tsx'
@@ -66,6 +67,13 @@ export default function Index() {
 			/>
 			<main className="flex-1">
 				<Hero />
+				{/*
+				 * Showpiece sections that aren't nav targets (no `navSections` entry)
+				 * are mounted explicitly here. Final page ordering is settled in a
+				 * later assembly slice; for now the proof-of-craft code sample rides
+				 * directly under the hero.
+				 */}
+				<CodeSample />
 				{navSections.map((section) => {
 					const Section = sectionComponents[section.id]
 					return Section ? (
