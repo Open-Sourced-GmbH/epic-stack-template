@@ -4,10 +4,13 @@
     "components": [
       "Button",
       "Checkbox",
+      "DropdownMenu",
       "Input",
+      "InputOTP",
       "Label",
       "StatusButton",
-      "Textarea"
+      "Textarea",
+      "Tooltip"
     ]
   }
 ]

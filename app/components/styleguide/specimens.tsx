@@ -1,10 +1,30 @@
 import { type ReactNode } from 'react'
 import { Button } from '#app/components/ui/button.tsx'
 import { Checkbox } from '#app/components/ui/checkbox.tsx'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '#app/components/ui/dropdown-menu.tsx'
 import { Input } from '#app/components/ui/input.tsx'
+import {
+	InputOTP,
+	InputOTPGroup,
+	InputOTPSeparator,
+	InputOTPSlot,
+} from '#app/components/ui/input-otp.tsx'
 import { Label } from '#app/components/ui/label.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '#app/components/ui/tooltip.tsx'
 
 /**
  * A styleguide specimen: one card rendered by the `/styleguide` route and
@@ -276,6 +296,63 @@ export const specimens: Specimen[] = [
 					<Label htmlFor="sg-cb3">Disabled</Label>
 				</div>
 			</div>
+		),
+	},
+	{
+		name: 'input-otp',
+		group: 'Forms',
+		subtitle: '6-digit, two groups + separator',
+		viewport: { width: 480, height: 140 },
+		render: () => (
+			<InputOTP maxLength={6} value="123456" onChange={() => {}}>
+				<InputOTPGroup>
+					<InputOTPSlot index={0} />
+					<InputOTPSlot index={1} />
+					<InputOTPSlot index={2} />
+				</InputOTPGroup>
+				<InputOTPSeparator />
+				<InputOTPGroup>
+					<InputOTPSlot index={3} />
+					<InputOTPSlot index={4} />
+					<InputOTPSlot index={5} />
+				</InputOTPGroup>
+			</InputOTP>
+		),
+	},
+	{
+		name: 'dropdown-menu',
+		group: 'Overlays',
+		subtitle: 'label / items / separator',
+		viewport: { width: 480, height: 280 },
+		render: () => (
+			<DropdownMenu open>
+				<DropdownMenuTrigger asChild>
+					<Button variant="outline">Open menu</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent>
+					<DropdownMenuLabel>My account</DropdownMenuLabel>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem>Profile</DropdownMenuItem>
+					<DropdownMenuItem>Settings</DropdownMenuItem>
+					<DropdownMenuItem>Log out</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+		),
+	},
+	{
+		name: 'tooltip',
+		group: 'Overlays',
+		subtitle: 'open',
+		viewport: { width: 480, height: 160 },
+		render: () => (
+			<TooltipProvider>
+				<Tooltip open>
+					<TooltipTrigger asChild>
+						<Button variant="outline">Hover me</Button>
+					</TooltipTrigger>
+					<TooltipContent>Helpful hint</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 		),
 	},
 ]

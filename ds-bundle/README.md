@@ -1,7 +1,7 @@
 # EpicUI (epic-stack-template@0.1.0)
 
 This design system is the published epic-stack-template React library, bundled as a single
-browser global. All 6 components are the real upstream code.
+browser global. All 9 components are the real upstream code.
 
 ## Where things are
 
@@ -41,7 +41,10 @@ preserved verbatim from upstream. See `tokens/` for the full list.
 ### general
 - `Button`
 - `Checkbox`
+- `DropdownMenu`
 - `Input`
+- `InputOTP`
 - `Label`
 - `StatusButton`
 - `Textarea`
+- `Tooltip`

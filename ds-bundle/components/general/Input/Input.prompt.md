@@ -35,3 +35,7 @@ onChange?: React.ChangeEventHandler<HTMLInputElement>;
 	</div>
 )
 ```
+
+## Related
+
+`InputOTP`
