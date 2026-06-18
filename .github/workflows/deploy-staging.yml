@@ -1,0 +1,90 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+permissions:
+  actions: write
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  prepare_metadata:
+    name: Generate Deployment Metadata
+    runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.metadata.outputs.docker_image_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Derive version metadata
+        id: meta
+        uses: ./.github/actions/deployment-metadata
+
+      - name: Assemble Docker tag
+        id: metadata
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d%H%M%S')
+          DOCKER_TAG="staging-${{ steps.meta.outputs.version }}-${TIMESTAMP}-${{ steps.meta.outputs.short_sha }}"
+          echo "docker_image_tag=${DOCKER_TAG}" >> $GITHUB_OUTPUT
+
+  migration_check:
+    name: Check Migrations
+    uses: ./.github/workflows/_migration-check.yml
+    with:
+      environment: staging
+      skip_when_app_unset: true
+    secrets:
+      CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+      CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}
+      CLOUDRON_APP_ID: ${{ secrets.CLOUDRON_APP_STAGING }}
+
+  build_and_deploy:
+    name: Build & Deploy
+    needs: [prepare_metadata, migration_check, ci]
+    uses: ./.github/workflows/_shared-build-deploy.yml
+    with:
+      deploy_environment: 'staging'
+      cloudron_app_location: staging.app.example.com
+      docker_image_tag: ${{ needs.prepare_metadata.outputs.docker_image_tag }}
+      manifest_title: 'Epic App (Staging)'
+      manifest_memory_limit: '268435456'
+      git_ref: ${{ github.ref }}
+      tag_as_latest: false
+    secrets:
+      CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+      CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}
+
+  smoke_test:
+    name: Post-Deploy Smoke Tests
+    needs: build_and_deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Wait for Cloudron restart
+        run: sleep 30
+
+      - name: Run smoke tests
+        run: npx tsx scripts/smoke-test.ts --base-url https://staging.app.example.com

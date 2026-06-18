@@ -1,0 +1,82 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  actions: write
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  prepare_metadata:
+    name: Generate Deployment Metadata
+    runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.metadata.outputs.docker_image_tag }}
+      tag_as_latest: ${{ steps.metadata.outputs.tag_as_latest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Derive version metadata
+        id: meta
+        uses: ./.github/actions/deployment-metadata
+
+      - name: Assemble Docker tag
+        id: metadata
+        run: |
+          # Determine if this is a tag push or main branch push
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Tag push: use tag name as Docker tag and mark for 'latest'
+            DOCKER_TAG="${{ github.ref_name }}"
+            TAG_AS_LATEST="true"
+          else
+            # Main branch push: use branch-version-sha format
+            DOCKER_TAG="main-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.short_sha }}"
+            TAG_AS_LATEST="false"
+          fi
+
+          echo "docker_image_tag=${DOCKER_TAG}" >> $GITHUB_OUTPUT
+          echo "tag_as_latest=${TAG_AS_LATEST}" >> $GITHUB_OUTPUT
+
+  migration_check:
+    name: Check Migrations
+    uses: ./.github/workflows/_migration-check.yml
+    with:
+      environment: prod
+    secrets:
+      CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+      CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}
+      CLOUDRON_APP_ID: ${{ secrets.CLOUDRON_APP_PROD }}
+
+  build_and_deploy:
+    name: Build & Deploy
+    needs: [prepare_metadata, migration_check, ci]
+    uses: ./.github/workflows/_shared-build-deploy.yml
+    with:
+      deploy_environment: 'production'
+      cloudron_app_location: app.example.com
+      docker_image_tag: ${{ needs.prepare_metadata.outputs.docker_image_tag }}
+      manifest_title: 'Epic App'
+      manifest_memory_limit: '268435456'
+      git_ref: ${{ github.ref }}
+      tag_as_latest:
+        ${{ needs.prepare_metadata.outputs.tag_as_latest == 'true' }}
+    secrets:
+      CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+      CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}

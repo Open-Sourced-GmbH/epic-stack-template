@@ -1,0 +1,18 @@
+{
+	"id": "com.example.app",
+	"title": "Epic App",
+	"version": "0.1.0",
+	"description": "An Epic Stack application",
+	"tagline": "Built on the Epic Stack, deployed to Cloudron",
+	"website": "https://app.example.com",
+	"contactEmail": "you@example.com",
+	"icon": "",
+	"addons": {
+		"localstorage": {},
+		"sendmail": {}
+	},
+	"manifestVersion": 2,
+	"healthCheckPath": "/resources/healthcheck",
+	"httpPort": 3000,
+	"memoryLimit": 268435456
+}

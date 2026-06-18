@@ -58,6 +58,7 @@ test('The user profile when logged in as self', async () => {
 	authSession.set(sessionKey, session.id)
 	const setCookieHeader = await authSessionStorage.commitSession(authSession)
 	const parsedCookie = setCookieParser.parseString(setCookieHeader)
+	if (!parsedCookie) throw new Error('Failed to parse set-cookie header')
 	const cookieHeader = new URLSearchParams({
 		[parsedCookie.name]: parsedCookie.value,
 	}).toString()
