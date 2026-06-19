@@ -50,6 +50,19 @@ test('trackGradient paints the track and drops the filled range', () => {
 	expect(range).toHaveClass('bg-transparent')
 })
 
+test('paints the invalid border token on the thumb when aria-invalid is set', () => {
+	const { container } = render(
+		<Slider value={50} aria-invalid aria-label="Hue" />,
+	)
+
+	const root = container.querySelector('[data-slot="slider"]')
+	const thumb = screen.getByRole('slider', { name: 'Hue' })
+	// aria-invalid lands on the root; the thumb repaints via the group variant.
+	expect(root).toHaveAttribute('aria-invalid', 'true')
+	expect(root).toHaveClass('group')
+	expect(thumb).toHaveClass('group-aria-[invalid]:border-input-invalid')
+})
+
 test('omitting trackGradient leaves a token-styled track with a filled range', () => {
 	const { container } = render(<Slider value={50} aria-label="Hue" />)
 

@@ -52,7 +52,7 @@ function Slider({
 		<SliderPrimitive.Root
 			data-slot="slider"
 			className={cn(
-				'relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50',
+				'group relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50',
 				className,
 			)}
 			value={value === undefined ? undefined : [value]}
@@ -77,7 +77,7 @@ function Slider({
 				data-slot="slider-thumb"
 				aria-label={ariaLabel}
 				aria-labelledby={ariaLabelledby}
-				className="border-border bg-background ring-ring focus-visible:ring-ring block size-4 rounded-full border-2 shadow-sm transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-hidden"
+				className="border-border bg-background ring-ring focus-visible:ring-ring group-aria-[invalid]:border-input-invalid block size-4 rounded-full border-2 shadow-sm transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-hidden"
 			/>
 		</SliderPrimitive.Root>
 	)

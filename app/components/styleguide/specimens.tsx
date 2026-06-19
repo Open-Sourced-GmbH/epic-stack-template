@@ -375,11 +375,17 @@ export const specimens: Specimen[] = [
 	{
 		name: 'textarea',
 		group: 'Forms',
-		subtitle: 'default',
-		viewport: { width: 480, height: 160 },
+		subtitle: 'default / invalid',
+		viewport: { width: 480, height: 260 },
 		render: () => (
-			<div className="max-w-sm">
+			<div className="flex max-w-sm flex-col gap-3">
 				<Textarea placeholder="Write something…" />
+				<div className="flex flex-col gap-1">
+					<Textarea aria-invalid defaultValue="too short" />
+					<p className="text-error-text text-body-2xs">
+						Please write at least 20 characters.
+					</p>
+				</div>
 			</div>
 		),
 	},
@@ -398,8 +404,8 @@ export const specimens: Specimen[] = [
 	{
 		name: 'checkbox',
 		group: 'Forms',
-		subtitle: 'unchecked / checked / disabled',
-		viewport: { width: 480, height: 140 },
+		subtitle: 'unchecked / checked / disabled / invalid',
+		viewport: { width: 480, height: 200 },
 		render: () => (
 			<div className="flex flex-col gap-3">
 				<div className="flex items-center gap-2">
@@ -414,35 +420,64 @@ export const specimens: Specimen[] = [
 					<Checkbox id="sg-cb3" disabled />
 					<Label htmlFor="sg-cb3">Disabled</Label>
 				</div>
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-2">
+						<Checkbox id="sg-cb4" aria-invalid />
+						<Label htmlFor="sg-cb4">Accept the terms</Label>
+					</div>
+					<p className="text-error-text text-body-2xs">
+						You must accept to continue.
+					</p>
+				</div>
 			</div>
 		),
 	},
 	{
 		name: 'input-otp',
 		group: 'Forms',
-		subtitle: '6-digit, two groups + separator',
-		viewport: { width: 480, height: 140 },
+		subtitle: '6-digit, two groups + separator / invalid',
+		viewport: { width: 480, height: 220 },
 		render: () => (
-			<InputOTP maxLength={6} value="123456" onChange={() => {}}>
-				<InputOTPGroup>
-					<InputOTPSlot index={0} />
-					<InputOTPSlot index={1} />
-					<InputOTPSlot index={2} />
-				</InputOTPGroup>
-				<InputOTPSeparator />
-				<InputOTPGroup>
-					<InputOTPSlot index={3} />
-					<InputOTPSlot index={4} />
-					<InputOTPSlot index={5} />
-				</InputOTPGroup>
-			</InputOTP>
+			<div className="flex flex-col gap-4">
+				<InputOTP maxLength={6} value="123456" onChange={() => {}}>
+					<InputOTPGroup>
+						<InputOTPSlot index={0} />
+						<InputOTPSlot index={1} />
+						<InputOTPSlot index={2} />
+					</InputOTPGroup>
+					<InputOTPSeparator />
+					<InputOTPGroup>
+						<InputOTPSlot index={3} />
+						<InputOTPSlot index={4} />
+						<InputOTPSlot index={5} />
+					</InputOTPGroup>
+				</InputOTP>
+				<div className="flex flex-col gap-1">
+					<InputOTP maxLength={6} value="000" onChange={() => {}} aria-invalid>
+						<InputOTPGroup>
+							<InputOTPSlot index={0} />
+							<InputOTPSlot index={1} />
+							<InputOTPSlot index={2} />
+						</InputOTPGroup>
+						<InputOTPSeparator />
+						<InputOTPGroup>
+							<InputOTPSlot index={3} />
+							<InputOTPSlot index={4} />
+							<InputOTPSlot index={5} />
+						</InputOTPGroup>
+					</InputOTP>
+					<p className="text-error-text text-body-2xs">
+						That code is incorrect.
+					</p>
+				</div>
+			</div>
 		),
 	},
 	{
 		name: 'slider',
 		group: 'Forms',
-		subtitle: 'default + gradient track (oklch hue sweep)',
-		viewport: { width: 480, height: 160 },
+		subtitle: 'default + gradient track (oklch hue sweep) / invalid',
+		viewport: { width: 480, height: 220 },
 		render: () => (
 			<div className="flex w-full max-w-sm flex-col gap-6">
 				<Slider defaultValue={40} min={0} max={100} aria-label="Default" />
@@ -453,6 +488,12 @@ export const specimens: Specimen[] = [
 					aria-label="Hue"
 					trackGradient="linear-gradient(to right, oklch(0.7 0.15 0), oklch(0.7 0.15 60), oklch(0.7 0.15 120), oklch(0.7 0.15 180), oklch(0.7 0.15 240), oklch(0.7 0.15 300), oklch(0.7 0.15 360))"
 				/>
+				<div className="flex flex-col gap-1">
+					<Slider defaultValue={90} min={0} max={100} aria-invalid aria-label="Invalid" />
+					<p className="text-error-text text-body-2xs">
+						Choose a value below 80.
+					</p>
+				</div>
 			</div>
 		),
 	},

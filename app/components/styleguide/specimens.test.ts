@@ -62,14 +62,17 @@ function cssRadiusTokens(css: string): Set<string> {
 
 /**
  * Real `:root` color tokens that intentionally have no swatch in the semantic
- * Colors specimen. `input-invalid`/`foreground-destructive` are state/utility
- * colors without a surface bg/fg pairing; the `brand*` accent tokens have their
- * own dedicated `brand-accent` specimen (ADR 062). Listing them here is the
- * explicit, reviewed curation decision — a *new* token is never silently dropped.
+ * Colors specimen. `input-invalid`/`foreground-destructive`/`error-text` are
+ * state/utility colors without a surface bg/fg pairing (`error-text` aliases
+ * `foreground-destructive` and is demonstrated as message text in the Forms
+ * specimens, not as a swatch); the `brand*` accent tokens have their own
+ * dedicated `brand-accent` specimen (ADR 062). Listing them here is the explicit,
+ * reviewed curation decision — a *new* token is never silently dropped.
  */
 const COLORS_NOT_SHOWN = new Set([
 	'input-invalid',
 	'foreground-destructive',
+	'error-text',
 	'brand',
 	'brand-soft',
 	'brand-glow',
