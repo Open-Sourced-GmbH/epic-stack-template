@@ -73,6 +73,16 @@ export {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 export { Label } from '#app/components/ui/label.tsx'
+export {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectSeparator,
+	SelectTrigger,
+	SelectValue,
+} from '#app/components/ui/select.tsx'
 export { Skeleton } from '#app/components/ui/skeleton.tsx'
 export { Slider } from '#app/components/ui/slider.tsx'
 export { Spinner } from '#app/components/ui/spinner.tsx'

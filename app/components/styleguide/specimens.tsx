@@ -49,6 +49,13 @@ import {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '#app/components/ui/select.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
@@ -668,6 +675,54 @@ export const specimens: Specimen[] = [
 					<p className="text-error-text text-body-2xs">
 						Choose a value below 80.
 					</p>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'select',
+		group: 'Forms',
+		subtitle: 'trigger matches Input — with value / Field-paired / invalid',
+		// Rendered closed (click to open the real panel). Unlike Dialog / DropdownMenu,
+		// Radix Select has no `modal={false}` escape — its open content is always wrapped
+		// in react-remove-scroll, so an always-open specimen would lock the whole
+		// styleguide page's scroll. The open panel (groups, selected check, separator) is
+		// snapshotted from the isolated `.design-sync/previews/Select.tsx` instead.
+		viewport: { width: 480, height: 320 },
+		render: () => (
+			<div className="flex w-full max-w-sm flex-col gap-6">
+				<Select defaultValue="medium">
+					<SelectTrigger aria-label="Size">
+						<SelectValue placeholder="Select a size" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="small">Small</SelectItem>
+						<SelectItem value="medium">Medium</SelectItem>
+						<SelectItem value="large">Large</SelectItem>
+					</SelectContent>
+				</Select>
+				<Field label="Plan" htmlFor="sg-plan">
+					<Select>
+						<SelectTrigger>
+							<SelectValue placeholder="Choose a plan" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="free">Free</SelectItem>
+							<SelectItem value="pro">Pro</SelectItem>
+						</SelectContent>
+					</Select>
+				</Field>
+				<div className="flex flex-col gap-1">
+					<Select>
+						<SelectTrigger aria-invalid aria-label="Country">
+							<SelectValue placeholder="Select a country" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="ch">Switzerland</SelectItem>
+							<SelectItem value="de">Germany</SelectItem>
+						</SelectContent>
+					</Select>
+					<p className="text-error-text text-body-2xs">This field is required.</p>
 				</div>
 			</div>
 		),
