@@ -12,7 +12,7 @@ real system instead of re-deriving it.
 
 ```
 /grill-with-docs → /to-prd → /to-design → [Claude Design: explore + export handoff]
-                                → /to-grounded-design → /to-issues → implement → PR
+                                → /to-grounded-design → update PRD → /to-issues → implement → PR
 ```
 
 Claude Design generates freely — that's its value. This skill translates "free"
@@ -104,3 +104,24 @@ any ADRs respected or proposed.
 A one-line confirmation that the design is grounded and sliceable.
 
 </grounded-design-spec-template>
+
+### 5. Fold the decisions back into the PRD
+
+Grounding produces real decisions — net-new components and tokens, ADRs, and
+the convention calls from step 2. The PRD is the single source of truth that
+`/to-issues` slices from, so update it **before** handing off, don't let those
+decisions live only in the spec:
+
+- Add net-new components/tokens and any ADR links to the PRD's **Implementation
+  Decisions**.
+- Move anything explicitly deferred during net-new resolution (step 3) into the
+  PRD's **Out of Scope**.
+- Note any new testing implications under **Testing Decisions**.
+
+The grounded spec stays the detailed UI→system mapping; the PRD stays the
+authoritative decision record. Re-publish the updated PRD to the tracker.
+
+## Next step
+
+PRD updated and the grounded spec in hand → run `/to-issues`. Pass it both: the
+spec for the UI mapping, the PRD for scope and decisions.

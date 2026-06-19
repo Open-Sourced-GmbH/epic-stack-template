@@ -12,7 +12,7 @@ instead of a blank canvas.
 
 ```
 /grill-with-docs → /to-prd → /to-design → [Claude Design: explore + export handoff]
-                                → /to-grounded-design → /to-issues → implement → PR
+                                → /to-grounded-design → update PRD → /to-issues → implement → PR
 ```
 
 It's the front bookend to
