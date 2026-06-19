@@ -6,6 +6,11 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from '#app/components/ui/alert.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -164,6 +169,16 @@ const badgeVariants = [
 	'secondary',
 	'destructive',
 	'outline',
+] as const
+const alertTones = [
+	{ tone: 'info', title: 'Heads up', body: 'A neutral, informational note.' },
+	{ tone: 'success', title: 'Saved', body: 'Your changes were saved.' },
+	{ tone: 'warning', title: 'Careful', body: 'This action needs attention.' },
+	{
+		tone: 'error',
+		title: 'Something went wrong',
+		body: 'We could not save your changes.',
+	},
 ] as const
 
 // A representative ⌘K registry for the palette specimen: Navigation / Theme /
@@ -388,6 +403,22 @@ export const specimens: Specimen[] = [
 					<Badge key={variant} variant={variant}>
 						{variant}
 					</Badge>
+				))}
+			</div>
+		),
+	},
+	{
+		name: 'alert',
+		group: 'Feedback',
+		subtitle: 'info / success / warning / error tones',
+		viewport: { width: 480, height: 360 },
+		render: () => (
+			<div className="flex w-full max-w-md flex-col gap-3">
+				{alertTones.map(({ tone, title, body }) => (
+					<Alert key={tone} tone={tone}>
+						<AlertTitle>{title}</AlertTitle>
+						<AlertDescription>{body}</AlertDescription>
+					</Alert>
 				))}
 			</div>
 		),

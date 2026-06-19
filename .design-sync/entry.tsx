@@ -20,6 +20,12 @@ export {
 	AccordionItem,
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
+export {
+	Alert,
+	AlertTitle,
+	AlertDescription,
+	alertVariants,
+} from '#app/components/ui/alert.tsx'
 export { Badge, badgeVariants } from '#app/components/ui/badge.tsx'
 export { Button, buttonVariants } from '#app/components/ui/button.tsx'
 export {
