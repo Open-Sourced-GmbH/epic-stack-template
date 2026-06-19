@@ -20,6 +20,7 @@ export {
 	AccordionItem,
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
+export { Badge, badgeVariants } from '#app/components/ui/badge.tsx'
 export { Button, buttonVariants } from '#app/components/ui/button.tsx'
 export {
 	Card,

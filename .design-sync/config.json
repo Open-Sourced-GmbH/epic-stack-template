@@ -8,6 +8,7 @@
 	"cssEntry": ".design-sync/styles.compiled.css",
 	"guidelinesGlob": [],
 	"componentSrcMap": {
+		"Badge": "app/components/ui/badge.tsx",
 		"Button": "app/components/ui/button.tsx",
 		"Card": "app/components/ui/card.tsx",
 		"Checkbox": "app/components/ui/checkbox.tsx",
@@ -25,6 +26,7 @@
 		"Field": "app/components/ui/field.tsx"
 	},
 	"dtsPropsFor": {
+		"Badge": "/** Status pill for rows/lists — a small rounded label. Tokens only; no new theme values. */\n/** Visual style variant. @default 'default' */\nvariant?: 'default' | 'secondary' | 'destructive' | 'outline';\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <span> attributes. */\n[key: string]: unknown;",
 		"Button": "/** Visual style variant. @default 'default' */\nvariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';\n/** Size preset. @default 'default' */\nsize?: 'default' | 'wide' | 'sm' | 'lg' | 'pill' | 'icon';\n/** Render as the child element via Radix Slot instead of a native <button>. @default false */\nasChild?: boolean;\nchildren?: React.ReactNode;\nclassName?: string;\ndisabled?: boolean;\ntype?: 'button' | 'submit' | 'reset';\nonClick?: React.MouseEventHandler<HTMLButtonElement>;\n/** Plus all native <button> attributes. */\n[key: string]: unknown;",
 		"Card": "/** Compound card surface promoting the `bg-card text-card-foreground rounded-lg border` idiom. Compose: Card (root) wrapping an optional CardHeader (holding CardTitle + CardDescription), a CardContent, and an optional CardFooter. Tokens only — no hardcoded colors or radii. */\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <div> attributes. */\n[key: string]: unknown;",
 		"Checkbox": "/** Controlled checked state; 'indeterminate' for a mixed state. */\nchecked?: boolean | 'indeterminate';\n/** Uncontrolled initial checked state. */\ndefaultChecked?: boolean;\nonCheckedChange?: (checked: boolean | 'indeterminate') => void;\ndisabled?: boolean;\nrequired?: boolean;\nname?: string;\nvalue?: string;\nid?: string;\nclassName?: string;\n/** Apply the invalid styling (red border). */\n'aria-invalid'?: boolean | 'true' | 'false';",

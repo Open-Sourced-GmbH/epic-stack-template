@@ -6,6 +6,7 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
+import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
 	Card,
@@ -157,6 +158,12 @@ const buttonVariants = [
 	'link',
 ] as const
 const buttonSizes = ['sm', 'default', 'lg', 'pill'] as const
+const badgeVariants = [
+	'default',
+	'secondary',
+	'destructive',
+	'outline',
+] as const
 
 // A representative ⌘K registry for the palette specimen: Navigation / Theme /
 // Help groups, a mix of `href` and `run` commands, each with a leading icon.
@@ -366,6 +373,21 @@ export const specimens: Specimen[] = [
 				</StatusButton>
 				<StatusButton status="success">success</StatusButton>
 				<StatusButton status="error">error</StatusButton>
+			</div>
+		),
+	},
+	{
+		name: 'badge',
+		group: 'Actions',
+		subtitle: 'default / secondary / destructive / outline',
+		viewport: { width: 480, height: 120 },
+		render: () => (
+			<div className="flex flex-wrap items-center gap-2">
+				{badgeVariants.map((variant) => (
+					<Badge key={variant} variant={variant}>
+						{variant}
+					</Badge>
+				))}
 			</div>
 		),
 	},
