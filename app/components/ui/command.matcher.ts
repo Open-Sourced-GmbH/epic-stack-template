@@ -5,6 +5,10 @@
  * tested without a renderer.
  */
 
+// Type-only import of the icon-name string union — no runtime/DOM dependency, so
+// the module stays framework-free while letting a command carry a leading icon.
+import { type IconName } from '@/icon-name'
+
 type CommandBase = {
 	id: string
 	title: string
@@ -12,6 +16,8 @@ type CommandBase = {
 	group: string
 	/** Extra search terms that match but are not shown as the title. */
 	keywords?: string[]
+	/** Optional leading icon, rendered by the palette in a brand tile. */
+	icon?: IconName
 }
 
 /** An action command runs a side effect; it never navigates. */

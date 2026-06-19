@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { toast } from 'sonner'
 import {
 	Accordion,
 	AccordionContent,
@@ -7,6 +8,8 @@ import {
 } from '#app/components/ui/accordion.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Checkbox } from '#app/components/ui/checkbox.tsx'
+import { type Command } from '#app/components/ui/command.matcher.ts'
+import { CommandPalette } from '#app/components/ui/command.tsx'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -143,6 +146,76 @@ const buttonVariants = [
 	'link',
 ] as const
 const buttonSizes = ['sm', 'default', 'lg', 'pill'] as const
+
+// A representative ⌘K registry for the palette specimen: Navigation / Theme /
+// Help groups, a mix of `href` and `run` commands, each with a leading icon.
+const commandRegistry: Command[] = [
+	{ id: 'home', title: 'Home', group: 'Navigation', href: '/', icon: 'arrow-right' },
+	{
+		id: 'pricing',
+		title: 'Pricing',
+		group: 'Navigation',
+		href: '/#pricing',
+		icon: 'file-text',
+	},
+	{ id: 'work', title: 'Our work', group: 'Navigation', href: '/#work', icon: 'link-2' },
+	{
+		id: 'toggle-theme',
+		title: 'Toggle theme',
+		group: 'Theme',
+		keywords: ['dark', 'light', 'appearance'],
+		icon: 'sun',
+		run: () => {},
+	},
+	{
+		id: 'docs',
+		title: 'Documentation',
+		group: 'Help',
+		href: '/docs',
+		icon: 'question-mark-circled',
+	},
+	{
+		id: 'support',
+		title: 'Contact support',
+		group: 'Help',
+		icon: 'envelope-closed',
+		run: () => {},
+	},
+]
+
+// Suggested actions for the palette's empty / no-match state. Injected by the
+// consumer (here, the specimen) — each fires a `sonner` toast (ADR 027) to
+// demonstrate that running a command can surface feedback.
+const commandEmptyActions: Command[] = [
+	{
+		id: 'create-project',
+		title: 'Create project',
+		group: 'Suggestions',
+		icon: 'plus',
+		run: () => toast.success('Create project'),
+	},
+	{
+		id: 'invite',
+		title: 'Invite',
+		group: 'Suggestions',
+		icon: 'avatar',
+		run: () => toast.success('Invite teammate'),
+	},
+	{
+		id: 'toggle-theme-empty',
+		title: 'Toggle theme',
+		group: 'Suggestions',
+		icon: 'sun',
+		run: () => toast.success('Toggle theme'),
+	},
+	{
+		id: 'contact-support',
+		title: 'Contact support',
+		group: 'Suggestions',
+		icon: 'question-mark-circled',
+		run: () => toast.success('Contact support'),
+	},
+]
 
 export const specimens: Specimen[] = [
 	{
@@ -431,6 +504,25 @@ export const specimens: Specimen[] = [
 					</AccordionContent>
 				</AccordionItem>
 			</Accordion>
+		),
+	},
+	{
+		name: 'command',
+		group: 'Overlays',
+		subtitle: '⌘K palette — grouped results, brand-soft selection',
+		viewport: { width: 560, height: 380 },
+		// Rendered inline (no `open`) so the specimen snapshots without a portal;
+		// the live overlay form takes `open`/`onOpenChange`.
+		render: () => <CommandPalette commands={commandRegistry} />,
+	},
+	{
+		name: 'command-empty',
+		group: 'Overlays',
+		subtitle: 'no-match state — suggested-action chips',
+		viewport: { width: 560, height: 240 },
+		// An empty registry forces the no-match state; the chips are injected.
+		render: () => (
+			<CommandPalette commands={[]} emptyActions={commandEmptyActions} />
 		),
 	},
 ]
