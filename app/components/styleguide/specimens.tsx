@@ -25,6 +25,14 @@ import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import { type Command } from '#app/components/ui/command.matcher.ts'
 import { CommandPalette } from '#app/components/ui/command.tsx'
 import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogOverlay,
+	DialogTitle,
+} from '#app/components/ui/dialog.tsx'
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -783,6 +791,38 @@ export const specimens: Specimen[] = [
 		// An empty registry forces the no-match state; the chips are injected.
 		render: () => (
 			<CommandPalette commands={[]} emptyActions={commandEmptyActions} />
+		),
+	},
+	{
+		name: 'dialog',
+		group: 'Overlays',
+		subtitle: 'modal overlay — title, description, close actions',
+		viewport: { width: 560, height: 320 },
+		// Rendered contained: the overlay/content are positioned `absolute` within
+		// this `relative` box (and modal={false}) so the static specimen shows the
+		// dialog surface in place, without a full-screen portal that would lock and
+		// dim the whole styleguide page.
+		render: () => (
+			<div className="relative flex h-72 items-center justify-center overflow-hidden rounded-lg">
+				<Dialog open modal={false}>
+					<DialogOverlay className="absolute" />
+					<DialogContent className="absolute w-[26rem]">
+						<DialogTitle>Delete project</DialogTitle>
+						<DialogDescription className="mt-2">
+							This permanently removes the project and all of its data. This
+							action cannot be undone.
+						</DialogDescription>
+						<div className="mt-6 flex justify-end gap-2">
+							<DialogClose asChild>
+								<Button variant="outline">Cancel</Button>
+							</DialogClose>
+							<DialogClose asChild>
+								<Button variant="destructive">Delete</Button>
+							</DialogClose>
+						</div>
+					</DialogContent>
+				</Dialog>
+			</div>
 		),
 	},
 ]

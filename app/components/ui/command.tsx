@@ -1,4 +1,3 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Command as CommandPrimitive } from 'cmdk'
 import * as React from 'react'
 
@@ -8,6 +7,13 @@ import {
 	filterCommands,
 	groupCommands,
 } from './command.matcher.ts'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogOverlay,
+	DialogTitle,
+} from './dialog.tsx'
 import { Icon } from './icon.tsx'
 
 /**
@@ -130,10 +136,14 @@ function CommandSeparator({
 }
 
 /**
- * Overlay shell for the palette: a Radix dialog that renders the cmdk `Command`
- * root inside. Provides `role="dialog"`, focus management and esc-to-close; the
- * title/description are visually hidden so the dialog is labelled for screen
- * readers without showing a chrome header (epic-ui-guidelines).
+ * Overlay shell for the palette: composes the shared `Dialog` primitive
+ * (`dialog.tsx`) to render the cmdk `Command` root inside, so the focus-trap /
+ * esc-to-close / `role="dialog"` plumbing lives in one place. The shared content
+ * is re-positioned near the top (`top-[20%]`) and stripped of its default
+ * padding so the palette fills the surface; the title/description are visually
+ * hidden so the dialog is labelled for screen readers without a chrome header
+ * (epic-ui-guidelines). The overlay form is a deliberate transient client-overlay
+ * exception to ADR 023 — see `dialog.tsx`.
  */
 function CommandDialog({
 	open,
@@ -149,23 +159,17 @@ function CommandDialog({
 	children: React.ReactNode
 }) {
 	return (
-		<DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-			<DialogPrimitive.Portal>
-				<DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-				<DialogPrimitive.Content
-					data-slot="command-dialog"
-					className="bg-popover text-popover-foreground border-border fixed top-[20%] left-[50%] z-50 w-full max-w-lg translate-x-[-50%] overflow-hidden rounded-xl border shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-				>
-					<DialogPrimitive.Title className="sr-only">
-						{title}
-					</DialogPrimitive.Title>
-					<DialogPrimitive.Description className="sr-only">
-						{description}
-					</DialogPrimitive.Description>
-					{children}
-				</DialogPrimitive.Content>
-			</DialogPrimitive.Portal>
-		</DialogPrimitive.Root>
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogOverlay />
+			<DialogContent
+				data-slot="command-dialog"
+				className="top-[20%] translate-y-0 overflow-hidden p-0"
+			>
+				<DialogTitle className="sr-only">{title}</DialogTitle>
+				<DialogDescription className="sr-only">{description}</DialogDescription>
+				{children}
+			</DialogContent>
+		</Dialog>
 	)
 }
 
