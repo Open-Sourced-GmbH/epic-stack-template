@@ -794,6 +794,15 @@ export const specimens: Specimen[] = [
 		),
 	},
 	{
+		name: 'command-loading',
+		group: 'Overlays',
+		subtitle: 'pending remote source — Skeleton/Spinner placeholders',
+		viewport: { width: 560, height: 280 },
+		// `loading` paints Skeleton rows + a Spinner instead of the empty/no-results
+		// state, so an in-flight fetch never reads as "No results found.".
+		render: () => <CommandPalette commands={[]} loading />,
+	},
+	{
 		name: 'dialog',
 		group: 'Overlays',
 		subtitle: 'modal overlay — title, description, close actions',

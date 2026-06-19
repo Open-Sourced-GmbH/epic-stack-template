@@ -24,6 +24,11 @@ before re-running `/design-sync`.
   `Command` would force the styleguide to import bare `Command`, which it never
   renders; `CommandPalette` is exactly what the `command` specimen imports, so
   lockstep stays honest.)
+  - **⌘K binding + loading:** the palette registers no global hotkey — the
+    consumer wires ⌘K / Ctrl-K (canonical snippet in `command.tsx`'s doc comment
+    and `conventions.md`). For remote command sources, pass `loading` to swap the
+    list for Skeleton/Spinner placeholders; the `command-loading` specimen +
+    `CommandPalette.Loading` preview cover that state (EPT-36).
 - **The lockstep test reads `.design-sync/config.json`** (fixed 2026-06-19; it
   previously read `design-sync.config.json` at the repo root, which no longer
   exists after the config moved into `.design-sync/`. That stale path threw on

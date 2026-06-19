@@ -15,6 +15,8 @@ import {
 	DialogTitle,
 } from './dialog.tsx'
 import { Icon } from './icon.tsx'
+import { Skeleton } from './skeleton.tsx'
+import { Spinner } from './spinner.tsx'
 
 /**
  * ⌘K command palette — a thin UI over the framework-free matcher
@@ -30,6 +32,29 @@ import { Icon } from './icon.tsx'
  * `role="dialog"`, focus trap, esc-to-close — and is a deliberate transient
  * client-overlay exception to ADR 023 (route-based dialogs): it is not
  * content-bearing or bookmarkable.
+ *
+ * **⌘K binding is the consumer's responsibility.** The palette owns `open` as a
+ * controlled prop but does NOT register a global hotkey — wire ⌘K / Ctrl-K where
+ * you mount it so it lives next to your other page shortcuts. Canonical wiring:
+ *
+ * ```tsx
+ * const [open, setOpen] = React.useState(false)
+ * React.useEffect(() => {
+ *   function onKeyDown(e: KeyboardEvent) {
+ *     // ⌘K on macOS, Ctrl+K elsewhere
+ *     if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+ *       e.preventDefault()
+ *       setOpen((prev) => !prev)
+ *     }
+ *   }
+ *   document.addEventListener('keydown', onKeyDown)
+ *   return () => document.removeEventListener('keydown', onKeyDown)
+ * }, [])
+ * return <CommandPalette commands={commands} open={open} onOpenChange={setOpen} />
+ * ```
+ *
+ * For remote command sources, pass `loading` while the fetch is in flight so the
+ * list shows Skeleton placeholders instead of the "No results found." state.
  */
 
 // --- Styled cmdk primitives (shadcn-style wrappers, tokens only) -------------
@@ -184,6 +209,12 @@ type CommandPaletteProps = {
 	/** When provided, the palette renders as a dialog overlay (controlled). */
 	open?: boolean
 	onOpenChange?: (open: boolean) => void
+	/**
+	 * Pending state for remote command sources: while `true`, the list shows
+	 * Skeleton placeholder rows (and a Spinner) instead of results or the
+	 * empty/no-results state — so an async fetch reads as "loading", not "empty".
+	 */
+	loading?: boolean
 	/** Navigate for `href` commands. Defaults to a full-page assignment. */
 	onNavigate?: (href: string) => void
 	/**
@@ -210,6 +241,7 @@ function CommandPalette({
 	onNavigate = defaultNavigate,
 	emptyActions = NO_EMPTY_ACTIONS,
 	placeholder = 'Type a command or search…',
+	loading = false,
 }: CommandPaletteProps) {
 	const [query, setQuery] = React.useState('')
 	const sections = groupCommands(filterCommands(query, commands))
@@ -231,7 +263,9 @@ function CommandPalette({
 				placeholder={placeholder}
 			/>
 			<CommandList>
-				{hasResults ? (
+				{loading ? (
+					<CommandLoadingState />
+				) : hasResults ? (
 					sections.map((section) => (
 						<CommandGroup key={section.group} heading={section.group}>
 							{section.commands.map((command) => (
@@ -272,6 +306,43 @@ function CommandPalette({
 		<CommandDialog open={open} onOpenChange={onOpenChange}>
 			{body}
 		</CommandDialog>
+	)
+}
+
+/** How many Skeleton placeholder rows the loading state paints. */
+const LOADING_ROWS = 4
+
+/**
+ * Loading / pending state for remote command sources: Skeleton rows mimicking
+ * command items (icon tile + label) plus a Spinner, wrapped in a `role="status"`
+ * region so assistive tech announces the busy state. Shown instead of the
+ * empty/no-results state while `loading` — so an in-flight fetch never reads as
+ * "No results found." (Skeleton/Spinner are tokens-only; rows are non-interactive.)
+ */
+function CommandLoadingState() {
+	return (
+		<div
+			data-slot="command-loading"
+			role="status"
+			aria-busy="true"
+			aria-label="Loading commands"
+			className="flex flex-col gap-1 p-1"
+		>
+			{Array.from({ length: LOADING_ROWS }).map((_, i) => (
+				<div
+					key={i}
+					className="flex items-center gap-3 rounded-md px-2 py-2"
+					aria-hidden="true"
+				>
+					<Skeleton className="size-6 shrink-0 rounded-md" />
+					<Skeleton className="h-4 w-2/3" />
+				</div>
+			))}
+			<div className="text-muted-foreground flex items-center justify-center gap-2 py-2 text-body-xs">
+				<Spinner className="size-4" title="Loading commands" />
+				Loading…
+			</div>
+		</div>
 	)
 }
 
