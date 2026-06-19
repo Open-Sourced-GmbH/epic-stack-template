@@ -7,7 +7,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 /**
  * The curated design-system component set is declared in three places that must
- * move together: `design-sync.config.json` (the canonical map the bundler
+ * move together: `.design-sync/config.json` (the canonical map the bundler
  * reads), the `.design-sync/entry.tsx` barrel (what actually gets bundled), and
  * `specimens.tsx` (what the styleguide renders). They were "kept in lockstep"
  * by hand with no enforcement — add a component to one and forget another and
@@ -56,7 +56,7 @@ function rootOf(name: string, canonical: string[]): string | null {
 }
 
 test('design-sync curated set is in lockstep across config, barrel, and specimens', async () => {
-	const config = JSON.parse(await read('design-sync.config.json')) as {
+	const config = JSON.parse(await read('.design-sync/config.json')) as {
 		componentSrcMap: Record<string, string>
 		dtsPropsFor: Record<string, string>
 	}
@@ -88,7 +88,7 @@ test('design-sync curated set is in lockstep across config, barrel, and specimen
 })
 
 test('design-sync hand-owned previews track the curated set one-to-one', async () => {
-	const config = JSON.parse(await read('design-sync.config.json')) as {
+	const config = JSON.parse(await read('.design-sync/config.json')) as {
 		componentSrcMap: Record<string, string>
 	}
 	const canonical = [...Object.keys(config.componentSrcMap)].sort()
@@ -107,7 +107,7 @@ test('design-sync hand-owned previews track the curated set one-to-one', async (
 })
 
 test('design-sync componentSrcMap points at real component files', async () => {
-	const config = JSON.parse(await read('design-sync.config.json')) as {
+	const config = JSON.parse(await read('.design-sync/config.json')) as {
 		componentSrcMap: Record<string, string>
 	}
 	for (const rel of Object.values(config.componentSrcMap)) {

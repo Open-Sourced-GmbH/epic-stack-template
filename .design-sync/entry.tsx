@@ -1,5 +1,5 @@
 // design-sync barrel entry — re-exports the curated styleguide design-system
-// surface (the same 9 components declared in design-sync.config.json and
+// surface (the same 12 components declared in design-sync.config.json and
 // rendered by app/components/styleguide/specimens.tsx) so package-build.mjs
 // bundles the *real* shipped component code into window.EpicUI. (The snapshot's
 // manifest.json is a generated artifact, not a source of this list.) This is
@@ -8,11 +8,21 @@
 // lockstep with specimens.tsx and design-sync.config.json — enforced by
 // app/components/styleguide/design-sync.test.ts.
 //
-// Compound components (DropdownMenu / Tooltip / InputOTP) export their sub-parts
-// too — the design agent needs them to compose, and the lockstep test maps each
-// sub-part back to its canonical root by name prefix.
+// Compound components (DropdownMenu / Tooltip / InputOTP / Accordion) export
+// their sub-parts too — the design agent needs them to compose, and the lockstep
+// test maps each sub-part back to its canonical root by name prefix. The command
+// palette is the exception: its complete, self-contained API is `CommandPalette`
+// (give it `commands` and it renders the whole palette + dialog), so only that
+// high-level component is carded — the raw cmdk primitives stay internal.
+export {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from '#app/components/ui/accordion.tsx'
 export { Button, buttonVariants } from '#app/components/ui/button.tsx'
 export { Checkbox } from '#app/components/ui/checkbox.tsx'
+export { CommandPalette } from '#app/components/ui/command.tsx'
 export {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -38,6 +48,7 @@ export {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 export { Label } from '#app/components/ui/label.tsx'
+export { Slider } from '#app/components/ui/slider.tsx'
 export { StatusButton } from '#app/components/ui/status-button.tsx'
 export { Textarea } from '#app/components/ui/textarea.tsx'
 export {
