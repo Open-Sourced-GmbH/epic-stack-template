@@ -21,12 +21,20 @@ type AccordionProps = DistributiveOmit<
 /**
  * Accordion — a Radix-compound Foundation component (ADR 019). Defaults to
  * single-open behavior (`type="single"`, collapsible); pass `type="multiple"`
- * to allow several open at once.
+ * to allow several panels open at once (its `defaultValue`/`value` are arrays
+ * rather than a single string).
  *
  * Styled with design tokens only. The open state is brand-tinted: the trigger's
  * plus icon rotates 45° into a brand fill and the question tints `text-brand`
  * on hover. The content uses a CSS grid-rows `0fr → 1fr` height animation, with
  * a `motion-reduce` fallback that drops the height/rotate transitions.
+ *
+ * A per-item `disabled` (on `AccordionItem`) renders the trigger dimmed and
+ * non-interactive — Radix forwards it to the trigger button and skips the item
+ * in keyboard roving focus. Accordions may be nested (an `AccordionContent` can
+ * hold its own `Accordion`) and grouped into page sections; give each nested
+ * `Accordion` its own item `value`s so an inner single-open state never
+ * collides with the outer one.
  */
 function Accordion({ type = 'single', ...props }: AccordionProps) {
 	// `collapsible` is a single-only Radix prop, so only attach it for single.
@@ -59,7 +67,7 @@ function AccordionTrigger({
 			<AccordionPrimitive.Trigger
 				data-slot="accordion-trigger"
 				className={cn(
-					'focus-cosy group text-foreground hover:text-brand flex flex-1 items-center justify-between gap-4 py-4 text-left text-body-md font-medium outline-hidden focus-visible:rounded-sm',
+					'focus-cosy group text-foreground hover:text-brand flex flex-1 items-center justify-between gap-4 py-4 text-left text-body-md font-medium outline-hidden focus-visible:rounded-sm disabled:pointer-events-none disabled:opacity-50',
 					className,
 				)}
 				{...props}

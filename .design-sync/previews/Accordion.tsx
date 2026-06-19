@@ -1,6 +1,8 @@
-// Owned preview — mirrors the `accordion` specimen. Single-open (collapsible),
-// first item open so the brand-tinted open state and the rotated plus icon show
-// in the static preview; the rest collapsed.
+// Owned preview — mirrors the `accordion` + `accordion-multiple` specimens.
+// `SingleOpen`: single-open (collapsible), first item open so the brand-tinted
+// open state and the rotated plus icon show in the static preview; the rest
+// collapsed. `Multiple`: type="multiple" with two panels open at once and a
+// disabled item, so the dimmed disabled state shows statically.
 import {
 	Accordion,
 	AccordionContent,
@@ -28,6 +30,34 @@ export const SingleOpen = () => (
 			<AccordionTrigger>Does it animate?</AccordionTrigger>
 			<AccordionContent>
 				Yes — a grid-rows height transition, with a reduced-motion fallback.
+			</AccordionContent>
+		</AccordionItem>
+	</Accordion>
+)
+
+export const Multiple = () => (
+	<Accordion
+		type="multiple"
+		defaultValue={['shipping', 'returns']}
+		className="w-full"
+	>
+		<AccordionItem value="shipping">
+			<AccordionTrigger>How fast is shipping?</AccordionTrigger>
+			<AccordionContent>
+				Orders ship within two business days; tracking follows by email.
+			</AccordionContent>
+		</AccordionItem>
+		<AccordionItem value="returns">
+			<AccordionTrigger>What is the return window?</AccordionTrigger>
+			<AccordionContent>
+				Thirty days, no questions asked — both panels stay open at once because
+				type="multiple" never auto-collapses siblings.
+			</AccordionContent>
+		</AccordionItem>
+		<AccordionItem value="enterprise" disabled>
+			<AccordionTrigger>Enterprise plans (coming soon)</AccordionTrigger>
+			<AccordionContent>
+				A disabled item renders dimmed and is skipped by keyboard focus.
 			</AccordionContent>
 		</AccordionItem>
 	</Accordion>

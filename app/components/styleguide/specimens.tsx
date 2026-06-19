@@ -734,6 +734,39 @@ export const specimens: Specimen[] = [
 		),
 	},
 	{
+		name: 'accordion-multiple',
+		group: 'Disclosure',
+		subtitle: 'type="multiple" — several panels open at once, one disabled',
+		viewport: { width: 560, height: 320 },
+		render: () => (
+			<Accordion
+				type="multiple"
+				defaultValue={['shipping', 'returns']}
+				className="w-full"
+			>
+				<AccordionItem value="shipping">
+					<AccordionTrigger>How fast is shipping?</AccordionTrigger>
+					<AccordionContent>
+						Orders ship within two business days; tracking follows by email.
+					</AccordionContent>
+				</AccordionItem>
+				<AccordionItem value="returns">
+					<AccordionTrigger>What is the return window?</AccordionTrigger>
+					<AccordionContent>
+						Thirty days, no questions asked — both panels stay open at once
+						because type="multiple" never auto-collapses siblings.
+					</AccordionContent>
+				</AccordionItem>
+				<AccordionItem value="enterprise" disabled>
+					<AccordionTrigger>Enterprise plans (coming soon)</AccordionTrigger>
+					<AccordionContent>
+						A disabled item renders dimmed and is skipped by keyboard focus.
+					</AccordionContent>
+				</AccordionItem>
+			</Accordion>
+		),
+	},
+	{
 		name: 'command',
 		group: 'Overlays',
 		subtitle: '⌘K palette — grouped results, brand-soft selection',
