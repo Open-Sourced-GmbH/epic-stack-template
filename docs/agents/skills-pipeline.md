@@ -31,6 +31,25 @@ GitHub/GitLab/local to switch.
 - `/tdd` slots into the **implement** step (red → green → refactor).
 - `/triage` is standalone for bug/feature intake.
 
+### Handoffs (invite the next step)
+
+Always end a lifecycle skill by inviting the user to the correct next step — the
+flow lives here, not (for the four core skills) inside the skill text. The
+`to-design` / `to-grounded-design` skills are repo-scoped and carry their own
+`## Next step`; the four core skills are global (`~/.claude/skills/`) and a
+same-name repo copy would **not** override them ([personal overrides
+project](https://code.claude.com/docs/en/skills)), so honour these handoffs from
+here instead:
+
+| After this skill   | Invite                                                              |
+| ------------------ | ------------------------------------------------------------------ |
+| `/grill-with-docs` | `/to-prd` (once terms + decisions are settled)                     |
+| `/to-prd`          | `/to-design` if the feature has UI; otherwise `/to-issues`         |
+| `/to-design`       | export the Claude Design handoff, then `/to-grounded-design`       |
+| `/to-grounded-design` | update the PRD with grounding decisions, then `/to-issues`       |
+| `/to-issues`       | implement each slice with `/tdd`                                    |
+| `/tdd`             | open a PR per [`git-workflow.md`](./git-workflow.md)               |
+
 These skills publish to the issue tracker described in
 [`issue-tracker.md`](./issue-tracker.md) and follow the conventions in
 [`linear-issues.md`](./linear-issues.md).
@@ -54,7 +73,7 @@ Per feature, design slots into the lifecycle between the PRD and issues:
 
 ```
 /grill-with-docs → /to-prd → /to-design → [Claude Design: explore + export handoff]
-                                → /to-grounded-design → /to-issues → implement → PR
+                                → /to-grounded-design → update PRD → /to-issues → implement → PR
 ```
 
 - `/to-design` — turns the PRD into a design brief seeded with the repo's

@@ -47,6 +47,12 @@ Config the engineering skills (`to-issues`, `to-prd`, `triage`, `tdd`,
 repo's conventions. Re-run `/setup-matt-pocock-skills` to regenerate these (see
 [skills-pipeline.md](docs/agents/skills-pipeline.md)).
 
+When you finish running any lifecycle skill, always end your reply by inviting
+the user to the correct next step per the **Handoffs** table in
+[skills-pipeline.md](docs/agents/skills-pipeline.md) (e.g. `/to-prd` → `/to-design`
+or `/to-issues`). The four core skills are global and can't carry this in-skill,
+so the invitation comes from here.
+
 The design lane (`to-design` → [Claude Design](https://claude.ai/design) →
 `to-grounded-design`) grounds feature design in the living `/styleguide` route;
 see [styleguide.md](docs/agents/styleguide.md).
