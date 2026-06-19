@@ -50,8 +50,8 @@ const InputOTPSlot = ({
 		<div
 			data-slot="input-otp-slot"
 			className={cn(
-				'border-input group-has-[[aria-invalid]]/otp:border-input-invalid relative flex size-10 items-center justify-center border-y border-r text-base transition-all first:rounded-l-md first:border-l last:rounded-r-md md:text-sm',
-				isActive && 'ring-ring ring-offset-background z-10 ring-2',
+				'border-input group-has-[[aria-invalid]]/otp:border-input-invalid relative flex size-10 items-center justify-center border-y border-r text-base first:rounded-l-md first:border-l last:rounded-r-md md:text-sm',
+				isActive && 'focus-cosy-active z-10',
 				className,
 			)}
 			{...props}

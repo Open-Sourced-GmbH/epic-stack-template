@@ -244,6 +244,30 @@
 	}
 }
 
+/* Cosy focus (EPT-22, AUDIT §3.5). The DS-wide focus treatment, baked into the
+   control classes so it's the single source — not a per-consumer override. On
+   focus a control gets a 1px brand border hugging it plus a soft `--brand-glow`
+   halo (both existing tokens — no new ones), replacing the old detached
+   `ring-2 ring-offset-2`. `focus-cosy` shows it on `:focus-visible` (keyboard or
+   click). `focus-cosy-active` paints the same resting state for a control that
+   marks its own focus — the InputOTP active slot, whose real focus lives on the
+   package's hidden input, not the slot div. The eased transition is gated to
+   `prefers-reduced-motion: no-preference` (below), so reduced-motion users get
+   the focus state applied instantly. */
+@utility focus-cosy {
+	&:focus-visible {
+		border-color: var(--brand);
+		outline: none;
+		box-shadow: 0 0 0 3px var(--brand-glow);
+	}
+}
+
+@utility focus-cosy-active {
+	border-color: var(--brand);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--brand-glow);
+}
+
 @layer base {
 	*,
 	::after,
@@ -267,6 +291,19 @@
    `.rv` / `.rv-in` scroll-reveal pair is the reusable utility consumed by later
    sections via the `useReveal` hook; the `.hero` rules drive the hero entrance. */
 @media (prefers-reduced-motion: no-preference) {
+	/* Cosy-focus easing (EPT-22). Gated here so reduced-motion users get the
+	   border + halo instantly with no animation. The shorthand is a superset of
+	   the `transition-colors` the controls used to carry, so those classes drop
+	   out (and reduced motion is now honoured for their hover colour too). */
+	.focus-cosy,
+	.focus-cosy-active {
+		transition:
+			box-shadow 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+			border-color 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+			background-color 0.2s ease,
+			color 0.15s ease;
+	}
+
 	/* Scroll-reveal: useReveal() tags targets `.rv`, then `.rv-in` as they enter. */
 	.rv {
 		opacity: 0;

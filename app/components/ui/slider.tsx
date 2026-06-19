@@ -31,7 +31,7 @@ type SliderProps = Omit<
 /**
  * Slider — a single-thumb Foundation component (ADR 019) on the Radix base, so
  * keyboard (arrows/Home/End) and ARIA come for free. Styled with design tokens
- * only; the thumb's focus ring follows `--ring` (i.e. the brand accent).
+ * only; the thumb takes the shared cosy-focus treatment (brand border + halo).
  *
  * The wrapper presents a friendlier single-number API (`value`/`defaultValue`/
  * `onChange`) over Radix's array form, and exposes `trackGradient` so the theme
@@ -77,7 +77,7 @@ function Slider({
 				data-slot="slider-thumb"
 				aria-label={ariaLabel}
 				aria-labelledby={ariaLabelledby}
-				className="border-border bg-background ring-ring focus-visible:ring-ring group-aria-[invalid]:border-input-invalid block size-4 rounded-full border-2 shadow-sm transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-hidden"
+				className="focus-cosy border-border bg-background group-aria-[invalid]:border-input-invalid block size-4 rounded-full border-2 shadow-sm hover:border-primary"
 			/>
 		</SliderPrimitive.Root>
 	)

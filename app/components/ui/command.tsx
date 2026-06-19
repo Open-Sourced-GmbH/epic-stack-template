@@ -296,7 +296,7 @@ function CommandEmptyState({
 							key={action.id}
 							type="button"
 							onClick={() => onSelect(action)}
-							className="bg-brand-soft text-brand focus-visible:ring-ring text-body-xs inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors outline-hidden hover:brightness-95 focus-visible:ring-2 focus-visible:ring-offset-2"
+							className="focus-cosy bg-brand-soft text-brand text-body-xs inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium outline-hidden hover:brightness-95"
 						>
 							{action.icon ? <Icon name={action.icon} size="xs" /> : null}
 							{action.title}
