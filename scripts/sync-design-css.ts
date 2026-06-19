@@ -12,9 +12,10 @@
  *
  *   pnpm build && pnpm design-sync:css
  */
-import { copyFile, readdir } from 'node:fs/promises'
+import { readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cleanTokenSurface } from './clean-token-surface.ts'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const ASSETS_DIR = join(ROOT, 'build/client/assets')
@@ -50,8 +51,11 @@ async function main() {
 
 	const file = matches[0]!
 	const src = join(ASSETS_DIR, file)
-	await copyFile(src, OUT_PATH)
-	console.log(`✓ ${rel(src)} → ${rel(OUT_PATH)}`)
+	// Filter the compiled CSS as it's copied so the design-sync token surface
+	// carries only the semantic tokens, not Tailwind plumbing / utility locals.
+	const filtered = cleanTokenSurface(await readFile(src, 'utf8'))
+	await writeFile(OUT_PATH, filtered, 'utf8')
+	console.log(`✓ ${rel(src)} → ${rel(OUT_PATH)} (token surface filtered)`)
 }
 
 await main()
