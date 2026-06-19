@@ -12,7 +12,7 @@ export const emailColors = {
 	cardForeground: '#020817',
 	muted: '#e6edf4',
 	mutedForeground: '#404a59',
-	primary: '#0f172a',
+	primary: '#009977',
 	primaryForeground: '#f8fafc',
 	border: '#e2e8f0',
 } as const

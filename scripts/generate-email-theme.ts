@@ -69,7 +69,21 @@ function block(css: string, selector: string): string {
 function readVar(blockBody: string, name: string): string {
 	const match = blockBody.match(new RegExp(`--${name}\\s*:\\s*([^;]+);`))
 	if (!match?.[1]) throw new Error(`--${name} not found`)
-	return match[1].trim()
+	const value = match[1].trim()
+	// Follow one or more levels of `var(--x)` indirection within the same block
+	// (e.g. `--primary: var(--brand)`, introduced by ADR 062) so the projected
+	// value is the resolved literal, not the alias. A `seen` guard avoids loops.
+	const seen = new Set<string>([name])
+	let resolved = value
+	let alias = resolved.match(/^var\(\s*--([\w-]+)\s*\)$/)
+	while (alias?.[1]) {
+		if (seen.has(alias[1]))
+			throw new Error(`Cyclic var() reference resolving --${name}`)
+		seen.add(alias[1])
+		resolved = readVar(blockBody, alias[1])
+		alias = resolved.match(/^var\(\s*--([\w-]+)\s*\)$/)
+	}
+	return resolved
 }
 
 // --- OKLCH → sRGB hex (CSS Color 4 / Björn Ottosson's reference formulae) ---

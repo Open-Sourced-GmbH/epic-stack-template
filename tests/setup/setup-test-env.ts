@@ -18,6 +18,14 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 	}
 }
 
+// jsdom has no layout, so `Element.prototype.scrollIntoView` is undefined; `cmdk`
+// (the ⌘K palette) calls it on the active item during a layout effect. A no-op
+// stub lets any cmdk-based component render in component tests — e.g. the
+// playground mounting the CommandPalette specimen.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+	Element.prototype.scrollIntoView = function scrollIntoView() {}
+}
+
 afterEach(() => server.resetHandlers())
 afterEach(() => cleanup())
 
