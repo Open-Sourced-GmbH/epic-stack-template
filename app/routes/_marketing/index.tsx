@@ -3,6 +3,7 @@ import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
 import { CodeSample } from './__code-sample.tsx'
+import { CommandShowpiece } from './__command-palette.tsx'
 import { Faq } from './__faq.tsx'
 import { FinalCta } from './__final-cta.tsx'
 import { MarketingFooter } from './__footer.tsx'
@@ -85,6 +86,11 @@ export default function Index() {
 				<CodeSample />
 				<HowItWorks />
 				<Playground />
+				{/*
+				 * ⌘K command palette showpiece — a global trigger + demo bar; not a
+				 * nav target, so it's mounted explicitly alongside the other showpieces.
+				 */}
+				<CommandShowpiece />
 				{navSections.map((section) => {
 					const Section = sectionComponents[section.id]
 					return Section ? (
