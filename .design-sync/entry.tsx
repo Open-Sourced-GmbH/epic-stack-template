@@ -1,5 +1,5 @@
 // design-sync barrel entry — re-exports the curated styleguide design-system
-// surface (the same 12 components declared in design-sync.config.json and
+// surface (the same 14 components declared in design-sync.config.json and
 // rendered by app/components/styleguide/specimens.tsx) so package-build.mjs
 // bundles the *real* shipped component code into window.EpicUI. (The snapshot's
 // manifest.json is a generated artifact, not a source of this list.) This is
@@ -8,8 +8,8 @@
 // lockstep with specimens.tsx and design-sync.config.json — enforced by
 // app/components/styleguide/design-sync.test.ts.
 //
-// Compound components (DropdownMenu / Tooltip / InputOTP / Accordion) export
-// their sub-parts too — the design agent needs them to compose, and the lockstep
+// Compound components (DropdownMenu / Tooltip / InputOTP / Accordion / Card)
+// export their sub-parts too — the design agent needs them to compose, and the lockstep
 // test maps each sub-part back to its canonical root by name prefix. The command
 // palette is the exception: its complete, self-contained API is `CommandPalette`
 // (give it `commands` and it renders the whole palette + dialog), so only that
@@ -21,6 +21,14 @@ export {
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
 export { Button, buttonVariants } from '#app/components/ui/button.tsx'
+export {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '#app/components/ui/card.tsx'
 export { Checkbox } from '#app/components/ui/checkbox.tsx'
 export { CommandPalette } from '#app/components/ui/command.tsx'
 export {

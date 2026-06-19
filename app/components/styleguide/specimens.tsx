@@ -7,6 +7,14 @@ import {
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '#app/components/ui/card.tsx'
 import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import { type Command } from '#app/components/ui/command.matcher.ts'
 import { CommandPalette } from '#app/components/ui/command.tsx'
@@ -358,6 +366,30 @@ export const specimens: Specimen[] = [
 				<StatusButton status="success">success</StatusButton>
 				<StatusButton status="error">error</StatusButton>
 			</div>
+		),
+	},
+	{
+		name: 'card',
+		group: 'Surfaces',
+		subtitle: 'header (title + description) / content / footer',
+		viewport: { width: 480, height: 280 },
+		render: () => (
+			<Card className="max-w-sm">
+				<CardHeader>
+					<CardTitle>Upgrade your plan</CardTitle>
+					<CardDescription>
+						Unlock unlimited projects and priority support.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="text-body-sm text-muted-foreground">
+					You're currently on the free plan. Upgrade any time — changes apply
+					immediately and you can cancel whenever you like.
+				</CardContent>
+				<CardFooter className="justify-end gap-3">
+					<Button variant="ghost">Maybe later</Button>
+					<Button>Upgrade</Button>
+				</CardFooter>
+			</Card>
 		),
 	},
 	{
