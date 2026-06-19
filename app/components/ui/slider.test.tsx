@@ -4,7 +4,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
-import { Slider } from './slider.tsx'
+import { Field } from './field.tsx'
+import {
+	Slider,
+	toThumbValues,
+	fromThumbValues,
+	formatSliderValue,
+} from './slider.tsx'
 
 test('renders a slider thumb reflecting the controlled value', () => {
 	render(<Slider value={40} min={0} max={100} aria-label="Hue" />)
@@ -70,4 +76,115 @@ test('omitting trackGradient leaves a token-styled track with a filled range', (
 	const range = container.querySelector('[data-slot="slider-range"]')
 	expect(track).not.toHaveAttribute('style')
 	expect(range).toHaveClass('bg-primary')
+})
+
+test('pairs with Field for a label + live value', () => {
+	const { container } = render(
+		<Field label="Volume" htmlFor="volume">
+			<Slider defaultValue={40} min={0} max={100} showValue />
+		</Field>,
+	)
+
+	// Field wires its htmlFor onto the slider root via the cloned `id`.
+	const root = container.querySelector('[data-slot="slider"]')
+	expect(root).toHaveAttribute('id', 'volume')
+	expect(container.querySelector('label')).toHaveAttribute('for', 'volume')
+	expect(
+		container.querySelector('[data-slot="slider-value"]'),
+	).toHaveTextContent('40')
+})
+
+test('value-mapping helpers round-trip single and array values', () => {
+	expect(toThumbValues(40)).toEqual([40])
+	expect(toThumbValues([20, 80])).toEqual([20, 80])
+	expect(toThumbValues(undefined)).toBeUndefined()
+
+	expect(fromThumbValues([45], false)).toBe(45)
+	expect(fromThumbValues([20, 85], true)).toEqual([20, 85])
+
+	expect(formatSliderValue(60)).toBe('60')
+	expect(formatSliderValue([20, 80])).toBe('20 – 80')
+})
+
+test('showValue renders a live value output that follows the thumb', async () => {
+	const user = userEvent.setup()
+	const { container } = render(
+		<Slider
+			defaultValue={40}
+			min={0}
+			max={100}
+			step={5}
+			showValue
+			aria-label="Volume"
+		/>,
+	)
+
+	const output = container.querySelector('[data-slot="slider-value"]')
+	expect(output).toHaveTextContent('40')
+
+	screen.getByRole('slider', { name: 'Volume' }).focus()
+	await user.keyboard('{ArrowRight}')
+
+	expect(output).toHaveTextContent('45')
+})
+
+test('showValue formats a range as "lo – hi" and honours formatValue', () => {
+	const { container, rerender } = render(
+		<Slider value={[20, 80]} min={0} max={100} showValue aria-label="Range" />,
+	)
+	expect(
+		container.querySelector('[data-slot="slider-value"]'),
+	).toHaveTextContent('20 – 80')
+
+	rerender(
+		<Slider
+			value={60}
+			min={0}
+			max={100}
+			showValue
+			formatValue={(v) => `${v}%`}
+			aria-label="Range"
+		/>,
+	)
+	expect(
+		container.querySelector('[data-slot="slider-value"]'),
+	).toHaveTextContent('60%')
+})
+
+test('range mode reports an array through onChange (array round-trips)', async () => {
+	const user = userEvent.setup()
+	const onChange = vi.fn()
+	render(
+		<Slider
+			defaultValue={[20, 80]}
+			min={0}
+			max={100}
+			step={5}
+			onChange={onChange}
+			aria-label="Price range"
+		/>,
+	)
+
+	const thumbs = screen.getAllByRole('slider', { name: 'Price range' })
+	thumbs[1]!.focus()
+	await user.keyboard('{ArrowRight}')
+
+	expect(onChange).toHaveBeenCalledWith([20, 85])
+	expect(onChange.mock.calls.every(([v]) => Array.isArray(v))).toBe(true)
+})
+
+test('range mode renders two thumbs reflecting an array value', () => {
+	render(
+		<Slider
+			value={[20, 80]}
+			min={0}
+			max={100}
+			aria-label="Price range"
+		/>,
+	)
+
+	const thumbs = screen.getAllByRole('slider', { name: 'Price range' })
+	expect(thumbs).toHaveLength(2)
+	expect(thumbs[0]).toHaveAttribute('aria-valuenow', '20')
+	expect(thumbs[1]).toHaveAttribute('aria-valuenow', '80')
 })

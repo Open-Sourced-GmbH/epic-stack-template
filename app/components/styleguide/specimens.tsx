@@ -633,8 +633,8 @@ export const specimens: Specimen[] = [
 	{
 		name: 'slider',
 		group: 'Forms',
-		subtitle: 'default + gradient track (oklch hue sweep) / invalid',
-		viewport: { width: 480, height: 220 },
+		subtitle: 'single / gradient track / range + value / Field-paired / invalid',
+		viewport: { width: 480, height: 420 },
 		render: () => (
 			<div className="flex w-full max-w-sm flex-col gap-6">
 				<Slider defaultValue={40} min={0} max={100} aria-label="Default" />
@@ -645,6 +645,16 @@ export const specimens: Specimen[] = [
 					aria-label="Hue"
 					trackGradient="linear-gradient(to right, oklch(0.7 0.15 0), oklch(0.7 0.15 60), oklch(0.7 0.15 120), oklch(0.7 0.15 180), oklch(0.7 0.15 240), oklch(0.7 0.15 300), oklch(0.7 0.15 360))"
 				/>
+				<Slider
+					defaultValue={[20, 80]}
+					min={0}
+					max={100}
+					showValue
+					aria-label="Price range"
+				/>
+				<Field label="Volume" htmlFor="sg-volume">
+					<Slider defaultValue={60} min={0} max={100} showValue />
+				</Field>
 				<div className="flex flex-col gap-1">
 					<Slider defaultValue={90} min={0} max={100} aria-invalid aria-label="Invalid" />
 					<p className="text-error-text text-body-2xs">
