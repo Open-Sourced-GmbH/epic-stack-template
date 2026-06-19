@@ -163,7 +163,8 @@ const buttonVariants = [
 	'ghost',
 	'link',
 ] as const
-const buttonSizes = ['sm', 'default', 'lg', 'pill'] as const
+const buttonTextSizes = ['sm', 'default', 'lg', 'pill'] as const
+const buttonIconSizes = ['icon-sm', 'icon', 'icon-lg'] as const
 const badgeVariants = [
 	'default',
 	'secondary',
@@ -364,15 +365,24 @@ export const specimens: Specimen[] = [
 	{
 		name: 'button-sizes',
 		group: 'Actions',
-		subtitle: 'sm / default / lg / pill',
-		viewport: { width: 560, height: 160 },
+		subtitle: 'sm / default / lg / pill · icon-sm / icon / icon-lg',
+		viewport: { width: 560, height: 200 },
 		render: () => (
-			<div className="flex flex-wrap items-center gap-3">
-				{buttonSizes.map((size) => (
-					<Button key={size} size={size}>
-						{size}
-					</Button>
-				))}
+			<div className="flex flex-col gap-4">
+				<div className="flex flex-wrap items-center gap-3">
+					{buttonTextSizes.map((size) => (
+						<Button key={size} size={size}>
+							{size}
+						</Button>
+					))}
+				</div>
+				<div className="flex flex-wrap items-center gap-3">
+					{buttonIconSizes.map((size) => (
+						<Button key={size} size={size} aria-label={size}>
+							<span aria-hidden>+</span>
+						</Button>
+					))}
+				</div>
 			</div>
 		),
 	},
