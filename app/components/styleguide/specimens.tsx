@@ -36,6 +36,7 @@ import {
 } from '#app/components/ui/input-otp.tsx'
 import { Label } from '#app/components/ui/label.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
+import { Spinner } from '#app/components/ui/spinner.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
@@ -365,6 +366,21 @@ export const specimens: Specimen[] = [
 				</StatusButton>
 				<StatusButton status="success">success</StatusButton>
 				<StatusButton status="error">error</StatusButton>
+			</div>
+		),
+	},
+	{
+		name: 'spinner',
+		group: 'Actions',
+		subtitle: 'inline loading indicator — backs StatusButton & async states',
+		viewport: { width: 480, height: 140 },
+		render: () => (
+			<div className="flex items-center gap-6">
+				<Spinner />
+				<div className="flex items-center gap-2">
+					<Spinner className="size-4" title="Saving" />
+					<span className="text-muted-foreground text-body-sm">Saving…</span>
+				</div>
 			</div>
 		),
 	},
