@@ -6,6 +6,12 @@
 :root {
 	--radius: 0.5rem;
 
+	/* Button cursor pref (ADR 062). The theme customizer's cursor segment flips
+	   this between `default` and `pointer`; root re-applies it via an inline
+	   style on <html> so it's server-applied (no flash). Consumed by the rule in
+	   the base layer below. */
+	--btn-cursor: default;
+
 	/* Brand accent (ADR 062). Pine is the default; the runtime customizer
 	   overrides --brand (and the vars that follow it) per-request via SSR
 	   inline styles. --brand-soft/-glow derive from --brand so one edit
@@ -240,6 +246,13 @@
 	::file-selector-button {
 		border-color: hsl(var(--border));
 	}
+
+	/* Button-hover cursor, driven by the customizer's `--btn-cursor` pref. Wrapped
+	   in `:where()` so it carries zero specificity — any explicit `cursor-*`
+	   utility (e.g. the dock's own controls, which always stay `pointer`) wins. */
+	:where(button:not(:disabled)) {
+		cursor: var(--btn-cursor, default);
+	}
 }
 
 /* Marketing landing motion (EPT-12). Every entrance + ambient loop here is
@@ -368,6 +381,23 @@
 		}
 		to {
 			width: 100%;
+		}
+	}
+
+	/* Theme customizer dock (EPT-19). The expanded card pops in; gated here so
+	   reduced-motion visitors get the resting (fully-visible) state with no
+	   animation. */
+	.tc-pop {
+		animation: tc-pop 0.18s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+	}
+	@keyframes tc-pop {
+		from {
+			opacity: 0;
+			transform: translateY(8px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: none;
 		}
 	}
 }

@@ -40,6 +40,17 @@ export const accentPresets: AccentPreset[] = [
 
 export const DEFAULT_ACCENT: Accent = accentPresets[0]!.accent
 
+/** The preset whose accent exactly matches `{l, c, h}`, if any. */
+export function findAccentPreset(accent?: Accent): AccentPreset | undefined {
+	if (!accent) return undefined
+	return accentPresets.find(
+		(p) =>
+			p.accent.l === accent.l &&
+			p.accent.c === accent.c &&
+			p.accent.h === accent.h,
+	)
+}
+
 /** Hold the oklch Light value inside the safe band; non-finite → default Light. */
 export function clampLight(l: number): number {
 	if (!Number.isFinite(l)) return DEFAULT_ACCENT.l

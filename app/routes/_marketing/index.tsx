@@ -1,4 +1,5 @@
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
+import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
 import { CodeSample } from './__code-sample.tsx'
@@ -11,6 +12,7 @@ import { HowItWorks } from './__how-it-works.tsx'
 import { Playground } from './__playground.tsx'
 import { Pricing } from './__pricing.tsx'
 import { Services } from './__services.tsx'
+import { ThemeCustomizer } from './__theme-customizer.tsx'
 import { Work } from './__work.tsx'
 
 const SITE_TITLE = 'Open Sourced — Product engineering studio'
@@ -103,6 +105,15 @@ export default function Index() {
 				<FinalCta />
 			</main>
 			<MarketingFooter />
+			{/*
+			 * The live theme customizer dock — re-themes the page through the
+			 * cookie + SSR accent plumbing (EPT-10/19). Server-applied, no flash.
+			 */}
+			<ThemeCustomizer
+				accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
+				cursor={requestInfo?.userPrefs.cursor ?? 'default'}
+				theme={requestInfo?.userPrefs.theme ?? null}
+			/>
 		</div>
 	)
 }

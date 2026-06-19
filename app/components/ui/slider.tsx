@@ -5,7 +5,10 @@ import { cn } from '#app/utils/misc.tsx'
 
 type SliderProps = Omit<
 	React.ComponentProps<typeof SliderPrimitive.Root>,
-	'value' | 'defaultValue' | 'onValueChange'
+	// Drop Radix's array `value`/`defaultValue`/`onValueChange` and the DOM
+	// `onChange` so the friendlier single-number `onChange` below is the only
+	// definition (otherwise the two intersect and reject a typed handler).
+	'value' | 'defaultValue' | 'onValueChange' | 'onChange'
 > & {
 	/** Controlled single value. */
 	value?: number

@@ -26,6 +26,7 @@ import { UserDropdown } from './components/user-dropdown.tsx'
 import {
 	AccentSwitch,
 	useOptimisticAccent,
+	useOptimisticButtonCursor,
 } from './routes/resources/accent.tsx'
 import {
 	ThemeSwitch,
@@ -125,6 +126,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				userPrefs: {
 					theme: getTheme(request),
 					accent: getAccent(request)?.accent ?? null,
+					cursor: getAccent(request)?.cursor ?? 'default',
 				},
 			},
 			ENV: getEnv(),
@@ -200,7 +202,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const accent =
 		useOptimisticAccent(data?.requestInfo.userPrefs.accent ?? undefined) ??
 		DEFAULT_ACCENT
-	const accentStyle = accentVars(accent) as React.CSSProperties
+	// The button-cursor pref rides the same inline-vars channel: `--btn-cursor`
+	// flips the customizer's cursor segment app-wide, server-applied (no flash).
+	const cursor =
+		useOptimisticButtonCursor(data?.requestInfo.userPrefs.cursor ?? undefined) ??
+		'default'
+	const accentStyle = {
+		...accentVars(accent),
+		'--btn-cursor': cursor,
+	} as React.CSSProperties
 	return (
 		<Document
 			nonce={nonce}
