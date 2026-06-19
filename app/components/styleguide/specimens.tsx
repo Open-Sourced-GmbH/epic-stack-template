@@ -11,6 +11,11 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from '#app/components/ui/alert.tsx'
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -500,6 +505,29 @@ export const specimens: Specimen[] = [
 					<Button>Upgrade</Button>
 				</CardFooter>
 			</Card>
+		),
+	},
+	{
+		name: 'avatar',
+		group: 'Surfaces',
+		subtitle: 'image with initials fallback — sized via utility classes',
+		viewport: { width: 480, height: 160 },
+		render: () => (
+			<div className="flex items-center gap-6">
+				{/* Image present — loads to a photo. */}
+				<Avatar>
+					<AvatarImage src="/img/user.png" alt="Ada Lovelace" />
+					<AvatarFallback>AL</AvatarFallback>
+				</Avatar>
+				{/* No image source — degrades to initials, not a broken-image glyph. */}
+				<Avatar>
+					<AvatarFallback>EM</AvatarFallback>
+				</Avatar>
+				{/* Sized up via a utility class on the root. */}
+				<Avatar className="size-16">
+					<AvatarFallback className="text-lg">GR</AvatarFallback>
+				</Avatar>
+			</div>
 		),
 	},
 	{

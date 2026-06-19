@@ -26,6 +26,11 @@ export {
 	AlertDescription,
 	alertVariants,
 } from '#app/components/ui/alert.tsx'
+export {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '#app/components/ui/avatar.tsx'
 export { Badge, badgeVariants } from '#app/components/ui/badge.tsx'
 export { Button, buttonVariants } from '#app/components/ui/button.tsx'
 export {

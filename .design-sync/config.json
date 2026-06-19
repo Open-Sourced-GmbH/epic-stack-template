@@ -9,6 +9,7 @@
 	"guidelinesGlob": [],
 	"componentSrcMap": {
 		"Alert": "app/components/ui/alert.tsx",
+		"Avatar": "app/components/ui/avatar.tsx",
 		"Badge": "app/components/ui/badge.tsx",
 		"Button": "app/components/ui/button.tsx",
 		"Card": "app/components/ui/card.tsx",
@@ -31,6 +32,7 @@
 	},
 	"dtsPropsFor": {
 		"Alert": "/** Alert / Callout for form- and page-level messages. Compose: Alert (root) wrapping an AlertTitle and an AlertDescription. Tokens only (brand / muted / destructive families) — no new theme values. `error` is announced assertively (role=\"alert\"); the other tones use role=\"status\", and an explicit `role` prop wins. */\n/** Message tone. @default 'info' */\ntone?: 'info' | 'success' | 'warning' | 'error';\nrole?: 'alert' | 'status';\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <div> attributes. */\n[key: string]: unknown;",
+		"Avatar": "/** Avatar — a user image with a graceful initials fallback, on the Radix base. Compose: Avatar (root) wrapping an AvatarImage (the photo) and an AvatarFallback (the initials shown until the image loads, or for good if it never does — a missing/slow image degrades to initials, not a broken-image glyph). Tokens only (the fallback uses the muted pair). Size it with utility classes on the root (`size-8`, `size-16`, …); the base is a `size-10` circle. */\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <span> attributes. */\n[key: string]: unknown;",
 		"Badge": "/** Status pill for rows/lists — a small rounded label. Tokens only; no new theme values. */\n/** Visual style variant. @default 'default' */\nvariant?: 'default' | 'secondary' | 'destructive' | 'outline';\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <span> attributes. */\n[key: string]: unknown;",
 		"Button": "/** Visual style variant. @default 'default' */\nvariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';\n/** Size preset. @default 'default' */\nsize?: 'default' | 'wide' | 'sm' | 'lg' | 'pill' | 'icon' | 'icon-sm' | 'icon-lg';\n/** Render as the child element via Radix Slot instead of a native <button>. @default false */\nasChild?: boolean;\nchildren?: React.ReactNode;\nclassName?: string;\ndisabled?: boolean;\ntype?: 'button' | 'submit' | 'reset';\nonClick?: React.MouseEventHandler<HTMLButtonElement>;\n/** Plus all native <button> attributes. */\n[key: string]: unknown;",
 		"Card": "/** Compound card surface promoting the `bg-card text-card-foreground rounded-lg border` idiom. Compose: Card (root) wrapping an optional CardHeader (holding CardTitle + CardDescription), a CardContent, and an optional CardFooter. Tokens only — no hardcoded colors or radii. */\nchildren?: React.ReactNode;\nclassName?: string;\n/** Plus all native <div> attributes. */\n[key: string]: unknown;",
