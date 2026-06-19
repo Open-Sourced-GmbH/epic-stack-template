@@ -40,6 +40,7 @@ export {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
+export { Field, Field as FormField } from '#app/components/ui/field.tsx'
 export { Input } from '#app/components/ui/input.tsx'
 export {
 	InputOTP,

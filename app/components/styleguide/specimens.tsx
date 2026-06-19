@@ -18,6 +18,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
+import { Field } from '#app/components/ui/field.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import {
 	InputOTP,
@@ -398,6 +399,35 @@ export const specimens: Specimen[] = [
 			<div className="grid max-w-sm gap-1.5">
 				<Label htmlFor="sg-email">Email</Label>
 				<Input id="sg-email" type="email" placeholder="you@example.com" />
+			</div>
+		),
+	},
+	{
+		name: 'field',
+		group: 'Forms',
+		subtitle: 'Label + control + description + error — aria wired',
+		viewport: { width: 480, height: 280 },
+		render: () => (
+			<div className="flex max-w-sm flex-col gap-5">
+				<Field
+					label="Email"
+					htmlFor="sg-field-email"
+					description="We'll only use it to send receipts."
+					required
+				>
+					<Input
+						id="sg-field-email"
+						type="email"
+						placeholder="you@example.com"
+					/>
+				</Field>
+				<Field
+					label="Username"
+					htmlFor="sg-field-username"
+					error="That username is already taken."
+				>
+					<Input id="sg-field-username" defaultValue="taken" />
+				</Field>
 			</div>
 		),
 	},
