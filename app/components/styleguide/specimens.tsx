@@ -36,6 +36,7 @@ import {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
@@ -402,6 +403,21 @@ export const specimens: Specimen[] = [
 				<div className="flex items-center gap-2">
 					<Spinner className="size-4" title="Saving" />
 					<span className="text-muted-foreground text-body-sm">Saving…</span>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'skeleton',
+		group: 'Actions',
+		subtitle: 'pulsing placeholder for loading states — respects reduced motion',
+		viewport: { width: 480, height: 140 },
+		render: () => (
+			<div className="flex items-center gap-4">
+				<Skeleton className="size-12 rounded-full" />
+				<div className="flex flex-col gap-2">
+					<Skeleton className="h-4 w-48" />
+					<Skeleton className="h-4 w-32" />
 				</div>
 			</div>
 		),
