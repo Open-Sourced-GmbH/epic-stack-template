@@ -20,7 +20,7 @@ GitHub/GitLab/local to switch.
 ## Process skills (feature lifecycle)
 
 ```
-/grill-with-docs → /to-prd → /to-issues → implement → PR
+/grill-with-docs → /to-prd → /to-issues → implement → PR → /to-acceptance
 ```
 
 - `/grill-with-docs` stress-tests the idea against the project's domain model and
@@ -29,14 +29,19 @@ GitHub/GitLab/local to switch.
 - `/to-prd` turns the grilled context into a PRD and publishes it to the tracker.
 - `/to-issues` breaks the PRD into independently-grabbable, vertical-slice issues.
 - `/tdd` slots into the **implement** step (red → green → refactor).
+- `/to-acceptance` is the **closing gate**: once a PRD's slices are implemented
+  and a PR is open, it proves the feature works (functional tests) and looks
+  right (design fidelity) before promotion, tracked as one Linear QA issue. It's
+  repo-scoped and carries its own `## Next step`.
 - `/triage` is standalone for bug/feature intake.
 
 ### Handoffs (invite the next step)
 
 Always end a lifecycle skill by inviting the user to the correct next step — the
 flow lives here, not (for the four core skills) inside the skill text. The
-`to-design` / `to-grounded-design` skills are repo-scoped and carry their own
-`## Next step`; the four core skills are global (`~/.claude/skills/`) and a
+`to-design` / `to-grounded-design` / `to-acceptance` skills are repo-scoped and
+carry their own `## Next step`; the four core skills are global
+(`~/.claude/skills/`) and a
 same-name repo copy would **not** override them ([personal overrides
 project](https://code.claude.com/docs/en/skills)), so honour these handoffs from
 here instead:
@@ -48,7 +53,8 @@ here instead:
 | `/to-design`       | export the Claude Design handoff, then `/to-grounded-design`       |
 | `/to-grounded-design` | update the PRD with grounding decisions, then `/to-issues`       |
 | `/to-issues`       | implement each slice with `/tdd`                                    |
-| `/tdd`             | open a PR per [`git-workflow.md`](./git-workflow.md)               |
+| `/tdd`             | open a PR per [`git-workflow.md`](./git-workflow.md), then `/to-acceptance` once the PRD's slices are done |
+| `/to-acceptance`   | promote `develop → staging` per [`git-workflow.md`](./git-workflow.md) (or `/tdd` to fix a failing case) |
 
 These skills publish to the issue tracker described in
 [`issue-tracker.md`](./issue-tracker.md) and follow the conventions in
