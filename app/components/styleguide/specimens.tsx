@@ -272,6 +272,33 @@ const commandEmptyActions: Command[] = [
 	},
 ]
 
+// Team roster for the `screen-team` reference screen. The `variant` walks the
+// Badge scale (Owner = primary, Admin = secondary, Member = outline) so the row
+// uses the real Badge primitive instead of a hand-rolled status pill.
+const teamMembers = [
+	{
+		name: 'Ada Lovelace',
+		email: 'ada@epic.dev',
+		role: 'Owner',
+		initials: 'AL',
+		variant: 'default',
+	},
+	{
+		name: 'Grace Hopper',
+		email: 'grace@epic.dev',
+		role: 'Admin',
+		initials: 'GH',
+		variant: 'secondary',
+	},
+	{
+		name: 'Alan Turing',
+		email: 'alan@epic.dev',
+		role: 'Member',
+		initials: 'AT',
+		variant: 'outline',
+	},
+] as const
+
 export const specimens: Specimen[] = [
 	{
 		name: 'colors',
@@ -914,6 +941,175 @@ export const specimens: Specimen[] = [
 						</div>
 					</DialogContent>
 				</Dialog>
+			</div>
+		),
+	},
+
+	// --- Reference screens -----------------------------------------------------
+	//
+	// The four `improove-001` handoff screens, rebuilt from real primitives only.
+	// In the design exploration each hand-rolled the missing pieces (Field, Card,
+	// Badge, Avatar, Skeleton, Alert) with bespoke markup; here every one is the
+	// shipping component, so these double as proof that no hand-rolled primitive
+	// remains and as the acceptance reference snapshotted to Claude Design.
+	{
+		name: 'screen-auth',
+		group: 'Reference screens',
+		subtitle: 'sign in — Card + Field + Checkbox + Button',
+		viewport: { width: 420, height: 480 },
+		render: () => (
+			<Card className="mx-auto w-full max-w-sm">
+				<CardHeader>
+					<CardTitle>Welcome back</CardTitle>
+					<CardDescription>Sign in to your account</CardDescription>
+				</CardHeader>
+				<CardContent className="flex flex-col gap-5">
+					<Field label="Email" htmlFor="screen-auth-email">
+						<Input
+							id="screen-auth-email"
+							type="email"
+							placeholder="you@example.com"
+						/>
+					</Field>
+					<Field label="Password" htmlFor="screen-auth-password">
+						<Input
+							id="screen-auth-password"
+							type="password"
+							placeholder="••••••••"
+						/>
+					</Field>
+					<div className="flex items-center gap-2">
+						<Checkbox id="screen-auth-remember" defaultChecked />
+						<Label htmlFor="screen-auth-remember">Remember me</Label>
+					</div>
+				</CardContent>
+				<CardFooter>
+					<Button size="wide">Sign in</Button>
+				</CardFooter>
+			</Card>
+		),
+	},
+	{
+		name: 'screen-settings',
+		group: 'Reference screens',
+		subtitle: 'profile + save bar — Card + Field + StatusButton',
+		viewport: { width: 460, height: 480 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-3">
+				<Card>
+					<CardHeader>
+						<CardTitle>Profile</CardTitle>
+						<CardDescription>Update your public details.</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col gap-5">
+						<Field label="Display name" htmlFor="screen-settings-name">
+							<Input id="screen-settings-name" defaultValue="Ada Lovelace" />
+						</Field>
+						<Field label="Bio" htmlFor="screen-settings-bio">
+							<Textarea
+								id="screen-settings-bio"
+								rows={3}
+								defaultValue="Mathematician. First programmer."
+							/>
+						</Field>
+					</CardContent>
+				</Card>
+				{/* Save bar: a layout strip, not a primitive — styled with tokens only. */}
+				<div className="border-border bg-card flex items-center justify-between rounded-lg border px-4 py-3">
+					<span className="text-muted-foreground text-body-sm">
+						Unsaved changes
+					</span>
+					<div className="flex gap-2">
+						<Button variant="ghost">Discard</Button>
+						<StatusButton status="idle">Save</StatusButton>
+					</div>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'screen-team',
+		group: 'Reference screens',
+		subtitle: 'team rows — Avatar + Badge + DropdownMenu row actions',
+		viewport: { width: 480, height: 280 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-1">
+				{teamMembers.map(({ name, email, role, initials, variant }) => (
+					<div
+						key={email}
+						className="hover:bg-muted/60 flex items-center justify-between rounded-md px-2 py-2"
+					>
+						<div className="flex items-center gap-3">
+							<Avatar>
+								<AvatarFallback>{initials}</AvatarFallback>
+							</Avatar>
+							<div className="flex flex-col">
+								<span className="text-body-sm font-medium">{name}</span>
+								<span className="text-muted-foreground text-body-2xs">
+									{email}
+								</span>
+							</div>
+						</div>
+						<div className="flex items-center gap-3">
+							<Badge variant={variant}>{role}</Badge>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon-sm"
+										aria-label={`Actions for ${name}`}
+									>
+										<span aria-hidden>⋯</span>
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem>View profile</DropdownMenuItem>
+									<DropdownMenuItem>Change role</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem>Remove</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</div>
+				))}
+			</div>
+		),
+	},
+	{
+		name: 'screen-states',
+		group: 'Reference screens',
+		subtitle: 'empty · error · loading — Button + Alert + Skeleton',
+		viewport: { width: 460, height: 520 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-4">
+				{/* Empty */}
+				<div className="border-border flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center">
+					<div className="bg-muted text-muted-foreground mb-1 flex size-10 items-center justify-center rounded-full">
+						<span aria-hidden className="text-body-lg">
+							+
+						</span>
+					</div>
+					<span className="text-body-sm font-medium">No projects yet</span>
+					<span className="text-muted-foreground text-body-2xs">
+						Create your first project to get started.
+					</span>
+					<Button className="mt-2">New project</Button>
+				</div>
+				{/* Error */}
+				<Alert tone="error">
+					<AlertTitle>Couldn't load projects.</AlertTitle>
+					<AlertDescription>
+						Check your connection and try again.
+					</AlertDescription>
+				</Alert>
+				{/* Loading */}
+				<Card>
+					<CardContent className="flex flex-col gap-3">
+						<Skeleton className="h-4 w-2/5" />
+						<Skeleton className="h-4 w-5/6" />
+						<Skeleton className="h-4 w-3/4" />
+					</CardContent>
+				</Card>
 			</div>
 		),
 	},
