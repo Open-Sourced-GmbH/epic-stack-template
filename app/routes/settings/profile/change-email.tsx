@@ -3,29 +3,28 @@ import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { data, redirect, Form } from 'react-router'
 import { z } from 'zod'
+import { EmailChangeEmail } from '#app/components/emails/change-email-verification.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import {
-	prepareVerification,
-	requireRecentVerification,
-} from '#app/routes/_auth/verify.server.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
+import { requireRecentVerification } from '#app/utils/two-factor.server.ts'
 import { EmailSchema } from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import {
+	newEmailAddressSessionKey,
+	prepareVerification,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { type Route } from './+types/change-email.ts'
 import { type BreadcrumbHandle } from './_layout.tsx'
-import { EmailChangeEmail } from './change-email.server.tsx'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="envelope-closed">Change Email</Icon>,
 	getSitemapEntries: () => null,
 }
-
-export const newEmailAddressSessionKey = 'new-email-address'
 
 const ChangeEmailSchema = z.object({
 	email: EmailSchema,

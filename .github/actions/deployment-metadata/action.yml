@@ -1,0 +1,37 @@
+name: Deployment Metadata
+description: >-
+  Read the single source-of-truth version from package.json, derive the short
+  SHA, and assert package.json and CloudronManifest.json agree. The shared
+  kernel of every deploy workflow's metadata step (ADR 068). Requires the repo
+  to be checked out first.
+
+outputs:
+  version:
+    description: 'Version from package.json (the single source of truth)'
+    value: ${{ steps.derive.outputs.version }}
+  short_sha:
+    description: 'Short commit SHA of the checked-out ref'
+    value: ${{ steps.derive.outputs.short_sha }}
+
+runs:
+  using: composite
+  steps:
+    - name: Derive and validate version metadata
+      id: derive
+      shell: bash
+      run: |
+        PROJECT_VERSION=$(node -p "require('./package.json').version")
+        MANIFEST_VERSION=$(node -p "require('./CloudronManifest.json').version")
+
+        # Single source of truth: package.json. The manifest only mirrors it
+        # (release-please extra-files). Fail at metadata time so drift can never
+        # reach a build, a tag, or a Cloudron deploy.
+        if [[ "$PROJECT_VERSION" != "$MANIFEST_VERSION" ]]; then
+          echo "::error file=CloudronManifest.json,line=1::Version mismatch! package.json ($PROJECT_VERSION) vs CloudronManifest.json ($MANIFEST_VERSION)."
+          exit 1
+        fi
+
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        echo "version=${PROJECT_VERSION}" >> "$GITHUB_OUTPUT"
+        echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        echo "Version validated: ${PROJECT_VERSION} (sha ${SHORT_SHA})"

@@ -50,12 +50,21 @@ export default defineConfig((config) => {
 			ignored: ['**/playwright-report/**'],
 		},
 	},
+	optimizeDeps: {
+		// `@nasa-gcn/remix-seo` (used server-side in the sitemap loader) peer-deps
+		// on `@remix-run/react`, which imports the legacy `react-router-dom`. Under
+		// `future.unstable_optimizeDeps` Vite crawls every route into the client
+		// dep scan and tries to pre-bundle `react-router-dom`, which isn't (and
+		// shouldn't be) installed under React Router 7. Exclude it to silence the
+		// "Failed to resolve dependency: react-router-dom" warning.
+		exclude: ['react-router-dom'],
+	},
 	sentryConfig,
 	plugins: [
 		cacheServerStubPlugin,
 		envOnlyMacros(),
 		tailwindcss(),
-		reactRouterDevTools(),
+		reactRouterDevTools({ pluginDir: './other/rdt-plugins' }),
 
 		iconsSpritesheet({
 			inputDir: './other/svg-icons',

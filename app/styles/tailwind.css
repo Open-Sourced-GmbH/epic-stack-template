@@ -6,6 +6,20 @@
 :root {
 	--radius: 0.5rem;
 
+	/* Button cursor pref (ADR 062). The theme customizer's cursor segment flips
+	   this between `default` and `pointer`; root re-applies it via an inline
+	   style on <html> so it's server-applied (no flash). Consumed by the rule in
+	   the base layer below. */
+	--btn-cursor: default;
+
+	/* Brand accent (ADR 062). Pine is the default; the runtime customizer
+	   overrides --brand (and the vars that follow it) per-request via SSR
+	   inline styles. --brand-soft/-glow derive from --brand so one edit
+	   re-tints the whole accent. */
+	--brand: oklch(60% 0.135 172);
+	--brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
+	--brand-glow: oklch(from var(--brand) l c h / 0.32);
+
 	--background: oklch(100% 0 0);
 	--foreground: oklch(13.71% 0.036 258.53);
 
@@ -15,7 +29,10 @@
 	--popover: oklch(100% 0 0);
 	--popover-foreground: oklch(13.71% 0.036 258.53);
 
-	--primary: oklch(20.79% 0.0399 265.73);
+	/* --primary follows --brand: the default <Button> and every focus ring are
+	   brand-colored with no component edits. --primary-foreground stays a fixed
+	   near-white token (constrained-picker decision — no runtime contrast math). */
+	--primary: var(--brand);
 	--primary-foreground: oklch(98.38% 0.0035 247.86);
 
 	--secondary: oklch(86.48% 0.0153 248);
@@ -35,11 +52,20 @@
 	--destructive-foreground: oklch(98.38% 0.0035 247.86);
 	/* prefixed with foreground because it should look good on the background */
 	--foreground-destructive: oklch(51.46% 0.1979 16.57);
+	/* --error-text is the going-forward name for error message text; it aliases
+	   --foreground-destructive, which is retained for one release. */
+	--error-text: var(--foreground-destructive);
 
-	--ring: oklch(71.07% 0.0351 256.79);
+	--ring: var(--brand);
 }
 
 .dark {
+	/* Brand accent is mode-independent: the same Pine in light and dark, so the
+	   customizer's per-request override needs no dark variant (ADR 062). */
+	--brand: oklch(60% 0.135 172);
+	--brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
+	--brand-glow: oklch(from var(--brand) l c h / 0.32);
+
 	--background: oklch(13.71% 0.036 258.53);
 	--foreground: oklch(98.38% 0.0035 247.86);
 
@@ -49,8 +75,11 @@
 	--popover: oklch(13.71% 0.036 258.53);
 	--popover-foreground: oklch(98.38% 0.0035 247.86);
 
-	--primary: oklch(98.38% 0.0035 247.86);
-	--primary-foreground: oklch(20.79% 0.0399 265.73);
+	/* --primary follows --brand here too, so the near-white foreground from
+	   :root holds in dark mode (the old dark-on-light pairing would be unreadable
+	   on the Pine button). */
+	--primary: var(--brand);
+	--primary-foreground: oklch(98.38% 0.0035 247.86);
 
 	--secondary: oklch(34.74% 0.0295 260.13);
 	--secondary-foreground: oklch(98.38% 0.0035 247.86);
@@ -69,8 +98,10 @@
 	--destructive-foreground: oklch(97.1% 0.0127 17.38);
 	/* prefixed with foreground because it should look good on the background */
 	--foreground-destructive: oklch(63.72% 0.2071 21.89);
+	/* --error-text aliases --foreground-destructive (retained one release). */
+	--error-text: var(--foreground-destructive);
 
-	--ring: oklch(65.28% 0.0684 260.07);
+	--ring: var(--brand);
 }
 
 @theme inline {
@@ -84,6 +115,9 @@
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
 	--color-popover-foreground: var(--popover-foreground);
+	--color-brand: var(--brand);
+	--color-brand-soft: var(--brand-soft);
+	--color-brand-glow: var(--brand-glow);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
 	--color-secondary: var(--secondary);
@@ -99,6 +133,7 @@
 	--color-input-invalid: var(--input-invalid);
 	--color-destructive-foreground: var(--destructive-foreground);
 	--color-foreground-destructive: var(--foreground-destructive);
+	--color-error-text: var(--error-text);
 }
 
 @theme {
@@ -209,6 +244,30 @@
 	}
 }
 
+/* Cosy focus (EPT-22, AUDIT §3.5). The DS-wide focus treatment, baked into the
+   control classes so it's the single source — not a per-consumer override. On
+   focus a control gets a 1px brand border hugging it plus a soft `--brand-glow`
+   halo (both existing tokens — no new ones), replacing the old detached
+   `ring-2 ring-offset-2`. `focus-cosy` shows it on `:focus-visible` (keyboard or
+   click). `focus-cosy-active` paints the same resting state for a control that
+   marks its own focus — the InputOTP active slot, whose real focus lives on the
+   package's hidden input, not the slot div. The eased transition is gated to
+   `prefers-reduced-motion: no-preference` (below), so reduced-motion users get
+   the focus state applied instantly. */
+@utility focus-cosy {
+	&:focus-visible {
+		border-color: var(--brand);
+		outline: none;
+		box-shadow: 0 0 0 3px var(--brand-glow);
+	}
+}
+
+@utility focus-cosy-active {
+	border-color: var(--brand);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--brand-glow);
+}
+
 @layer base {
 	*,
 	::after,
@@ -216,5 +275,172 @@
 	::backdrop,
 	::file-selector-button {
 		border-color: hsl(var(--border));
+	}
+
+	/* Button-hover cursor, driven by the customizer's `--btn-cursor` pref. Wrapped
+	   in `:where()` so it carries zero specificity — any explicit `cursor-*`
+	   utility (e.g. the dock's own controls, which always stay `pointer`) wins. */
+	:where(button:not(:disabled)) {
+		cursor: var(--btn-cursor, default);
+	}
+}
+
+/* Marketing landing motion (EPT-12). Every entrance + ambient loop here is
+   progressive enhancement: the resting/final state renders server-side and these
+   rules apply only when the visitor has not asked to reduce motion. The
+   `.rv` / `.rv-in` scroll-reveal pair is the reusable utility consumed by later
+   sections via the `useReveal` hook; the `.hero` rules drive the hero entrance. */
+@media (prefers-reduced-motion: no-preference) {
+	/* Cosy-focus easing (EPT-22). Gated here so reduced-motion users get the
+	   border + halo instantly with no animation. The shorthand is a superset of
+	   the `transition-colors` the controls used to carry, so those classes drop
+	   out (and reduced motion is now honoured for their hover colour too). */
+	.focus-cosy,
+	.focus-cosy-active {
+		transition:
+			box-shadow 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+			border-color 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+			background-color 0.2s ease,
+			color 0.15s ease;
+	}
+
+	/* Scroll-reveal: useReveal() tags targets `.rv`, then `.rv-in` as they enter. */
+	.rv {
+		opacity: 0;
+		transform: translateY(22px);
+		transition:
+			opacity 0.6s cubic-bezier(0.2, 0.7, 0.25, 1),
+			transform 0.6s cubic-bezier(0.2, 0.7, 0.25, 1);
+	}
+	.rv.rv-in {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* How-it-works timeline draw (EPT-13). Keyed on the JS-added `.rv` row class,
+	   so without JS / under reduced motion the resting state (node visible, line
+	   full) stands. The connector line draws top-down and the node pops once its
+	   row enters view. */
+	.hiw .rv .hiw-node {
+		transform: scale(0.6);
+		transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) 0.08s;
+	}
+	.hiw .rv.rv-in .hiw-node {
+		transform: none;
+	}
+	.hiw .rv .hiw-line {
+		transform: scaleY(0);
+		transform-origin: top;
+		transition: transform 0.55s cubic-bezier(0.4, 0.7, 0.3, 1) 0.2s;
+	}
+	.hiw .rv.rv-in .hiw-line {
+		transform: scaleY(1);
+	}
+
+	/* Hero entrance: children rise/fade once JS sets `data-in` on mount. */
+	.hero[data-in] .anim {
+		animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+	}
+	.hero[data-in] .anim.d1 {
+		animation-delay: 0.05s;
+	}
+	.hero[data-in] .anim.d2 {
+		animation-delay: 0.13s;
+	}
+	.hero[data-in] .anim.d3 {
+		animation-delay: 0.21s;
+	}
+	.hero[data-in] .anim.d4 {
+		animation-delay: 0.29s;
+	}
+	.hero[data-in] .anim.d5 {
+		animation-delay: 0.4s;
+	}
+
+	/* Hero ambient loops. */
+	.hero .breathe {
+		animation: hero-breathe 7s ease-in-out infinite;
+	}
+	.hero .floaty {
+		animation: hero-floaty 5s ease-in-out infinite;
+	}
+	.hero .dotpulse {
+		animation: hero-dotpulse 2.6s ease-in-out infinite;
+	}
+
+	@keyframes hero-rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@keyframes hero-breathe {
+		0%,
+		100% {
+			transform: scale(1);
+			opacity: 0.7;
+		}
+		50% {
+			transform: scale(1.06);
+			opacity: 1;
+		}
+	}
+	@keyframes hero-floaty {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-8px);
+		}
+	}
+	@keyframes hero-dotpulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 var(--brand-soft);
+		}
+		50% {
+			box-shadow: 0 0 0 5px transparent;
+		}
+	}
+
+	/* Live playground carousel (EPT-16). The per-slide progress fill grows
+	   0 → 100% over the autoplay dwell while running; the viewport height eases
+	   to the active slide. Both are gated here, so reduced-motion / no-JS
+	   visitors get an instant, fill-less swap with no fixed height. */
+	.carousel-viewport {
+		transition: height 0.4s cubic-bezier(0.2, 0.7, 0.25, 1);
+	}
+	.carousel-fill[data-running] {
+		animation: carousel-fill var(--carousel-ms, 7000ms) linear forwards;
+	}
+	@keyframes carousel-fill {
+		from {
+			width: 0;
+		}
+		to {
+			width: 100%;
+		}
+	}
+
+	/* Theme customizer dock (EPT-19). The expanded card pops in; gated here so
+	   reduced-motion visitors get the resting (fully-visible) state with no
+	   animation. */
+	.tc-pop {
+		animation: tc-pop 0.18s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+	}
+	@keyframes tc-pop {
+		from {
+			opacity: 0;
+			transform: translateY(8px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
 	}
 }

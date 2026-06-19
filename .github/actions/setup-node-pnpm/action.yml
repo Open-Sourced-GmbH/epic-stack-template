@@ -1,0 +1,32 @@
+name: Setup Node + pnpm
+description: >-
+  Set up Node (pinned via .nvmrc, ADR 068), enable pnpm through Corepack, and
+  install dependencies with a frozen lockfile. The uniform setup kernel shared by
+  every CI job. Requires the repo to be checked out first.
+
+runs:
+  using: composite
+  steps:
+    - name: ⎔ Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+
+    # pnpm/action-setup@v4 self-installs pnpm using its own bundled Node 20
+    # runtime, which fails the engines check for pnpm ≥11 (needs Node ≥22.13).
+    # Corepack ships with Node 22 and resolves pnpm from the `packageManager`
+    # field in package.json - runs inside our setup-node Node, not a vendored
+    # one, so the engines check passes.
+    - name: 📦 Enable pnpm via Corepack
+      shell: bash
+      run: corepack enable
+
+    - name: ⎔ Re-setup node with pnpm cache
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
+
+    - name: 📥 Download deps
+      shell: bash
+      run: pnpm install --frozen-lockfile

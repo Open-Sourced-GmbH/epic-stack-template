@@ -14,9 +14,9 @@ import { prisma } from '#app/utils/db.server.ts'
 import { getUserImgSrc, useDoubleCheck } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
+import { twoFAVerificationType } from '#app/utils/two-factor.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { type Route } from './+types/index.ts'
-import { twoFAVerificationType } from './two-factor/_layout.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,

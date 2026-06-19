@@ -1,0 +1,17 @@
+name: Setup Test Database
+description: >-
+  Copy the example env file and bring a local SQLite database up to schema with
+  `prisma migrate deploy` + `prisma generate`. The shared DB-readiness step for
+  CI jobs that run app code. Requires Node + pnpm to be set up first
+  (see the setup-node-pnpm action).
+
+runs:
+  using: composite
+  steps:
+    - name: 🏄 Copy test env vars
+      shell: bash
+      run: cp .env.example .env
+
+    - name: 🛠 Setup Database
+      shell: bash
+      run: pnpm exec prisma migrate deploy && pnpm exec prisma generate --sql

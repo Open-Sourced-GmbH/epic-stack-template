@@ -4,7 +4,7 @@ import {
 } from '@simplewebauthn/server'
 import { getSessionExpirationDate } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { handleNewSession } from '../login.server.ts'
+import { handleNewSession } from '#app/utils/two-factor.server.ts'
 import { type Route } from './+types/authentication.ts'
 import {
 	PasskeyLoginBodySchema,

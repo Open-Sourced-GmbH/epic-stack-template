@@ -8,6 +8,9 @@ import express from 'express'
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import morgan from 'morgan'
+import { logEnvStatus } from '#app/utils/env.server.ts'
+
+logEnvStatus()
 
 const MODE = process.env.NODE_ENV ?? 'development'
 const IS_PROD = MODE === 'production'
@@ -25,10 +28,15 @@ const app = express()
 const getHost = (req: { get: (key: string) => string | undefined }) =>
 	req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
-// fly is our proxy
-app.set('trust proxy', true)
+// Cloudron reverse-proxies every request through a single nginx hop, so we
+// trust exactly one proxy. `req.ip` then resolves to the real client IP and a
+// client cannot spoof it by sending its own X-Forwarded-For (nginx appends the
+// true peer, and we only trust that last hop). Override TRUST_PROXY — e.g. to
+// `2` when also sitting behind Cloudflare — if you add proxy hops in front.
+const trustProxy = process.env.TRUST_PROXY ?? '1'
+app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy)
 
-// ensure HTTPS only (X-Forwarded-Proto comes from Fly)
+// ensure HTTPS only (X-Forwarded-Proto comes from the proxy)
 app.use((req, res, next) => {
 	if (req.method !== 'GET') return next()
 	const proto = req.get('X-Forwarded-Proto')
@@ -51,6 +59,21 @@ app.get(/.*/, (req, res, next) => {
 	} else {
 		next()
 	}
+})
+
+// Reject oversized request bodies early, before any heavier middleware runs.
+// The largest legitimate upload is the 3MB avatar (settings/profile/photo.tsx);
+// 12MB leaves generous headroom for multipart overhead and future uploads while
+// capping abusive payloads. This trusts Content-Length — the common case;
+// chunked uploads without it still fall through to the framework's own limits.
+const MAX_BODY_SIZE = 1024 * 1024 * 12
+app.use((req, res, next) => {
+	if (req.method === 'GET' || req.method === 'HEAD') return next()
+	const contentLength = Number(req.get('content-length'))
+	if (contentLength && contentLength > MAX_BODY_SIZE) {
+		return res.status(413).send('Payload too large')
+	}
+	next()
 })
 
 app.use(compression())
@@ -97,13 +120,11 @@ const rateLimitDefault = {
 	standardHeaders: true,
 	legacyHeaders: false,
 	validate: { trustProxy: false },
-	// Malicious users can spoof their IP address which means we should not default
-	// to trusting req.ip when hosted on Fly.io. However, users cannot spoof Fly-Client-Ip.
-	// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
-	// specific header such as cf-connecting-ip
+	// With `trust proxy` set to the real number of hops (see above), `req.ip` is
+	// the genuine, non-spoofable client IP, so we key the limiter off it directly.
 	keyGenerator: (req: express.Request) => {
 		const ip = req.ip ?? req.socket?.remoteAddress
-		return req.get('fly-client-ip') ?? ipKeyGenerator(ip ?? '0.0.0.0')
+		return ipKeyGenerator(ip ?? '0.0.0.0')
 	},
 }
 

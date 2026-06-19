@@ -2,6 +2,11 @@ import { faker } from '@faker-js/faker'
 import { prisma } from '#app/utils/db.server.ts'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants.ts'
 import {
+	getPermissionMatrix,
+	roleGrantedAccess,
+	roleNames,
+} from '#app/utils/user.ts'
+import {
 	createPassword,
 	createUser,
 	getNoteImages,
@@ -12,6 +17,36 @@ import { insertGitHubUser } from '#tests/mocks/github.ts'
 async function seed() {
 	console.log('🌱 Seeding...')
 	console.time(`🌱 Database has been seeded`)
+
+	console.time('🔑 Created permissions and roles...')
+	// Derive the RBAC permission matrix and role grants from the vocabulary
+	// registry (app/utils/user.ts), so the database rows cannot drift from it.
+	// Idempotent: re-running the seed reconciles existing rows to the registry.
+	for (const permission of getPermissionMatrix()) {
+		await prisma.permission.upsert({
+			where: {
+				action_entity_access: {
+					action: permission.action,
+					entity: permission.entity,
+					access: permission.access,
+				},
+			},
+			create: permission,
+			update: {},
+		})
+	}
+	for (const name of roleNames) {
+		const permissions = await prisma.permission.findMany({
+			select: { id: true },
+			where: { access: roleGrantedAccess[name] },
+		})
+		await prisma.role.upsert({
+			where: { name },
+			create: { name, permissions: { connect: permissions } },
+			update: { permissions: { set: permissions } },
+		})
+	}
+	console.timeEnd('🔑 Created permissions and roles...')
 
 	const totalUsers = 5
 	console.time(`👤 Created ${totalUsers} users...`)

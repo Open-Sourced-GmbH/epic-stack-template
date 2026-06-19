@@ -18,6 +18,9 @@ export const lruCache = {
 	},
 	get: (key: string) => lruStore.get(key),
 	delete: (key: string) => lruStore.delete(key),
+	keys: (limit: number) => [...lruStore.keys()].slice(0, limit),
+	search: (query: string, limit: number) =>
+		[...lruStore.keys()].filter((key) => key.includes(query)).slice(0, limit),
 }
 
 export const cache = {
@@ -32,6 +35,14 @@ export const cache = {
 	async delete(key: string) {
 		sqliteStore.delete(key)
 	},
+	keys: (limit: number) => [...sqliteStore.keys()].slice(0, limit),
+	search: (query: string, limit: number) =>
+		[...sqliteStore.keys()].filter((key) => key.includes(query)).slice(0, limit),
+}
+
+export const cacheBackends = {
+	lru: lruCache,
+	sqlite: cache,
 }
 
 export async function getAllCacheKeys(limit: number) {

@@ -13,10 +13,10 @@ import { Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
-	cache,
+	cacheBackends,
 	getAllCacheKeys,
-	lruCache,
 	searchCacheKeys,
+	type CacheBackendName,
 } from '#app/utils/cache.server.ts'
 import {
 	ensureInstance,
@@ -69,19 +69,9 @@ export async function action({ request }: Route.ActionArgs) {
 	invariantResponse(typeof instance === 'string', 'instance must be a string')
 	await ensureInstance(instance)
 
-	switch (type) {
-		case 'sqlite': {
-			await cache.delete(key)
-			break
-		}
-		case 'lru': {
-			lruCache.delete(key)
-			break
-		}
-		default: {
-			throw new Error(`Unknown cache type: ${type}`)
-		}
-	}
+	const backend = cacheBackends[type as CacheBackendName]
+	invariantResponse(backend, `Unknown cache type: ${type}`)
+	await backend.delete(key)
 	return { success: true }
 }
 

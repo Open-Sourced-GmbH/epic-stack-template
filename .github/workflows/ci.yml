@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git ref to check out (defaults to the triggering ref)'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  lint:
+    name: ⬣ ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 🛠 Setup test database
+        uses: ./.github/actions/setup-test-db
+
+      - name: 🔬 Lint
+        run: pnpm lint
+
+  typecheck:
+    name: ʦ TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 🛠 Setup test database
+        uses: ./.github/actions/setup-test-db
+
+      - name: 🔎 Type check
+        run: pnpm typecheck
+
+  vitest:
+    name: ⚡ Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: 🗄 Install sqlite3 CLI
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 🛠 Setup test database
+        uses: ./.github/actions/setup-test-db
+
+      - name: ⚡ Run vitest
+        run: pnpm test -- --run
+
+  design-sync-css:
+    name: 🎨 Design-sync CSS freshness
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 🏗 Build
+        run: pnpm build
+
+      # Regenerate the compiled Tailwind stylesheet the /design-sync bundler
+      # consumes, then fail if it differs from what's committed. The lockstep
+      # vitest guards the component *set*; this guards the *CSS* — without it a
+      # token change ships stale styles to Claude Design with no error.
+      - name: 🎨 Refresh compiled CSS
+        run: pnpm design-sync:css
+
+      - name: 🧪 Verify committed CSS is fresh
+        run: |
+          if ! git diff --quiet -- .design-sync/styles.compiled.css; then
+            echo "::error file=.design-sync/styles.compiled.css::Compiled CSS is stale. Run 'pnpm build && pnpm design-sync:css' and commit the result."
+            git diff --stat -- .design-sync/styles.compiled.css
+            exit 1
+          fi
+
+  playwright:
+    name: 🎭 Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: ⎔ Setup node + pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: 📥 Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 🛠 Setup test database
+        uses: ./.github/actions/setup-test-db
+
+      - name: 🏦 Cache Database
+        id: db-cache
+        uses: actions/cache@v4
+        with:
+          path: prisma/data.db
+          key:
+            db-cache-schema_${{ hashFiles('./prisma/schema.prisma')
+            }}-migrations_${{ hashFiles('./prisma/migrations/*/migration.sql')
+            }}
+
+      - name: 🌱 Seed Database
+        if: steps.db-cache.outputs.cache-hit != 'true'
+        run: pnpm exec prisma migrate reset --force
+
+      - name: 🏗 Build
+        run: pnpm build
+
+      - name: 🎭 Playwright tests
+        run: pnpm exec playwright test
+
+      - name: 📊 Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

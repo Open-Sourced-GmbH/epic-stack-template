@@ -15,6 +15,7 @@ import { type Route } from './+types/root.ts'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { Matomo } from './components/matomo.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { SearchBar } from './components/search-bar.tsx'
 import { useToast } from './components/toaster.tsx'
@@ -23,11 +24,18 @@ import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
 import { UserDropdown } from './components/user-dropdown.tsx'
 import {
+	AccentSwitch,
+	useOptimisticAccent,
+	useOptimisticButtonCursor,
+} from './routes/resources/accent.tsx'
+import {
 	ThemeSwitch,
 	useOptionalTheme,
 	useTheme,
 } from './routes/resources/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
+import { getAccent } from './utils/accent.server.ts'
+import { accentVars, DEFAULT_ACCENT } from './utils/accent.ts'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { prisma } from './utils/db.server.ts'
@@ -117,6 +125,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 				path: new URL(request.url).pathname,
 				userPrefs: {
 					theme: getTheme(request),
+					accent: getAccent(request)?.accent ?? null,
+					cursor: getAccent(request)?.cursor ?? 'default',
 				},
 			},
 			ENV: getEnv(),
@@ -138,16 +148,22 @@ function Document({
 	children,
 	nonce,
 	theme = 'light',
+	accentStyle,
 	env = {},
 }: {
 	children: React.ReactNode
 	nonce: string
 	theme?: Theme
+	accentStyle?: React.CSSProperties
 	env?: Record<string, string | undefined>
 }) {
 	const allowIndexing = ENV.ALLOW_INDEXING !== 'false'
 	return (
-		<html lang="en" className={`${theme} h-full overflow-x-hidden`}>
+		<html
+			lang="en"
+			className={`${theme} h-full overflow-x-hidden`}
+			style={accentStyle}
+		>
 			<head>
 				<ClientHintCheck nonce={nonce} />
 				<Meta />
@@ -160,6 +176,9 @@ function Document({
 			</head>
 			<body className="bg-background text-foreground">
 				{children}
+				{env.MATOMO_URL && env.MATOMO_SITE_ID ? (
+					<Matomo url={env.MATOMO_URL} siteId={env.MATOMO_SITE_ID} />
+				) : null}
 				<script
 					nonce={nonce}
 					dangerouslySetInnerHTML={{
@@ -178,8 +197,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const data = useLoaderData<typeof loader | null>()
 	const nonce = useNonce()
 	const theme = useOptionalTheme()
+	// Apply the chosen accent as inline CSS vars on <html> server-side (no flash),
+	// re-tinting optimistically while an accent switch is in flight (ADR 062).
+	const accent =
+		useOptimisticAccent(data?.requestInfo.userPrefs.accent ?? undefined) ??
+		DEFAULT_ACCENT
+	// The button-cursor pref rides the same inline-vars channel: `--btn-cursor`
+	// flips the customizer's cursor segment app-wide, server-applied (no flash).
+	const cursor =
+		useOptimisticButtonCursor(data?.requestInfo.userPrefs.cursor ?? undefined) ??
+		'default'
+	const accentStyle = {
+		...accentVars(accent),
+		'--btn-cursor': cursor,
+	} as React.CSSProperties
 	return (
-		<Document nonce={nonce} theme={theme} env={data?.ENV}>
+		<Document
+			nonce={nonce}
+			theme={theme}
+			accentStyle={accentStyle}
+			env={data?.ENV}
+		>
 			{children}
 		</Document>
 	)
@@ -191,6 +229,11 @@ function App() {
 	const theme = useTheme()
 	const matches = useMatches()
 	const isOnSearchPage = matches.find((m) => m.id === 'routes/users/index')
+	// Routes can opt out of the generic app chrome via `handle.hideChrome` (e.g.
+	// the marketing landing, which ships its own branded header/footer — EPT-11).
+	const hideChrome = matches.some(
+		(m) => (m.handle as { hideChrome?: boolean } | undefined)?.hideChrome,
+	)
 	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
 	useToast(data.toast)
 
@@ -200,33 +243,42 @@ function App() {
 			getSrc={getImgSrc}
 		>
 			<div className="flex min-h-screen flex-col justify-between">
-				<header className="container py-6">
-					<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
-						<Logo />
-						<div className="ml-auto hidden max-w-sm flex-1 sm:block">
-							{searchBar}
-						</div>
-						<div className="flex items-center gap-10">
-							{user ? (
-								<UserDropdown />
-							) : (
-								<Button asChild variant="default" size="lg">
-									<Link to="/login">Log In</Link>
-								</Button>
-							)}
-						</div>
-						<div className="block w-full sm:hidden">{searchBar}</div>
-					</nav>
-				</header>
+				{hideChrome ? null : (
+					<header className="container py-6">
+						<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
+							<Logo />
+							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
+								{searchBar}
+							</div>
+							<div className="flex items-center gap-10">
+								{user ? (
+									<UserDropdown />
+								) : (
+									<Button asChild variant="default" size="lg">
+										<Link to="/login">Log In</Link>
+									</Button>
+								)}
+							</div>
+							<div className="block w-full sm:hidden">{searchBar}</div>
+						</nav>
+					</header>
+				)}
 
 				<div className="flex flex-1 flex-col">
 					<Outlet />
 				</div>
 
-				<div className="container flex justify-between pb-5">
-					<Logo />
-					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-				</div>
+				{hideChrome ? null : (
+					<div className="container flex items-center justify-between pb-5">
+						<Logo />
+						<div className="flex items-center gap-4">
+							<AccentSwitch
+								userPreference={data.requestInfo.userPrefs.accent ?? undefined}
+							/>
+							<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+						</div>
+					</div>
+				)}
 			</div>
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="Xiquell product storefront preview" fill="none">
+  <rect width="1200" height="750" fill="#0b1620"/>
+  <rect width="1200" height="750" fill="url(#xq-glow)"/>
+  <rect x="0" y="0" width="1200" height="64" fill="#10263a"/>
+  <circle cx="40" cy="32" r="7" fill="#1c3e5a"/>
+  <circle cx="66" cy="32" r="7" fill="#1c3e5a"/>
+  <circle cx="92" cy="32" r="7" fill="#1c3e5a"/>
+  <rect x="140" y="20" width="360" height="24" rx="12" fill="#0b1620"/>
+  <text x="160" y="37" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" fill="#5aa9d6">xiquell.ch</text>
+  <rect x="64" y="140" width="540" height="34" rx="8" fill="#3d93c9"/>
+  <rect x="64" y="196" width="420" height="16" rx="8" fill="#21496a"/>
+  <rect x="64" y="226" width="360" height="16" rx="8" fill="#21496a"/>
+  <rect x="64" y="296" width="190" height="48" rx="12" fill="#3d93c9"/>
+  <rect x="270" y="296" width="150" height="48" rx="12" fill="#10263a" stroke="#1c3e5a"/>
+  <rect x="660" y="120" width="476" height="520" rx="20" fill="#10263a" stroke="#1c3e5a"/>
+  <rect x="700" y="160" width="396" height="300" rx="14" fill="#15324b"/>
+  <path d="M860 280 l44 76 h-88 z" fill="#3d93c9"/>
+  <circle cx="898" cy="300" r="60" fill="#5aa9d6" fill-opacity="0.25"/>
+  <rect x="700" y="492" width="260" height="18" rx="9" fill="#3d93c9"/>
+  <rect x="700" y="528" width="396" height="12" rx="6" fill="#21496a"/>
+  <rect x="700" y="556" width="320" height="12" rx="6" fill="#1a3850"/>
+  <defs>
+    <radialGradient id="xq-glow" cx="0.15" cy="0.15" r="0.9">
+      <stop offset="0" stop-color="#3d93c9" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#3d93c9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

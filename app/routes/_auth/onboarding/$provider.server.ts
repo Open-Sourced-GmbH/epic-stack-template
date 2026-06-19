@@ -1,8 +1,10 @@
 import { invariant } from '@epic-web/invariant'
 import { redirect } from 'react-router'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { type VerifyFunctionArgs } from '../verify.server.ts'
-import { onboardingEmailSessionKey } from './index.tsx'
+import {
+	onboardingEmailSessionKey,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
+import { type VerifyFunctionArgs } from '#app/utils/verification.ts'
 
 export async function handleVerification({ submission }: VerifyFunctionArgs) {
 	invariant(

@@ -6,7 +6,6 @@ import {
 	verboseReporter,
 	mergeReporters,
 	type CacheEntry,
-	type Cache as CachifiedCache,
 	type CachifiedOptions,
 	type Cache,
 	totalTtl,
@@ -15,8 +14,11 @@ import {
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { z } from 'zod'
-import { updatePrimaryCacheValue } from '#app/routes/admin/cache/sqlite.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './litefs.server.ts'
+import {
+	getInstanceInfo,
+	getInstanceInfoSync,
+	getInternalInstanceDomain,
+} from './litefs.server.ts'
 import { cachifiedTimingReporter, type Timings } from './timing.server.ts'
 
 const CACHE_DATABASE_PATH = process.env.CACHE_DATABASE_PATH
@@ -75,6 +77,23 @@ const lru = remember(
 	() => new LRUCache<string, CacheEntry<unknown>>({ max: 5000 }),
 )
 
+/**
+ * A cache backend the admin surface can enumerate: the cachified `Cache`
+ * (get/set/delete) plus the key-listing the admin UI needs (`keys`/`search`).
+ * Two backends satisfy it — the in-process LRU and the distributed SQLite cache —
+ * so it is a real seam, named here once. `cacheBackends` is the registry the
+ * admin enumerate/delete paths iterate instead of hardcoding each backend.
+ */
+type CacheBackend = Cache & {
+	keys: (limit: number) => Array<string> | Promise<Array<string>>
+	search: (
+		query: string,
+		limit: number,
+	) => Array<string> | Promise<Array<string>>
+}
+
+export type CacheBackendName = 'lru' | 'sqlite'
+
 export const lruCache = {
 	name: 'app-memory-cache',
 	set: (key, value) => {
@@ -87,7 +106,10 @@ export const lruCache = {
 	},
 	get: (key) => lru.get(key),
 	delete: (key) => lru.delete(key),
-} satisfies Cache
+	keys: (limit) => [...lru.keys()].slice(0, limit),
+	search: (query, limit) =>
+		[...lru.keys()].filter((key) => key.includes(query)).slice(0, limit),
+} satisfies CacheBackend
 
 const isBuffer = (obj: unknown): obj is Buffer =>
 	Buffer.isBuffer(obj) || obj instanceof Uint8Array
@@ -139,7 +161,71 @@ const searchKeysStatement = cacheDb.prepare(
 	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
 )
 
-export const cache: CachifiedCache = {
+/**
+ * Propagate a cache write to the primary instance. On a non-primary instance the
+ * SQLite cache is read-only, so `cache.set`/`cache.delete` forward the write over
+ * the internal network to the primary's `/admin/cache/sqlite` action, which
+ * applies it locally. This is the outbound half of that handoff; the route action
+ * is the inbound half.
+ */
+async function updatePrimaryCacheValue({
+	key,
+	cacheValue,
+}: {
+	key: string
+	cacheValue: any
+}) {
+	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	if (currentIsPrimary) {
+		throw new Error(
+			`updatePrimaryCacheValue should not be called on the primary instance (${primaryInstance})}`,
+		)
+	}
+	const domain = getInternalInstanceDomain(primaryInstance)
+	const token = process.env.INTERNAL_COMMAND_TOKEN
+	return fetch(`${domain}/admin/cache/sqlite`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ key, cacheValue }),
+	})
+}
+
+/**
+ * Apply a cache write under the single-writer rule: the SQLite cache may only be
+ * written on the primary instance. On the primary we run `writeLocally`; on a
+ * replica the cache database is read-only, so the write is forwarded to the
+ * primary's `/admin/cache/sqlite` action via `updatePrimaryCacheValue`
+ * (fire-and-forget). This is the one place the primary-vs-replica fork for cache
+ * writes lives — `cache.set` and `cache.delete` both go through it.
+ */
+async function writeToPrimary({
+	key,
+	cacheValue,
+	writeLocally,
+}: {
+	key: string
+	cacheValue: any
+	writeLocally: () => void
+}) {
+	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	if (currentIsPrimary) {
+		writeLocally()
+		return
+	}
+	void updatePrimaryCacheValue({ key, cacheValue }).then((response) => {
+		if (!response.ok) {
+			console.error(
+				`Error forwarding cache write for key "${key}" to primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+				{ cacheValue },
+			)
+		}
+	})
+}
+
+export const cache = {
 	name: 'SQLite cache',
 	async get(key) {
 		const result = getStatement.get(key)
@@ -156,63 +242,53 @@ export const cache: CachifiedCache = {
 		return { metadata, value }
 	},
 	async set(key, entry) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-
-		if (currentIsPrimary) {
-			const value = JSON.stringify(entry.value, bufferReplacer)
-			setStatement.run(key, value, JSON.stringify(entry.metadata))
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue({
-				key,
-				cacheValue: entry,
-			}).then((response) => {
-				if (!response.ok) {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						{ entry },
-					)
-				}
-			})
-		}
+		await writeToPrimary({
+			key,
+			cacheValue: entry,
+			writeLocally: () => {
+				const value = JSON.stringify(entry.value, bufferReplacer)
+				setStatement.run(key, value, JSON.stringify(entry.metadata))
+			},
+		})
 	},
 	async delete(key) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-
-		if (currentIsPrimary) {
-			deleteStatement.run(key)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue({
-				key,
-				cacheValue: undefined,
-			}).then((response) => {
-				if (!response.ok) {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-					)
-				}
-			})
-		}
+		await writeToPrimary({
+			key,
+			cacheValue: undefined,
+			writeLocally: () => {
+				deleteStatement.run(key)
+			},
+		})
 	},
+	keys: (limit) =>
+		getAllKeysStatement.all(limit).map((row) => (row as { key: string }).key),
+	search: (query, limit) =>
+		searchKeysStatement
+			.all(`%${query}%`, limit)
+			.map((row) => (row as { key: string }).key),
+} satisfies CacheBackend
+
+export const cacheBackends = {
+	lru: lruCache,
+	sqlite: cache,
+} satisfies Record<CacheBackendName, CacheBackend>
+
+async function collectBackendKeys(
+	list: (backend: CacheBackend) => Array<string> | Promise<Array<string>>,
+) {
+	const names = Object.keys(cacheBackends) as Array<CacheBackendName>
+	const entries = await Promise.all(
+		names.map(async (name) => [name, await list(cacheBackends[name])] as const),
+	)
+	return Object.fromEntries(entries) as Record<CacheBackendName, Array<string>>
 }
 
 export async function getAllCacheKeys(limit: number) {
-	return {
-		sqlite: getAllKeysStatement
-			.all(limit)
-			.map((row) => (row as { key: string }).key),
-		lru: [...lru.keys()],
-	}
+	return collectBackendKeys((backend) => backend.keys(limit))
 }
 
 export async function searchCacheKeys(search: string, limit: number) {
-	return {
-		sqlite: searchKeysStatement
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key),
-		lru: [...lru.keys()].filter((key) => key.includes(search)),
-	}
+	return collectBackendKeys((backend) => backend.search(search, limit))
 }
 
 export async function cachified<Value>(

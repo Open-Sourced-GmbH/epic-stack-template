@@ -4,6 +4,11 @@ Date: 2025-02-20
 
 Status: accepted
 
+Amended by [057](057-pluggable-storage-driver.md): storage is now a pluggable
+driver with `disk` as the Cloudron default and S3-compatible (MinIO) as opt-in.
+The "no binary blobs in SQLite" decision below still stands; "Tigris by default"
+does not.
+
 ## Context
 
 The Epic Stack previously stored uploaded images directly in SQLite using binary

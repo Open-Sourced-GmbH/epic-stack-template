@@ -1,0 +1,121 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Deployment Target Environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      git_ref:
+        description: 'Git ref to build (leave empty to use current branch)'
+        required: false
+        type: string
+        default: ''
+      image_tag_suffix:
+        description:
+          'Optional suffix for manual build image tag (e.g., "hotfix", "test")'
+        required: false
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+  packages: write
+
+jobs:
+  prepare_metadata:
+    name: Generate Deployment Metadata
+    runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.metadata.outputs.docker_image_tag }}
+      cloudron_app_location: ${{ steps.metadata.outputs.cloudron_app_location }}
+      manifest_title: ${{ steps.metadata.outputs.manifest_title }}
+      manifest_memory_limit: ${{ steps.metadata.outputs.manifest_memory_limit }}
+      resolved_git_ref: ${{ steps.resolve_ref.outputs.git_ref }}
+
+    steps:
+      - name: Resolve git ref
+        id: resolve_ref
+        run: |
+          INPUT_REF="${{ github.event.inputs.git_ref }}"
+          if [[ -z "$INPUT_REF" ]]; then
+            RESOLVED_REF="${{ github.ref_name }}"
+            echo "No git_ref provided, using trigger branch: $RESOLVED_REF"
+          else
+            RESOLVED_REF="$INPUT_REF"
+            echo "Using provided git_ref: $RESOLVED_REF"
+          fi
+          echo "git_ref=${RESOLVED_REF}" >> $GITHUB_OUTPUT
+
+      - name: Checkout code at specified ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve_ref.outputs.git_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Derive version metadata
+        id: meta
+        uses: ./.github/actions/deployment-metadata
+
+      - name: Generate deployment metadata
+        id: metadata
+        run: |
+          PROJECT_VERSION="${{ steps.meta.outputs.version }}"
+          SHORT_SHA="${{ steps.meta.outputs.short_sha }}"
+
+          # Format optional suffix
+          MANUAL_SUFFIX="${{ github.event.inputs.image_tag_suffix }}"
+          MANUAL_SUFFIX_FORMATTED=$([[ -z "$MANUAL_SUFFIX" ]] && echo "" || echo "-${MANUAL_SUFFIX// /-}")
+
+          # Build Docker tag with manual prefix
+          DOCKER_TAG="manual${MANUAL_SUFFIX_FORMATTED}-${PROJECT_VERSION}-${SHORT_SHA}"
+
+          # Set environment-specific configuration
+          if [[ "${{ github.event.inputs.target_environment }}" == "staging" ]]; then
+            CLOUDRON_APP="staging.app.example.com"
+            MANIFEST_TITLE="Epic App (Staging)"
+            MANIFEST_MEMORY="268435456"
+          else
+            CLOUDRON_APP="app.example.com"
+            MANIFEST_TITLE="Epic App"
+            MANIFEST_MEMORY="268435456"
+          fi
+
+          echo "docker_image_tag=${DOCKER_TAG}" >> $GITHUB_OUTPUT
+          echo "cloudron_app_location=${CLOUDRON_APP}" >> $GITHUB_OUTPUT
+          echo "manifest_title=${MANIFEST_TITLE}" >> $GITHUB_OUTPUT
+          echo "manifest_memory_limit=${MANIFEST_MEMORY}" >> $GITHUB_OUTPUT
+
+  ci:
+    name: CI
+    needs: prepare_metadata
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.prepare_metadata.outputs.resolved_git_ref }}
+
+  build_and_deploy:
+    name: Build & Deploy
+    needs: [prepare_metadata, ci]
+    uses: ./.github/workflows/_shared-build-deploy.yml
+    with:
+      deploy_environment: ${{ github.event.inputs.target_environment }}
+      cloudron_app_location:
+        ${{ needs.prepare_metadata.outputs.cloudron_app_location }}
+      docker_image_tag: ${{ needs.prepare_metadata.outputs.docker_image_tag }}
+      manifest_title: ${{ needs.prepare_metadata.outputs.manifest_title }}
+      manifest_memory_limit:
+        ${{ needs.prepare_metadata.outputs.manifest_memory_limit }}
+      git_ref: ${{ needs.prepare_metadata.outputs.resolved_git_ref }}
+      tag_as_latest: false
+    secrets:
+      CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+      CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}

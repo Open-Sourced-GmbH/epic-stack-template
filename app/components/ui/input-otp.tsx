@@ -12,7 +12,10 @@ const InputOTP = ({
 		inputMode="text"
 		data-slot="input-otp"
 		containerClassName={cn(
-			'flex items-center gap-2 has-disabled:opacity-50',
+			// `group/otp` lets each slot repaint its border when the field is
+			// aria-invalid (the package forwards aria-invalid to the hidden input,
+			// which lives inside this container).
+			'group/otp flex items-center gap-2 has-disabled:opacity-50',
 			containerClassName,
 		)}
 		className={cn('disabled:cursor-not-allowed', className)}
@@ -47,8 +50,8 @@ const InputOTPSlot = ({
 		<div
 			data-slot="input-otp-slot"
 			className={cn(
-				'border-input relative flex size-10 items-center justify-center border-y border-r text-base transition-all first:rounded-l-md first:border-l last:rounded-r-md md:text-sm',
-				isActive && 'ring-ring ring-offset-background z-10 ring-2',
+				'border-input group-has-[[aria-invalid]]/otp:border-input-invalid relative flex size-10 items-center justify-center border-y border-r text-base first:rounded-l-md first:border-l last:rounded-r-md md:text-sm',
+				isActive && 'focus-cosy-active z-10',
 				className,
 			)}
 			{...props}

@@ -17,7 +17,12 @@ import { prisma } from '#app/utils/db.server.ts'
 import { getNoteImgSrc, useIsPending } from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { userHasPermission, useOptionalUser } from '#app/utils/user.ts'
+import {
+	permissionForOwnership,
+	userHasPermission,
+	useOptionalUser,
+} from '#app/utils/user.ts'
+import { noteImageSelect } from './+shared/note.server.ts'
 import { type Route } from './+types/$noteId.ts'
 import { type Route as NotesRoute } from './+types/_layout.ts'
 
@@ -30,13 +35,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 			content: true,
 			ownerId: true,
 			updatedAt: true,
-			images: {
-				select: {
-					id: true,
-					altText: true,
-					objectKey: true,
-				},
-			},
+			images: { select: noteImageSelect },
 		},
 	})
 
@@ -77,7 +76,7 @@ export async function action({ request }: Route.ActionArgs) {
 	const isOwner = note.ownerId === userId
 	await requireUserWithPermission(
 		request,
-		isOwner ? `delete:note:own` : `delete:note:any`,
+		permissionForOwnership('delete', 'note', isOwner),
 	)
 
 	await prisma.note.delete({ where: { id: note.id } })
@@ -97,7 +96,7 @@ export default function NoteRoute({
 	const isOwner = user?.id === loaderData.note.ownerId
 	const canDelete = userHasPermission(
 		user,
-		isOwner ? `delete:note:own` : `delete:note:any`,
+		permissionForOwnership('delete', 'note', isOwner),
 	)
 	const displayBar = canDelete || isOwner
 

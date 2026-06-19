@@ -23,10 +23,11 @@ import {
 	PasswordAndConfirmPasswordSchema,
 	UsernameSchema,
 } from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import {
+	onboardingEmailSessionKey,
+	verifySessionStorage,
+} from '#app/utils/verification.server.ts'
 import { type Route } from './+types/index.ts'
-
-export const onboardingEmailSessionKey = 'onboardingEmail'
 
 const SignupFormSchema = z
 	.object({

@@ -2,14 +2,14 @@ import { invariant } from '@epic-web/invariant'
 import { faker } from '@faker-js/faker'
 import { SetCookie } from '@mjackson/headers'
 import { http } from 'msw'
-import { type AppLoadContext } from 'react-router'
+import { RouterContextProvider } from 'react-router'
 import { afterEach, expect, test } from 'vitest'
-import { twoFAVerificationType } from '#app/routes/settings/profile/two-factor/_layout.tsx'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
 import { GITHUB_PROVIDER_NAME } from '#app/utils/connections.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { generateTOTP } from '#app/utils/totp.server.ts'
+import { twoFAVerificationType } from '#app/utils/two-factor.ts'
 import { createUser } from '#tests/db-utils.ts'
 import { insertGitHubUser, deleteGitHubUsers } from '#tests/mocks/github.ts'
 import { server } from '#tests/mocks/index.ts'
@@ -22,7 +22,7 @@ const ROUTE_PATH = '/auth/github/callback'
 const PARAMS = { provider: 'github' }
 const LOADER_ARGS_BASE = {
 	params: PARAMS,
-	context: {} as AppLoadContext,
+	context: new RouterContextProvider(),
 	url: new URL(ROUTE_PATH, BASE_URL),
 	pattern: ROUTE_PATH,
 } satisfies Omit<Route.LoaderArgs, 'request'>

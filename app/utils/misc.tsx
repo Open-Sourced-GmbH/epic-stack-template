@@ -61,6 +61,20 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
 
+/**
+ * Whether the visitor has asked the OS to reduce motion. Client-only and
+ * defensive: returns `false` when `matchMedia` is unavailable (SSR, no-JS,
+ * jsdom), so motion stays opt-in and the resting state is the default. Use this
+ * to gate progressive-enhancement animations.
+ */
+export function prefersReducedMotion() {
+	return (
+		typeof window !== 'undefined' &&
+		typeof window.matchMedia === 'function' &&
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	)
+}
+
 export function getDomainUrl(request: Request) {
 	const host =
 		request.headers.get('X-Forwarded-Host') ??

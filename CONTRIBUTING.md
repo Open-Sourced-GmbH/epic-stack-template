@@ -10,8 +10,8 @@ instructions:
 
 ### System Requirements
 
-- [Node.js](https://nodejs.org/) >= 20.0.0
-- [npm](https://npmjs.com/) >= 8.18.0
+- [Node.js](https://nodejs.org/) >= 22.18.0 (see `.nvmrc`)
+- [pnpm](https://pnpm.io/) >= 10 (enable via `corepack enable`)
 - [git](https://git-scm.com/) >= 2.38.0
 
 ### Setup steps
@@ -19,7 +19,7 @@ instructions:
 1.  Fork repo
 2.  clone the repo
 3.  Copy `.env.example` into `.env`
-4.  Run `npm install && npm run setup -s` to install dependencies and run
+4.  Run `pnpm install && pnpm run setup` to install dependencies and run
     validation
 5.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
 
@@ -50,29 +50,29 @@ cd ./epic-stack
 cp .env.example .env
 
 # Install deps
-npm install
+pnpm install
 
 # Run the build
-npm run build
+pnpm run build
 
 # setup the database
-npx prisma migrate deploy
+pnpm exec prisma migrate deploy
 
 # generate the prisma client
-npx prisma generate --sql
+pnpm exec prisma generate --sql
 
 # Install playwright browsers
-npm run test:e2e:install
+pnpm run test:e2e:install
 
 # run build, typecheck, linting
-npm run validate
+pnpm run validate
 ```
 
 If that all worked without trouble, you should be able to start development
 with:
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 And open up `http://localhost:3000` and rock!

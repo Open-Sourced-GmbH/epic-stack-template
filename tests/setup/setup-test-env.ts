@@ -8,6 +8,24 @@ import { afterEach, beforeEach, vi, type MockInstance } from 'vitest'
 import { server } from '#tests/mocks/index.ts'
 import './custom-matchers.ts'
 
+// jsdom ships no ResizeObserver; components built on it (e.g. `input-otp`) call
+// it on mount. A no-op stub lets those render in component tests.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+	globalThis.ResizeObserver = class {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	}
+}
+
+// jsdom has no layout, so `Element.prototype.scrollIntoView` is undefined; `cmdk`
+// (the ⌘K palette) calls it on the active item during a layout effect. A no-op
+// stub lets any cmdk-based component render in component tests — e.g. the
+// playground mounting the CommandPalette specimen.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+	Element.prototype.scrollIntoView = function scrollIntoView() {}
+}
+
 afterEach(() => server.resetHandlers())
 afterEach(() => cleanup())
 

@@ -25,3 +25,35 @@ node_modules
 # generated files
 /app/components/ui/icons
 .react-router/
+
+# styleguide snapshot bundle (published to Claude Design via /design-sync)
+/styleguide/
+
+# /design-sync converter toolchain — staged by the /design-sync skill, not part
+# of the template. The tracked, reviewable inputs live in .design-sync/ (config,
+# NOTES.md, conventions.md, previews/); these generated/vendored files and machine
+# state must never be committed.
+/package-build.mjs
+/package-validate.mjs
+/lib/
+/ds-bundle/
+/.ds-sync/
+/.design-sync/.cache/
+/.design-sync/learnings/
+/.design-sync/node_modules
+
+# developer environment / agent mounts (not part of the template).
+# .claude/skills and .claude/settings.json ARE tracked — only ignore the mounts.
+/.bash_profile
+/.bashrc
+/.profile
+/.zprofile
+/.zshrc
+/.gitconfig
+/.ripgreprc
+/.idea
+/.mcp.json
+/.gitmodules
+/.claude/agents
+/.claude/commands
+/.claude/hooks

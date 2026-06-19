@@ -2,6 +2,7 @@ import { useSpinDelay } from 'spin-delay'
 import { cn } from '#app/utils/misc.tsx'
 import { Button, type ButtonVariant } from './button.tsx'
 import { Icon } from './icon.tsx'
+import { Spinner } from './spinner.tsx'
 import {
 	Tooltip,
 	TooltipContent,
@@ -28,14 +29,7 @@ export const StatusButton = ({
 		...spinDelay,
 	})
 	const companion = {
-		pending: delayedPending ? (
-			<div
-				role="status"
-				className="inline-flex size-6 items-center justify-center"
-			>
-				<Icon name="update" className="animate-spin" title="loading" />
-			</div>
-		) : null,
+		pending: delayedPending ? <Spinner /> : null,
 		success: (
 			<div
 				role="status"

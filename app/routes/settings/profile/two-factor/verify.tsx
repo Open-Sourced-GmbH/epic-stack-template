@@ -7,15 +7,19 @@ import { z } from 'zod'
 import { ErrorList, OTPField } from '#app/components/forms.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { isCodeValid } from '#app/routes/_auth/verify.server.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { getTOTPAuthUri } from '#app/utils/totp.server.ts'
+import {
+	cancelTwoFactorEnrollment,
+	confirmTwoFactorEnrollment,
+} from '#app/utils/two-factor.server.ts'
+import { twoFAVerifyVerificationType } from '#app/utils/two-factor.ts'
+import { isCodeValid } from '#app/utils/verification.server.ts'
 import { type BreadcrumbHandle } from '../../profile/_layout.tsx'
 import { type Route } from './+types/verify.ts'
-import { twoFAVerificationType } from './_layout.tsx'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="check">Verify</Icon>,
@@ -32,8 +36,6 @@ const ActionSchema = z.discriminatedUnion('intent', [
 	CancelSchema,
 	VerifySchema,
 ])
-
-export const twoFAVerifyVerificationType = '2fa-verify'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
@@ -100,18 +102,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	switch (submission.value.intent) {
 		case 'cancel': {
-			await prisma.verification.deleteMany({
-				where: { type: twoFAVerifyVerificationType, target: userId },
-			})
+			await cancelTwoFactorEnrollment(userId)
 			return redirect('/settings/profile/two-factor')
 		}
 		case 'verify': {
-			await prisma.verification.update({
-				where: {
-					target_type: { type: twoFAVerifyVerificationType, target: userId },
-				},
-				data: { type: twoFAVerificationType },
-			})
+			await confirmTwoFactorEnrollment(userId)
 			return redirectWithToast('/settings/profile/two-factor', {
 				type: 'success',
 				title: 'Enabled',

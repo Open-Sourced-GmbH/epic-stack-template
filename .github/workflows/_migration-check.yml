@@ -1,0 +1,83 @@
+name: Migration Check
+
+# Reusable workflow: pull the target environment's applied migrations, replay
+# pending ones against a temp copy, and surface destructive operations. The
+# exit-code contract from scripts/db/migration-check.sh lives here, in one place,
+# for every deploy workflow to share (ADR 068's single-home discipline):
+#   0 - safe          → pass
+#   2 - destructive    → ::warning:: + job summary, but do NOT block (advisory)
+#   other - failure    → ::error:: + block the deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target env passed to migration-check.sh (staging or prod)'
+        required: true
+        type: string
+      skip_when_app_unset:
+        description: >-
+          When true, skip (exit 0) instead of failing if the Cloudron app id is
+          empty. Tolerates the first deploy to an env that has no app yet.
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      CLOUDRON_SERVER:
+        required: true
+      CLOUDRON_TOKEN:
+        required: true
+      CLOUDRON_APP_ID:
+        required: false
+
+jobs:
+  migration_check:
+    name: Check Migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Cloudron CLI
+        run: npm install -g cloudron
+
+      - name: Run migration check
+        env:
+          CLOUDRON_SERVER: ${{ secrets.CLOUDRON_SERVER }}
+          CLOUDRON_TOKEN: ${{ secrets.CLOUDRON_TOKEN }}
+          CLOUDRON_APP_ID: ${{ secrets.CLOUDRON_APP_ID }}
+          # migration-check.sh resolves the app id from the env var matching its
+          # <env> arg; mirror the single app-id secret into both so one reusable
+          # workflow serves staging and prod (only the relevant one is read).
+          CLOUDRON_APP_STAGING: ${{ secrets.CLOUDRON_APP_ID }}
+          CLOUDRON_APP_PROD: ${{ secrets.CLOUDRON_APP_ID }}
+          DB_OPS_CONFIRM: skip
+          TARGET_ENV: ${{ inputs.environment }}
+          SKIP_WHEN_APP_UNSET: ${{ inputs.skip_when_app_unset }}
+        run: |
+          if [[ "$SKIP_WHEN_APP_UNSET" == "true" && -z "${CLOUDRON_APP_ID:-}" ]]; then
+            echo "::notice::Cloudron app id not set - skipping migration check (expected on first deploy)"
+            exit 0
+          fi
+
+          set +e
+          output=$(bash scripts/db/migration-check.sh "$TARGET_ENV" 2>&1)
+          exit_code=$?
+          set -e
+          echo "$output"
+
+          if [[ $exit_code -eq 2 ]]; then
+            echo "::warning::Destructive database operations detected in pending migrations."
+            {
+              echo "## ⚠️ Destructive Migration Operations Detected"
+              echo ""
+              echo '```'
+              echo "$output"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          elif [[ $exit_code -ne 0 ]]; then
+            echo "::error::Migration check failed"
+            exit 1
+          fi
