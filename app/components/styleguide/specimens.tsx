@@ -26,6 +26,7 @@ import {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { Slider } from '#app/components/ui/slider.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
@@ -435,6 +436,24 @@ export const specimens: Specimen[] = [
 					<InputOTPSlot index={5} />
 				</InputOTPGroup>
 			</InputOTP>
+		),
+	},
+	{
+		name: 'slider',
+		group: 'Forms',
+		subtitle: 'default + gradient track (oklch hue sweep)',
+		viewport: { width: 480, height: 160 },
+		render: () => (
+			<div className="flex w-full max-w-sm flex-col gap-6">
+				<Slider defaultValue={40} min={0} max={100} aria-label="Default" />
+				<Slider
+					defaultValue={172}
+					min={0}
+					max={360}
+					aria-label="Hue"
+					trackGradient="linear-gradient(to right, oklch(0.7 0.15 0), oklch(0.7 0.15 60), oklch(0.7 0.15 120), oklch(0.7 0.15 180), oklch(0.7 0.15 240), oklch(0.7 0.15 300), oklch(0.7 0.15 360))"
+				/>
+			</div>
 		),
 	},
 	{
