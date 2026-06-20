@@ -6,8 +6,10 @@ before re-running `/design-sync`.
 ## Shape: synth / no-dist (package shape)
 
 - Epic Stack **app**, not a published package — there is no component `dist/`.
-  `.design-sync/entry.tsx` is a **barrel** re-exporting the curated 12 components
-  (was 9; Accordion, Slider, CommandPalette added 2026-06-19).
+  `.design-sync/entry.tsx` is a **barrel** re-exporting the curated **21**
+  components (was 9 → 12 with Accordion/Slider/CommandPalette on 2026-06-19 →
+  **21** on 2026-06-20 with the EPT-21–36 hardening: **Alert, Avatar, Badge,
+  Card, Dialog, Field, Select, Skeleton, Spinner**, all synced 2026-06-20).
 - The barrel is kept in lockstep with `app/components/styleguide/specimens.tsx`,
   enforced by `app/components/styleguide/design-sync.test.ts` (vitest, CI).
 - DropdownMenu / Tooltip / InputOTP / **Accordion** are **compound** — the barrel
@@ -59,7 +61,7 @@ before re-running `/design-sync`.
 
 ## Previews
 
-- All 12 previews under `.design-sync/previews/` are **HAND-OWNED** (no marker
+- All 21 previews under `.design-sync/previews/` are **HAND-OWNED** (no marker
   line) — they mirror the variant grids in `specimens.tsx` (Button variants+sizes,
   StatusButton 4 states, Input 3 states, Checkbox 3 states, Label+Input field,
   Textarea, plus DropdownMenu/Tooltip/InputOTP compound specimens rendered open,
@@ -85,13 +87,20 @@ before re-running `/design-sync`.
   utilities all live in `_ds_bundle.css` (linked alongside `styles.css` per the
   README contract), so an empty `tokens/` is cosmetic; components still render
   styled.
-- `[GRID_OVERFLOW]` on **DropdownMenu** and **Tooltip** — expected and
-  **non-blocking**. Both are portal/overlay specimens rendered `open`, so their
-  content escapes the grid cell; no grid layout can present a portal. Pre-existing
-  (these shipped in the original 9). Optional polish: set
-  `cfg.overrides.{DropdownMenu,Tooltip}: {"cardMode": "single", "primaryStory":
-  "Open"}` and batch-rebuild — left as-is for now since the cards still convey the
-  component. CommandPalette renders **inline** (no portal) so it does NOT overflow.
+- `[GRID_OVERFLOW]` on **DropdownMenu**, **Tooltip**, and **Select** — expected
+  and **non-blocking**. All three are portal/overlay specimens rendered `open`, so
+  their content escapes the grid cell; no grid layout can present a portal.
+  DropdownMenu/Tooltip are pre-existing (original 9); **Select** joined on
+  2026-06-20 (its `Open` story renders the panel). Optional polish: set
+  `cfg.overrides.{DropdownMenu,Tooltip,Select}: {"cardMode": "single",
+  "primaryStory": "Open"}` and batch-rebuild — left as-is for now since the cards
+  still convey the component. CommandPalette renders **inline** (no portal) so it
+  does NOT overflow.
+- `[TOKENS_MISSING]` (~15 vars: `--tw-*` engine internals + code/syntax-highlight
+  vars) — expected and **non-blocking**, same family as `[CSS_RUNTIME]`. These are
+  runtime/utility vars, not semantic design tokens; the filtered `styles.compiled.css`
+  (css-token-filter, EPT-21) drops the `--tw-*` *declarations* from the token
+  surface so `check_design_system` stays clean. Don't chase.
 
 ## Known limitations
 

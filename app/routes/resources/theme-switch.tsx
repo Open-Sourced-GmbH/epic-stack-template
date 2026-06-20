@@ -31,6 +31,10 @@ export async function action({ request }: Route.ActionArgs) {
 	const responseInit = {
 		headers: { 'set-cookie': setTheme(theme) },
 	}
+	// `redirectTo` must only ever arrive from a no-JS document POST (the
+	// `<ServerOnly>`-gated `<Form>` in ThemeSwitch) — those get a real 302 the
+	// browser follows with a full GET. JS `useFetcher` callers must NOT send it:
+	// a redirect from a single-fetch POST 404s through the splat (`routes/$`).
 	if (redirectTo) {
 		return redirect(redirectTo, responseInit)
 	} else {

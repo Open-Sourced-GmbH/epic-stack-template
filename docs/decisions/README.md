@@ -74,3 +74,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 060 | [New-Session Finalization in Util](060-new-session-finalization-in-util.md) | Accepted                          |
 | 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |
 | 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |
+| 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Proposed                          |

@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { type Command } from '#app/components/ui/command.matcher.ts'
 import { CommandPalette } from '#app/components/ui/command.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { AppFrame } from './__app-frame.tsx'
 import {
 	landingCommands,
@@ -56,7 +55,6 @@ export function CommandShowpiece() {
 	const [open, setOpen] = useState(false)
 	const navigate = useNavigate()
 	const themeFetcher = useFetcher()
-	const redirectTo = useOptionalRequestInfo()?.path
 
 	// Global ⌘K / Ctrl-K toggle — works anywhere on the landing.
 	useEffect(() => {
@@ -74,10 +72,14 @@ export function CommandShowpiece() {
 	 * Persist a theme change through the existing switch resource. Routing it
 	 * through `useFetcher` (action `/resources/theme-switch`) is what lets
 	 * `useOptimisticThemeMode` re-tint the whole page live; a toast confirms it.
+	 *
+	 * No `redirectTo`: that's the no-JS escape hatch (the `<ServerOnly>`-gated
+	 * `<Form>` inputs). Sending it from a fetcher makes the action return a
+	 * single-fetch redirect to the index `.data` URL that 404s through the splat.
 	 */
 	function handleTheme(mode: ThemeMode) {
 		void themeFetcher.submit(
-			{ theme: mode, ...(redirectTo ? { redirectTo } : {}) },
+			{ theme: mode },
 			{ method: 'POST', action: '/resources/theme-switch' },
 		)
 		toast.success(themeToast[mode])

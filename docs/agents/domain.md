@@ -25,10 +25,22 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
 
 - **Post** — the unit of published content: an admin-authored blog article with
   a title, a URL **slug**, a Markdown **body** (rendered with syntax-highlighted
-  code blocks), a **cover image**, **tags**, an **author**, and a publication
-  state. Replaces the legacy `Note`. Owned/authored only by users with the
-  authoring permission; it is **not** per-user content — there is one canonical
-  feed, not one feed per user.
+  code blocks), an optional **excerpt**, a **cover image**, **tags**, an
+  **author**, and a publication state. Replaces the legacy `Note`. Authored only
+  by users with the `post` authoring permission; it is **not** per-user content —
+  there is one canonical feed, not one feed per user. Because a Post is canonical
+  content and **not owned** by its author, deleting the author does **not** delete
+  the Post: the author credit blanks (the `author` link is `SetNull`), the Post
+  stands. (Contrast the retired `Note`, which cascade-deleted with its owner.)
+- **Slug** — a Post's (and a Tag's) URL identifier, globally unique within its
+  kind. Auto-suggested from the title but editable while the Post is a Draft. It
+  is **permanently frozen on first publish** — once a URL has been public it never
+  changes, even if the Post is later unpublished back to Draft. (No redirect/slug-
+  history machinery: links to a published Post stay stable because the slug can't
+  move.)
+- **Excerpt** — an optional short summary on a Post, used for the index-card
+  blurb and the per-post SEO/Open-Graph description. When empty it falls back to a
+  derived first paragraph of the body; authors may override it.
 - **Draft** — a Post in the unpublished state. Visible only in the admin
   authoring surface; never appears on the public feed or via public URLs.
 - **Published** — a Post that has been released: it has a `publishedAt` instant
@@ -38,10 +50,17 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   authoring permission (admins, via RBAC) can author or edit Posts. Regular
   logged-in users are **readers only** — they have no content-creation ability
   (account management only).
-- **Tag** — a free-form taxonomy label attached to a Post for grouping/filtering
-  on the public feed.
-- **Cover image** — the lead image of a Post (a `PostImage`), reusing the
-  Stack's existing image-upload/storage machinery (formerly `NoteImage`).
+- **Tag** — a **canonical, shared** taxonomy label that Posts are grouped under.
+  Authors create tags on demand (free-form entry), but each tag is a single
+  shared entity (its own name + URL **slug**), not per-post free text — many
+  Posts reference the same Tag (Post↔Tag is many-to-many). Tags are
+  **browseable** on the public feed: each has its own route listing every
+  Published Post under it. Renaming a tag updates it everywhere; it is not a
+  find-replace over post bodies.
+- **Cover image** — the lead image of a Post, designated by an explicit
+  `coverImageId`. A Post may hold 0..n `PostImage`s (reusing the Stack's existing
+  image-upload/storage machinery, formerly `NoteImage`); the cover is the one
+  singled out by `coverImageId`, leaving the rest available for body images later.
 
 > **Retired:** **Note** / **NoteImage** — the upstream Epic Stack per-user notes
 > example. Removed in this template; the `note` RBAC entity becomes `post`.

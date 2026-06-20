@@ -50,6 +50,14 @@ export default defineConfig((config) => {
 			ignored: ['**/playwright-report/**'],
 		},
 	},
+	resolve: {
+		// Force a single copy of React and the router across the whole module graph.
+		// `@nasa-gcn/remix-seo` drags a transitive `react-router-dom@6` into the dep
+		// scan; without dedupe the dev optimizer can hand a module a stale/duplicate
+		// React, surfacing as `Cannot read properties of null (reading 'useContext')`
+		// after a mid-session re-optimize. Dedupe is the standard Vite remedy.
+		dedupe: ['react', 'react-dom', 'react-router'],
+	},
 	optimizeDeps: {
 		// `@nasa-gcn/remix-seo` (used server-side in the sitemap loader) peer-deps
 		// on `@remix-run/react`, which imports the legacy `react-router-dom`. Under

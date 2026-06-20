@@ -13,7 +13,6 @@ import {
 	findAccentPreset,
 } from '#app/utils/accent.ts'
 import { cn } from '#app/utils/misc.tsx'
-import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Theme } from '#app/utils/theme.server.ts'
 
 /** The theme *preference* the segment can set — the resolved `Theme` plus `system`. */
@@ -65,19 +64,22 @@ export function ThemeCustomizer({
 
 	const accentFetcher = useFetcher()
 	const themeFetcher = useFetcher()
-	const redirectTo = useOptionalRequestInfo()?.path
 	const activeTheme = useOptimisticThemeMode() ?? theme ?? 'system'
 
 	const activePreset = findAccentPreset(draft)
+
+	// The dock is a JS-only component (no `<noscript>` form), so it never sends
+	// `redirectTo`. That field is the *no-JS* progressive-enhancement escape hatch
+	// (see the `<ServerOnly>`-gated inputs on AccentSwitch/ThemeSwitch); sending it
+	// from a fetcher makes the action return a single-fetch redirect to the index
+	// `.data` URL, which 404s through the splat route. Omitting it lets the action
+	// return `data()` — cookie still set, page still re-tints optimistically.
 
 	/** Persist an accent change (preset or sliders) and re-tint optimistically. */
 	function commitAccent(next: Accent, presetId?: string) {
 		setDraft(next)
 		void accentFetcher.submit(
-			{
-				...(presetId ? { presetId } : { l: next.l, c: next.c, h: next.h }),
-				...(redirectTo ? { redirectTo } : {}),
-			},
+			presetId ? { presetId } : { l: next.l, c: next.c, h: next.h },
 			{ method: 'POST', action: '/resources/accent' },
 		)
 	}
@@ -85,14 +87,14 @@ export function ThemeCustomizer({
 	function commitCursor(next: ButtonCursor) {
 		setDraftCursor(next)
 		void accentFetcher.submit(
-			{ cursor: next, ...(redirectTo ? { redirectTo } : {}) },
+			{ cursor: next },
 			{ method: 'POST', action: '/resources/accent' },
 		)
 	}
 
 	function commitTheme(next: ThemeMode) {
 		void themeFetcher.submit(
-			{ theme: next, ...(redirectTo ? { redirectTo } : {}) },
+			{ theme: next },
 			{ method: 'POST', action: '/resources/theme-switch' },
 		)
 	}
