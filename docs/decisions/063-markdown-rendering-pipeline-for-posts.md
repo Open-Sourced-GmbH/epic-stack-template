@@ -41,8 +41,26 @@ and Shiki.
   **`rehype-sanitize`** → syntax highlighting. Sanitisation is kept even though
   authoring is admin-only.
 - **Shiki** provides syntax highlighting, themed to match the landing's dark
-  code surface so code reads consistently site-wide. The concrete code *theme/
-  colours* are resolved in the design lane, not here.
+  code surface so code reads consistently site-wide. The concrete code theme was
+  resolved in the design lane (Slice ② grounded design) as a fixed, **always-dark
+  palette** (dark in both light and dark mode, like the landing). Promote these
+  into `@theme` and map the Shiki theme onto them:
+
+  | Token | Value | Shiki scope |
+  | --- | --- | --- |
+  | `--code-bg` | `oklch(0.21 0.015 264)` | editor background (ground) |
+  | `--code-bg-2` | `oklch(0.25 0.016 264)` | caption bar |
+  | `--code-border` | `oklch(0.31 0.018 264)` | block border |
+  | `--code-fg` | `oklch(0.87 0.012 264)` | default text |
+  | `--code-comment` | `oklch(0.58 0.02 264)` | `comment` (italic), lang label |
+  | `--code-kw` | `oklch(0.76 0.13 318)` | `keyword`, `storage` |
+  | `--code-string` | `oklch(0.8 0.12 152)` | `string` |
+  | `--code-number` | `oklch(0.82 0.1 76)` | `constant.numeric` |
+  | `--code-fn` | `oklch(0.78 0.11 232)` | `entity.name.function` |
+
+  Block chrome: `0.7rem` radius, `1px --code-border`, traffic-light caption bar.
+  The long-form **prose** ramp that wraps this code is a separate concern — see
+  [ADR 064](064-long-form-prose-typography-ramp.md).
 
 ## Consequences
 

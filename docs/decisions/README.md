@@ -75,3 +75,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |
 | 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |
 | 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Proposed                          |
+| 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Proposed                          |
