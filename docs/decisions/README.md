@@ -74,6 +74,6 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 060 | [New-Session Finalization in Util](060-new-session-finalization-in-util.md) | Accepted                          |
 | 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |
 | 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |
-| 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Proposed                          |
-| 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Proposed                          |
+| 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Accepted                          |
+| 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Accepted                          |
 | 065 | [Per-Entity Access Scoping](065-per-entity-access-scoping.md)            | Accepted (amends [059](059-seed-derives-permission-matrix-from-registry.md)) |

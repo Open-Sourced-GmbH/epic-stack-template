@@ -300,6 +300,50 @@ const teamMembers = [
 	},
 ] as const
 
+/**
+ * A representative, hand-tokenised code snippet for the code specimens. It is a
+ * palette demonstration, not live pipeline output: each span carries the same
+ * inline `style="color:var(--code-*)"` shape the Markdown pipeline emits
+ * (`app/utils/markdown.server.ts`) onto the always-dark `--code-*` tokens, so the
+ * styleguide shows the real code colours — but the tokenisation here is authored
+ * by hand, not produced by Shiki.
+ */
+function HighlightedSnippet() {
+	const tok = (color: string, italic?: boolean) => (text: string) => (
+		<span style={{ color: `var(${color})`, fontStyle: italic ? 'italic' : undefined }}>
+			{text}
+		</span>
+	)
+	const kw = tok('--code-kw')
+	const fn = tok('--code-fn')
+	const str = tok('--code-string')
+	const num = tok('--code-number')
+	const com = tok('--code-comment', true)
+	return (
+		<code className="font-mono">
+			<span className="block">{com('// render a Post body to safe HTML')}</span>
+			<span className="block">
+				{kw('export async function')} {fn('renderPostBody')}(markdown) {'{'}
+			</span>
+			<span className="block">
+				{'  '}
+				{kw('const')} html = {kw('await')} {fn('unified')}()
+			</span>
+			<span className="block">
+				{'    '}.{fn('use')}(remarkParse).{fn('use')}(remarkGfm).{fn('process')}(markdown)
+			</span>
+			<span className="block">
+				{'  '}
+				{kw('return')} {fn('String')}(html) {com('// ')}
+				{num('200')}
+			</span>
+			<span className="block">{'}'}</span>
+			<span className="block"> </span>
+			<span className="block">{str("'highlighted, sanitised, cached on read'")}</span>
+		</code>
+	)
+}
+
 export const specimens: Specimen[] = [
 	{
 		name: 'colors',
@@ -1125,6 +1169,68 @@ export const specimens: Specimen[] = [
 					</CardContent>
 				</Card>
 			</div>
+		),
+	},
+	{
+		name: 'code-block',
+		group: 'Code',
+		subtitle: 'always-dark Shiki surface, traffic-light caption (ADR 063)',
+		viewport: { width: 720, height: 300 },
+		// The block chrome the article + preview wrap around the pipeline's
+		// highlighted `<pre>`: 0.7rem radius, 1px --code-border, a traffic-light
+		// caption bar on --code-bg-2. The surface stays dark on any page theme
+		// because every colour is a fixed --code-* token.
+		render: () => (
+			<div className="overflow-hidden rounded-[0.7rem] border border-[var(--code-border)] bg-[var(--code-bg)]">
+				<div className="flex items-center gap-2 border-b border-[var(--code-border)] bg-[var(--code-bg-2)] px-4 py-2.5">
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="ml-2 font-mono text-xs text-[var(--code-comment)]">
+						markdown.server.ts
+					</span>
+				</div>
+				<pre className="overflow-x-auto p-4 text-sm leading-relaxed text-[var(--code-fg)]">
+					<HighlightedSnippet />
+				</pre>
+			</div>
+		),
+	},
+	{
+		name: 'prose-article',
+		group: 'Type',
+		subtitle: 'long-form reading ramp — 68ch measure, em-relative headings (ADR 064)',
+		viewport: { width: 720, height: 620 },
+		// The scoped `.prose` ramp rendered Markdown flows into. Exercises the
+		// heading ramp, body rhythm, brand-tinted links + markers, blockquote
+		// rule, the inline-code chip, and a fenced code block styled by `.prose
+		// pre`. Reuses existing colour tokens (ADR 064) — no new colours.
+		render: () => (
+			<article className="prose">
+				<h2>Render on read, cached</h2>
+				<p>
+					A post stores raw Markdown as the single source of truth. The loader
+					renders it to safe HTML on read and caches the result, so an article
+					re-renders only when its body changes.
+				</p>
+				<p>
+					Inline spans like <code>renderPostBody()</code> sit on a soft, bordered
+					chip, while links to the{' '}
+					<a href="/blog">feed</a> pick up the brand accent.
+				</p>
+				<h3>What the pipeline guarantees</h3>
+				<ul>
+					<li>GFM tables, headings, and lists render predictably.</li>
+					<li>Author HTML is sanitised before highlighting runs.</li>
+					<li>Code blocks paint onto the always-dark code palette.</li>
+				</ul>
+				<blockquote>
+					Raw Markdown is the source of truth; rendered HTML is never persisted.
+				</blockquote>
+				<pre>
+					<HighlightedSnippet />
+				</pre>
+			</article>
 		),
 	},
 ]
