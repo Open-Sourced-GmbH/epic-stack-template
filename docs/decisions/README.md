@@ -76,3 +76,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |
 | 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Proposed                          |
 | 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Proposed                          |
+| 065 | [Per-Entity Access Scoping](065-per-entity-access-scoping.md)            | Accepted (amends [059](059-seed-derives-permission-matrix-from-registry.md)) |

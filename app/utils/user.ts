@@ -30,12 +30,24 @@ export function useUser() {
 // the database (and the seed) must mirror them. The types are derived from the
 // arrays so the type and the runtime list cannot drift.
 export const permissionActions = ['create', 'read', 'update', 'delete'] as const
-export const permissionEntities = ['user', 'note'] as const
+export const permissionEntities = ['user', 'post'] as const
 export const permissionAccesses = ['own', 'any'] as const
 
 export type PermissionAction = (typeof permissionActions)[number]
 export type PermissionEntity = (typeof permissionEntities)[number]
 export type PermissionAccess = (typeof permissionAccesses)[number]
+
+// Which access levels each entity is scoped by. Owner-scoped entities (a user
+// acting on their own account) carry both `own` and `any`; admin-authored
+// canonical content (`post`) is never owner-scoped, so it carries `any` alone —
+// there is no `post:own`. Because the `user` role is granted only `:own`
+// permissions (see `roleGrantedAccess`), an entity with no `:own` access grants
+// that role nothing, so regular users hold no `post` permission at all (readers
+// only — ADR-050) as a consequence of the registry rather than a special case.
+export const entityAccesses = {
+	user: ['own', 'any'],
+	post: ['any'],
+} as const satisfies Record<PermissionEntity, ReadonlyArray<PermissionAccess>>
 
 // The set of Roles a user can hold, named once here (the database `Role` rows
 // must mirror it). Guards take a `RoleName`, so a mistyped role is a compile
@@ -53,9 +65,10 @@ export const roleGrantedAccess = {
 	user: 'own',
 } satisfies Record<RoleName, PermissionAccess>
 
-// The full permission matrix derived from the vocabulary: every
-// entity × action × access. The database `Permission` rows are exactly this set,
-// so the seed generates them from here rather than from a hand-maintained list.
+// The full permission matrix derived from the vocabulary: every action on every
+// entity, at each access level that entity is scoped by (`entityAccesses`). The
+// database `Permission` rows are exactly this set, so the seed generates them
+// from here rather than from a hand-maintained list.
 export function getPermissionMatrix(): Array<{
 	action: PermissionAction
 	entity: PermissionEntity
@@ -63,7 +76,7 @@ export function getPermissionMatrix(): Array<{
 }> {
 	return permissionEntities.flatMap((entity) =>
 		permissionActions.flatMap((action) =>
-			permissionAccesses.map((access) => ({ action, entity, access })),
+			entityAccesses[entity].map((access) => ({ action, entity, access })),
 		),
 	)
 }

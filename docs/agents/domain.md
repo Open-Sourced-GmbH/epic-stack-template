@@ -73,17 +73,20 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
 
 - **Permission** — a granted capability stored as a row of three columns:
   **action** (`create`/`read`/`update`/`delete`), **entity** (the noun acted on,
-  e.g. `user`, `note`), and **access** (`own` = only the actor's own rows, `any`
+  e.g. `user`, `post`), and **access** (`own` = only the actor's own rows, `any`
   = anyone's). The set of valid actions/entities/access levels is the **RBAC
   vocabulary**, named once as value-level registries (`permissionActions`,
   `permissionEntities`, `permissionAccesses`) in `app/utils/user.ts`; the
-  database `Permission` rows must mirror it. The **own-vs-any idiom** — acting on
+  database `Permission` rows must mirror it. Access is scoped **per entity**
+  (`entityAccesses`): `user` carries both `own` and `any`, but admin-authored
+  `post` carries `any` only — there is no `post:own` (see
+  [ADR-065](../decisions/065-per-entity-access-scoping.md)). The **own-vs-any idiom** — acting on
   a resource needs `:own` if you own it, `:any` otherwise — is the helper
   `permissionForOwnership(action, entity, isOwner)`, used by both a server guard
   and its client check (see
   [ADR-061](../decisions/061-ownership-permission-rule-and-note-select.md)).
 - **Permission String** — the textual form a guard names, `action:entity` or
-  `action:entity:access` (e.g. `delete:note:own`). The access segment may be
+  `action:entity:access` (e.g. `delete:user:own`). The access segment may be
   comma-joined (`own,any`) to mean "any of these satisfy the requirement";
   omitting it means any access satisfies. `parsePermissionString` turns it into a
   **Required Permission** `{ action, entity, access? }`.

@@ -28,13 +28,13 @@ async function uploadToStorage(file: File | FileUpload, key: string) {
 
 /**
  * Where an uploaded image belongs in storage. The path each variant produces is
- * scope-bearing — a note image lives under its owning user *and* note — so the
+ * scope-bearing — a post image lives under its author *and* post — so the
  * mapping from target to key is the security-relevant part and lives in one
  * tested place (`buildImageKey`) rather than being re-spelled per upload helper.
  */
 export type ImageUploadTarget =
 	| { kind: 'profile'; userId: string }
-	| { kind: 'note'; userId: string; noteId: string }
+	| { kind: 'post'; userId: string; postId: string }
 
 export function buildImageKey(
 	target: ImageUploadTarget,
@@ -46,7 +46,7 @@ export function buildImageKey(
 	const dir =
 		target.kind === 'profile'
 			? `users/${target.userId}/profile-images`
-			: `users/${target.userId}/notes/${target.noteId}/images`
+			: `users/${target.userId}/posts/${target.postId}/images`
 	return `${dir}/${timestamp}-${fileId}.${fileExtension}`
 }
 
@@ -57,14 +57,14 @@ export async function uploadProfileImage(
 	return uploadToStorage(file, buildImageKey({ kind: 'profile', userId }, file))
 }
 
-export async function uploadNoteImage(
+export async function uploadPostImage(
 	userId: string,
-	noteId: string,
+	postId: string,
 	file: File | FileUpload,
 ) {
 	return uploadToStorage(
 		file,
-		buildImageKey({ kind: 'note', userId, noteId }, file),
+		buildImageKey({ kind: 'post', userId, postId }, file),
 	)
 }
 

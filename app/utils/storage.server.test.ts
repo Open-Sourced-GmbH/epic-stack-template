@@ -14,12 +14,12 @@ test('a profile image key is scoped under its user', () => {
 	expect(key.endsWith('.png')).toBe(true)
 })
 
-test('a note image key is scoped under its user and note', () => {
+test('a post image key is scoped under its author and post', () => {
 	const key = buildImageKey(
-		{ kind: 'note', userId: 'user123', noteId: 'note456' },
+		{ kind: 'post', userId: 'user123', postId: 'post456' },
 		imageFile('diagram.jpg'),
 	)
-	expect(key.startsWith('users/user123/notes/note456/images/')).toBe(true)
+	expect(key.startsWith('users/user123/posts/post456/images/')).toBe(true)
 	expect(key.endsWith('.jpg')).toBe(true)
 })
 

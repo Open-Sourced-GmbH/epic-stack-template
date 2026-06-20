@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import {
+	entityAccesses,
 	getPermissionMatrix,
 	parsePermissionString,
 	permissionAccesses,
@@ -23,9 +24,9 @@ const userWith = (...permissions: Array<ReturnType<typeof grant>>) => ({
 })
 
 test('parsePermissionString splits the three segments', () => {
-	expect(parsePermissionString('delete:note:own')).toEqual({
+	expect(parsePermissionString('delete:user:own')).toEqual({
 		action: 'delete',
-		entity: 'note',
+		entity: 'user',
 		access: ['own'],
 	})
 })
@@ -39,18 +40,18 @@ test('a missing access segment means no access constraint', () => {
 })
 
 test('a comma-joined access segment parses to the set of levels', () => {
-	expect(parsePermissionString('delete:note:own,any').access).toEqual([
+	expect(parsePermissionString('delete:user:own,any').access).toEqual([
 		'own',
 		'any',
 	])
 })
 
 test('permissionSatisfies requires the same entity and action', () => {
-	const required = parsePermissionString('delete:note:any')
-	expect(permissionSatisfies(grant('delete', 'note', 'any'), required)).toBe(
+	const required = parsePermissionString('delete:post:any')
+	expect(permissionSatisfies(grant('delete', 'post', 'any'), required)).toBe(
 		true,
 	)
-	expect(permissionSatisfies(grant('update', 'note', 'any'), required)).toBe(
+	expect(permissionSatisfies(grant('update', 'post', 'any'), required)).toBe(
 		false,
 	)
 	expect(permissionSatisfies(grant('delete', 'user', 'any'), required)).toBe(
@@ -65,41 +66,58 @@ test('a requirement with no access matches any granted access level', () => {
 })
 
 test('a single-access requirement matches only that access level', () => {
-	const required = parsePermissionString('delete:note:own')
-	expect(permissionSatisfies(grant('delete', 'note', 'own'), required)).toBe(
+	const required = parsePermissionString('delete:user:own')
+	expect(permissionSatisfies(grant('delete', 'user', 'own'), required)).toBe(
 		true,
 	)
-	expect(permissionSatisfies(grant('delete', 'note', 'any'), required)).toBe(
+	expect(permissionSatisfies(grant('delete', 'user', 'any'), required)).toBe(
 		false,
 	)
 })
 
 test('a comma-joined requirement matches any of its access levels', () => {
-	const required = parsePermissionString('delete:note:own,any')
-	expect(permissionSatisfies(grant('delete', 'note', 'own'), required)).toBe(
+	const required = parsePermissionString('delete:user:own,any')
+	expect(permissionSatisfies(grant('delete', 'user', 'own'), required)).toBe(
 		true,
 	)
-	expect(permissionSatisfies(grant('delete', 'note', 'any'), required)).toBe(
+	expect(permissionSatisfies(grant('delete', 'user', 'any'), required)).toBe(
 		true,
 	)
 })
 
-test('getPermissionMatrix is the full entity × action × access cross product', () => {
+test('getPermissionMatrix expands each entity at the access levels it is scoped by', () => {
 	const matrix = getPermissionMatrix()
-	expect(matrix).toHaveLength(
-		permissionEntities.length *
-			permissionActions.length *
-			permissionAccesses.length,
+	const expectedLength = permissionEntities.reduce(
+		(sum, entity) =>
+			sum + permissionActions.length * entityAccesses[entity].length,
+		0,
 	)
-	// every entry draws from the vocabulary, and the set is unique
+	expect(matrix).toHaveLength(expectedLength)
+	// every entry draws from the vocabulary, at an access level valid for its
+	// entity, and the set is unique
 	const keys = new Set<string>()
 	for (const { action, entity, access } of matrix) {
 		expect(permissionActions).toContain(action)
 		expect(permissionEntities).toContain(entity)
-		expect(permissionAccesses).toContain(access)
+		expect(entityAccesses[entity]).toContain(access)
 		keys.add(`${action}:${entity}:${access}`)
 	}
 	expect(keys.size).toBe(matrix.length)
+})
+
+test('post is admin-authored content: every action at :any, never :own', () => {
+	// posts are never owner-scoped — there is no post:own
+	expect(entityAccesses.post).toEqual(['any'])
+
+	const postPerms = getPermissionMatrix().filter((p) => p.entity === 'post')
+	// the seed grants each role the permissions at its granted access level, so
+	// the admin role (`:any`) holds every post action while the user role
+	// (`:own`) holds none — there is no `post:own` to grant
+	expect(postPerms.every((p) => p.access === roleGrantedAccess.admin)).toBe(true)
+	expect([...postPerms.map((p) => p.action)].sort()).toEqual(
+		[...permissionActions].sort(),
+	)
+	expect(postPerms.some((p) => p.access === roleGrantedAccess.user)).toBe(false)
 })
 
 test('every Role has a granted access level', () => {
@@ -109,16 +127,21 @@ test('every Role has a granted access level', () => {
 })
 
 test('permissionForOwnership picks :own when owner, :any otherwise', () => {
-	expect(permissionForOwnership('delete', 'note', true)).toBe('delete:note:own')
-	expect(permissionForOwnership('delete', 'note', false)).toBe('delete:note:any')
+	expect(permissionForOwnership('delete', 'user', true)).toBe('delete:user:own')
+	expect(permissionForOwnership('delete', 'user', false)).toBe(
+		'delete:user:any',
+	)
 })
 
 test('userHasPermission scans every role and is false without a user', () => {
-	const user = userWith(grant('read', 'user', 'any'), grant('delete', 'note', 'own'))
+	const user = userWith(
+		grant('read', 'user', 'any'),
+		grant('delete', 'user', 'own'),
+	)
 	const has = (p: PermissionString) => userHasPermission(user, p)
-	expect(has('delete:note:own')).toBe(true)
+	expect(has('delete:user:own')).toBe(true)
 	expect(has('read:user:any')).toBe(true)
-	expect(has('delete:note:any')).toBe(false)
+	expect(has('delete:user:any')).toBe(false)
 	expect(userHasPermission(null, 'read:user')).toBe(false)
 	expect(userHasPermission(undefined, 'read:user')).toBe(false)
 })
