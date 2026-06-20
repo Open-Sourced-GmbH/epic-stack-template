@@ -46,14 +46,15 @@ import {
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
 import { Field } from '#app/components/ui/field.tsx'
-import { Input } from '#app/components/ui/input.tsx'
 import {
 	InputOTP,
 	InputOTPGroup,
 	InputOTPSeparator,
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
+import { Input } from '#app/components/ui/input.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { Pagination } from '#app/components/ui/pagination.tsx'
 import {
 	Select,
 	SelectContent,
@@ -731,6 +732,19 @@ export const specimens: Specimen[] = [
 						Choose a value below 80.
 					</p>
 				</div>
+			</div>
+		),
+	},
+	{
+		name: 'pagination',
+		group: 'Navigation',
+		subtitle: 'page 1 (prev disabled) / middle (ellipsis both sides) / last',
+		viewport: { width: 480, height: 220 },
+		render: () => (
+			<div className="flex flex-col gap-6">
+				<Pagination page={1} pageCount={8} getPageHref={(p) => `#page-${p}`} />
+				<Pagination page={5} pageCount={10} getPageHref={(p) => `#page-${p}`} />
+				<Pagination page={8} pageCount={8} getPageHref={(p) => `#page-${p}`} />
 			</div>
 		),
 	},

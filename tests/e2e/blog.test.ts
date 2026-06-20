@@ -26,7 +26,9 @@ test('the ⌘K palette has a Blog command that navigates to /blog', async ({
 
 	await expect(palette).toBeHidden()
 	await expect(page).toHaveURL(/\/blog$/)
-	await expect(page.getByRole('heading', { name: /blog/i })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: /notes on building/i }),
+	).toBeVisible()
 })
 
 test('the blog renders inside the shared marketing chrome', async ({
@@ -38,5 +40,7 @@ test('the blog renders inside the shared marketing chrome', async ({
 	// The same branded header/footer the landing uses wrap the blog route.
 	await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible()
 	await expect(page.getByRole('contentinfo')).toBeVisible()
-	await expect(page.getByRole('heading', { name: /blog/i })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: /notes on building/i }),
+	).toBeVisible()
 })

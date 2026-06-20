@@ -6,6 +6,11 @@
 :root {
 	--radius: 0.5rem;
 
+	/* Pager cell size — the square tap target for each numbered page and the
+	   prev/next controls in the `Pagination` primitive (non-foundational layout
+	   token, GROUNDED-SPEC §Net-new). */
+	--pager-size: 2.35rem;
+
 	/* Button cursor pref (ADR 062). The theme customizer's cursor segment flips
 	   this between `default` and `pointer`; root re-applies it via an inline
 	   style on <html> so it's server-applied (no flash). Consumed by the rule in
