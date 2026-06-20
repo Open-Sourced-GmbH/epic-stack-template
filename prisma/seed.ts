@@ -7,6 +7,7 @@ import {
 } from '#app/utils/user.ts'
 import { createPassword, createUser, getUserImages } from '#tests/db-utils.ts'
 import { insertGitHubUser } from '#tests/mocks/github.ts'
+import { samplePosts } from './sample-posts.ts'
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -98,36 +99,59 @@ async function seed() {
 		},
 	})
 
-	// Placeholder posts proving the Post pipeline seeds — one Published, one
-	// Draft, under a shared Tag. Rich sample content (code blocks, cover images)
-	// lands in the seed slice once the render pipeline exists (EPT-44).
-	const announcements = await prisma.tag.create({
-		select: { id: true },
-		data: { name: 'Announcements', slug: 'announcements' },
-	})
-
-	await prisma.post.create({
-		data: {
-			title: 'Hello, world',
-			slug: 'hello-world',
-			body: '# Hello, world\n\nThis is a placeholder post seeded with the Post domain foundation. Real sample content lands once the Markdown render pipeline exists.',
-			excerpt: 'The first placeholder post, proving the public feed renders.',
-			publishedAt: new Date(),
-			authorId: kody.id,
-			tags: { connect: { id: announcements.id } },
-		},
-	})
-
-	await prisma.post.create({
-		data: {
-			title: 'A work in progress',
-			slug: 'a-work-in-progress',
-			body: 'This Draft is still being written, so it never appears on the public feed.',
-			authorId: kody.id,
-		},
-	})
-
 	console.timeEnd(`🐨 Created admin user "kody"`)
+
+	console.time(`📝 Created ${samplePosts.length} sample posts`)
+	// Resolve-or-create each distinct tag up front (posts share tags, so creating
+	// inline would hit the unique constraint), then create every post connecting
+	// its tags by id. Covers are created as PostImages and singled out via
+	// `coverImageId` — the same relations the real editor uses, no schema bypass.
+	const tagIdBySlug = new Map<string, string>()
+	for (const tag of samplePosts.flatMap((post) => post.tags)) {
+		if (tagIdBySlug.has(tag.slug)) continue
+		const row = await prisma.tag.upsert({
+			select: { id: true },
+			where: { slug: tag.slug },
+			create: { name: tag.name, slug: tag.slug },
+			update: { name: tag.name },
+		})
+		tagIdBySlug.set(tag.slug, row.id)
+	}
+
+	for (const post of samplePosts) {
+		const created = await prisma.post.create({
+			select: { id: true },
+			data: {
+				title: post.title,
+				slug: post.slug,
+				body: post.body,
+				excerpt: post.excerpt ?? null,
+				publishedAt: post.publishedAt,
+				authorId: kody.id,
+				tags: {
+					connect: post.tags.map((tag) => ({ id: tagIdBySlug.get(tag.slug)! })),
+				},
+			},
+		})
+
+		// The cover is one of the post's own PostImages, singled out by
+		// `coverImageId` — so create the image, then point the post at it.
+		if (post.cover) {
+			const image = await prisma.postImage.create({
+				select: { id: true },
+				data: {
+					postId: created.id,
+					objectKey: post.cover.objectKey,
+					altText: post.cover.altText,
+				},
+			})
+			await prisma.post.update({
+				where: { id: created.id },
+				data: { coverImageId: image.id },
+			})
+		}
+	}
+	console.timeEnd(`📝 Created ${samplePosts.length} sample posts`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
 }
