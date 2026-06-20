@@ -20,6 +20,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 				slug: true,
 				excerpt: true,
 				body: true,
+				publishedAt: true,
+				coverImage: { select: { objectKey: true, altText: true } },
 				tags: { select: { name: true }, orderBy: { name: 'asc' } },
 			},
 		}),

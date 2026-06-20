@@ -26,6 +26,24 @@ async function requestFor(
 	})
 }
 
+/** A multipart request (so a cover `File` can ride along), mirroring the editor's
+ * `encType="multipart/form-data"` submit. */
+async function multipartRequestFor(
+	userId: string,
+	fields: Record<string, string>,
+	cover?: File,
+) {
+	const cookie = await getSessionCookieFor(userId)
+	const body = new FormData()
+	for (const [key, value] of Object.entries(fields)) body.append(key, value)
+	if (cover) body.append('coverFile', cover)
+	return new Request(`${BASE_URL}/admin/blog/new`, {
+		method: 'POST',
+		headers: { cookie },
+		body,
+	})
+}
+
 function callAction(request: Request) {
 	return action({
 		request,
@@ -186,6 +204,126 @@ test('editing a post replaces its tag set with what was submitted', async () => 
 		select: { tags: { select: { slug: true } } },
 	})
 	expect(post?.tags.map((t) => t.slug)).toEqual(['new'])
+})
+
+test('publishing a draft stamps publishedAt and makes it live', async () => {
+	const admin = await makeAdmin()
+	const draft = await prisma.post.create({
+		select: { id: true },
+		data: { title: 'To Publish', slug: 'to-publish', body: 'body' },
+	})
+
+	const request = await requestFor(admin.id, {
+		id: draft.id,
+		intent: 'publish',
+		title: 'To Publish',
+		slug: 'to-publish',
+		excerpt: 'A summary',
+		body: 'body',
+	})
+	const location = expectRedirect(await callAction(request))
+	expect(location).toBe(`/admin/blog/${draft.id}/edit`)
+
+	const post = await prisma.post.findUnique({ where: { id: draft.id } })
+	expect(post?.publishedAt).toBeInstanceOf(Date)
+})
+
+test('publishing without an excerpt is blocked with a field error', async () => {
+	const admin = await makeAdmin()
+	const draft = await prisma.post.create({
+		select: { id: true },
+		data: { title: 'No Excerpt', slug: 'no-excerpt', body: 'body' },
+	})
+
+	const request = await requestFor(admin.id, {
+		id: draft.id,
+		intent: 'publish',
+		title: 'No Excerpt',
+		slug: 'no-excerpt',
+		excerpt: '',
+		body: 'body',
+	})
+	const errors = expectFieldErrors(await callAction(request))
+	expect(errors.excerpt?.join(' ')).toMatch(/excerpt is required/i)
+
+	// Still a Draft — the failed publish never stamped publishedAt.
+	const post = await prisma.post.findUnique({ where: { id: draft.id } })
+	expect(post?.publishedAt).toBeNull()
+})
+
+test('re-publishing keeps the original publication instant', async () => {
+	const admin = await makeAdmin()
+	const firstPublished = new Date('2026-01-01T00:00:00.000Z')
+	const published = await prisma.post.create({
+		select: { id: true },
+		data: {
+			title: 'Live',
+			slug: 'live',
+			body: 'body',
+			excerpt: 'sum',
+			publishedAt: firstPublished,
+		},
+	})
+
+	const request = await requestFor(admin.id, {
+		id: published.id,
+		intent: 'publish',
+		title: 'Live edited',
+		slug: 'live',
+		excerpt: 'sum',
+		body: 'body edited',
+	})
+	expectRedirect(await callAction(request))
+
+	const post = await prisma.post.findUnique({ where: { id: published.id } })
+	expect(post?.publishedAt?.toISOString()).toBe(firstPublished.toISOString())
+	expect(post?.title).toBe('Live edited')
+})
+
+test('unpublishing clears publishedAt (Published → Draft)', async () => {
+	const admin = await makeAdmin()
+	const published = await prisma.post.create({
+		select: { id: true },
+		data: {
+			title: 'Going Dark',
+			slug: 'going-dark',
+			body: 'body',
+			publishedAt: new Date('2026-01-01'),
+		},
+	})
+
+	const cookie = await getSessionCookieFor(admin.id)
+	const request = new Request(`${BASE_URL}/admin/blog/new`, {
+		method: 'POST',
+		headers: { cookie },
+		// Unpublish carries only id + intent — the confirm Dialog submits nothing else.
+		body: new URLSearchParams({ id: published.id, intent: 'unpublish' }),
+	})
+	const location = expectRedirect(await callAction(request))
+	expect(location).toBe(`/admin/blog/${published.id}/edit`)
+
+	const post = await prisma.post.findUnique({ where: { id: published.id } })
+	expect(post?.publishedAt).toBeNull()
+})
+
+test('a cover upload attaches a PostImage and sets coverImageId', async () => {
+	const admin = await makeAdmin()
+	const cover = new File([Buffer.from('fake-png-bytes')], 'cover.png', {
+		type: 'image/png',
+	})
+	const request = await multipartRequestFor(
+		admin.id,
+		{ title: 'With Cover', slug: '', excerpt: '', body: 'body' },
+		cover,
+	)
+	expectRedirect(await callAction(request))
+
+	const post = await prisma.post.findUnique({
+		where: { slug: 'with-cover' },
+		select: { coverImageId: true, coverImage: { select: { objectKey: true } } },
+	})
+	expect(post?.coverImageId).not.toBeNull()
+	expect(post?.coverImage?.objectKey).toMatch(/posts\/.+\/images\//)
 })
 
 test('the editor refuses a non-admin (reader)', async () => {

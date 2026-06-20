@@ -7,6 +7,21 @@ import { createRoutesStub } from 'react-router'
 import { expect, test } from 'vitest'
 import { PostEditor, type PostEditorPost } from './post-editor.tsx'
 
+/** A draft post fixture; override any field per test. */
+function makePost(overrides: Partial<PostEditorPost> = {}): PostEditorPost {
+	return {
+		id: 'p1',
+		title: 'Original',
+		slug: 'original-slug',
+		excerpt: null,
+		body: 'body',
+		publishedAt: null,
+		coverImage: null,
+		tags: [],
+		...overrides,
+	}
+}
+
 function renderEditor(
 	post?: PostEditorPost,
 	previewHtml = '<p>rendered preview</p>',
@@ -82,14 +97,7 @@ test('the Write/Preview segmented control swaps panes on small screens', async (
 
 test('an existing post treats its slug as already author-approved', async () => {
 	const user = userEvent.setup()
-	renderEditor({
-		id: 'p1',
-		title: 'Original',
-		slug: 'original-slug',
-		excerpt: null,
-		body: 'body',
-		tags: [],
-	})
+	renderEditor(makePost({ slug: 'original-slug' }))
 
 	const title = screen.getByLabelText('Title')
 	const slug = screen.getByLabelText('Slug')
@@ -100,14 +108,7 @@ test('an existing post treats its slug as already author-approved', async () => 
 })
 
 test('the editor seeds the Tags field with the post’s existing tags', async () => {
-	renderEditor({
-		id: 'p1',
-		title: 'Original',
-		slug: 'original-slug',
-		excerpt: null,
-		body: 'body',
-		tags: ['React', 'Remix'],
-	})
+	renderEditor(makePost({ tags: ['React', 'Remix'] }))
 
 	// Each existing tag renders as a removable chip in the TagInput.
 	expect(
@@ -116,4 +117,29 @@ test('the editor seeds the Tags field with the post’s existing tags', async ()
 	expect(
 		screen.getByRole('button', { name: /remove remix/i }),
 	).toBeInTheDocument()
+})
+
+test('a draft offers Publish and an editable slug', () => {
+	renderEditor(makePost({ publishedAt: null }))
+
+	expect(screen.getByRole('button', { name: /publish/i })).toBeInTheDocument()
+	expect(
+		screen.queryByRole('button', { name: /unpublish/i }),
+	).not.toBeInTheDocument()
+	// The slug is editable while still a Draft.
+	expect(screen.getByLabelText('Slug')).toBeEnabled()
+})
+
+test('a published post locks the slug and swaps Publish for Unpublish', () => {
+	renderEditor(makePost({ publishedAt: new Date('2026-01-01') }))
+
+	const slug = screen.getByLabelText('Slug')
+	expect(slug).toBeDisabled()
+	expect(slug).toHaveValue('original-slug')
+	expect(screen.getByText(/locked — changing a live url/i)).toBeInTheDocument()
+
+	expect(screen.getByRole('button', { name: /unpublish/i })).toBeInTheDocument()
+	expect(
+		screen.queryByRole('button', { name: /^publish$/i }),
+	).not.toBeInTheDocument()
 })

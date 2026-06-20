@@ -8,7 +8,7 @@ import {
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { useEffect, useState } from 'react'
-import { Form, useFetcher } from 'react-router'
+import { Form, useFetcher, useNavigation } from 'react-router'
 import { z } from 'zod'
 import {
 	ErrorList,
@@ -16,6 +16,8 @@ import {
 	TextareaField,
 	type ListOfErrors,
 } from '#app/components/forms.tsx'
+import { Alert, AlertDescription, AlertTitle } from '#app/components/ui/alert.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import {
 	Card,
 	CardContent,
@@ -23,11 +25,25 @@ import {
 	CardHeader,
 	CardTitle,
 } from '#app/components/ui/card.tsx'
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogOverlay,
+	DialogTitle,
+	DialogTrigger,
+} from '#app/components/ui/dialog.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
 import { Label } from '#app/components/ui/label.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { TagInput } from '#app/components/ui/tag-input.tsx'
-import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
+import { cn, getPostImgSrc, useDebounce, useIsPending } from '#app/utils/misc.tsx'
 import { slugify } from '#app/utils/slug.ts'
+
+/** The intents the editor submits; the action branches on these. */
+type Intent = 'save' | 'publish' | 'unpublish'
 
 const titleMaxLength = 150
 const slugMaxLength = 100
@@ -38,8 +54,10 @@ const tagMaxLength = 50
 /**
  * The shape the editor writes. `slug` is optional on the wire — when blank the
  * server derives it from the title (the action owns slug resolution + collision
- * + lock-after-publish; see `post-editor.server.tsx`). Tags, cover image, and
- * publication land in sibling slices, so they are intentionally absent here.
+ * + lock-after-publish; see `post-editor.server.tsx`). The cover image (a `File`)
+ * and the `intent` ride outside this schema: the action reads them straight from
+ * the multipart form. Excerpt is optional here but the action *requires* it to
+ * publish.
  */
 export const PostEditorSchema = z.object({
 	id: z.string().optional(),
@@ -58,6 +76,10 @@ export type PostEditorPost = {
 	slug: string
 	excerpt: string | null
 	body: string
+	/** Set once the post is live — drives the slug lock and the publish controls. */
+	publishedAt: Date | string | null
+	/** The current cover, shown as a thumbnail beside the upload control. */
+	coverImage: { objectKey: string; altText: string | null } | null
 	/** The post's current tag names — the editor's `TagInput` starts here. */
 	tags: string[]
 }
@@ -73,6 +95,7 @@ export function PostEditor({
 	actionData?: { result?: SubmissionResult } | null
 }) {
 	const isPending = useIsPending()
+	const isPublished = Boolean(post?.publishedAt)
 
 	const [form, fields] = useForm({
 		id: 'post-editor',
@@ -95,6 +118,20 @@ export function PostEditor({
 	// existing post already has an author-approved slug, so treat it as touched.
 	const [slugEdited, setSlugEdited] = useState(Boolean(post?.slug))
 
+	// Which intent is mid-flight (drives the pending spinner) and which one last
+	// ran (drives the success/error flash on the right button after the response).
+	const navigation = useNavigation()
+	const pendingIntent =
+		navigation.state !== 'idle'
+			? (navigation.formData?.get('intent') as Intent | null)
+			: null
+	const [lastIntent, setLastIntent] = useState<Intent | null>(null)
+	const statusFor = (intent: Intent) => {
+		if (pendingIntent === intent) return 'pending' as const
+		if (lastIntent === intent) return form.status ?? ('idle' as const)
+		return 'idle' as const
+	}
+
 	return (
 		<main className="container mx-auto max-w-5xl py-10">
 			<Card>
@@ -102,9 +139,21 @@ export function PostEditor({
 					<CardTitle>{post ? 'Edit post' : 'New post'}</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<Form method="POST" {...getFormProps(form)}>
+					{form.status === 'error' ? (
+						<Alert tone="error" className="mb-6">
+							<AlertTitle>This post can’t be saved yet</AlertTitle>
+							<AlertDescription>
+								Fix the highlighted fields below and try again.
+							</AlertDescription>
+						</Alert>
+					) : null}
+					<Form
+						method="POST"
+						encType="multipart/form-data"
+						{...getFormProps(form)}
+					>
 						{/* Lets "enter" submit the form rather than a stray button. */}
-						<button type="submit" className="hidden" />
+						<button type="submit" name="intent" value="save" className="hidden" />
 						{post ? (
 							<input type="hidden" name="id" value={post.id} />
 						) : null}
@@ -122,21 +171,45 @@ export function PostEditor({
 							}}
 							errors={fields.title.errors}
 						/>
-						<Field
-							labelProps={{ children: 'Slug' }}
-							inputProps={{
-								name: fields.slug.name,
-								id: fields.slug.id,
-								value: slug.value ?? '',
-								onChange: (event) => {
-									setSlugEdited(true)
-									slug.change(event.currentTarget.value)
-								},
-								onFocus: () => slug.focus(),
-								onBlur: () => slug.blur(),
-							}}
-							errors={fields.slug.errors}
-						/>
+						{isPublished ? (
+							// A live URL is a promise we keep: the slug is frozen once
+							// published. Shown disabled, but a hidden field still submits it so
+							// a Save round-trips the unchanged slug (the action also enforces
+							// the lock server-side).
+							<div className="mb-4">
+								<Label htmlFor="post-slug-locked">Slug</Label>
+								<Input
+									id="post-slug-locked"
+									value={post?.slug ?? ''}
+									disabled
+									readOnly
+								/>
+								<input
+									type="hidden"
+									name={fields.slug.name}
+									value={post?.slug ?? ''}
+								/>
+								<p className="text-muted-foreground px-4 pt-1 text-body-xs">
+									Locked — changing a live URL breaks inbound links.
+								</p>
+							</div>
+						) : (
+							<Field
+								labelProps={{ children: 'Slug' }}
+								inputProps={{
+									name: fields.slug.name,
+									id: fields.slug.id,
+									value: slug.value ?? '',
+									onChange: (event) => {
+										setSlugEdited(true)
+										slug.change(event.currentTarget.value)
+									},
+									onFocus: () => slug.focus(),
+									onBlur: () => slug.blur(),
+								}}
+								errors={fields.slug.errors}
+							/>
+						)}
 						<Field
 							labelProps={{ children: 'Excerpt' }}
 							inputProps={{
@@ -144,6 +217,7 @@ export function PostEditor({
 							}}
 							errors={fields.excerpt.errors}
 						/>
+						<CoverField cover={post?.coverImage} />
 						<div className="mb-4 flex flex-col gap-1.5">
 							<Label htmlFor={fields.tags.id}>Tags</Label>
 							<TagInput
@@ -163,18 +237,154 @@ export function PostEditor({
 						<ErrorList id={form.errorId} errors={form.errors} />
 					</Form>
 				</CardContent>
-				<CardFooter>
+				<CardFooter className="flex flex-wrap gap-3">
 					<StatusButton
 						form={form.id}
 						type="submit"
+						name="intent"
+						value="save"
+						variant={post && !isPublished ? 'secondary' : 'default'}
 						disabled={isPending}
-						status={isPending ? 'pending' : 'idle'}
+						status={statusFor('save')}
+						onClick={() => setLastIntent('save')}
 					>
 						{post ? 'Save changes' : 'Create draft'}
 					</StatusButton>
+
+					{post && !isPublished ? (
+						<StatusButton
+							form={form.id}
+							type="submit"
+							name="intent"
+							value="publish"
+							disabled={isPending}
+							status={statusFor('publish')}
+							onClick={() => setLastIntent('publish')}
+						>
+							<Icon name="arrow-right">Publish</Icon>
+						</StatusButton>
+					) : null}
+
+					{post && isPublished ? (
+						<UnpublishButton
+							formId={form.id}
+							disabled={isPending}
+							status={statusFor('unpublish')}
+							onConfirm={() => setLastIntent('unpublish')}
+						/>
+					) : null}
 				</CardFooter>
 			</Card>
 		</main>
+	)
+}
+
+/**
+ * The cover-image control: a file input that uploads through the post-image
+ * storage machinery (the action sets `coverImageId`), with a thumbnail of the
+ * picked file — or the current cover — so the author sees what will ship to the
+ * feed card and the OG image. Optional: a coverless post falls back to its
+ * deterministic gradient art.
+ */
+function CoverField({
+	cover,
+}: {
+	cover?: { objectKey: string; altText: string | null } | null
+}) {
+	const [preview, setPreview] = useState<string | null>(null)
+	const src = preview ?? (cover ? getPostImgSrc(cover.objectKey) : null)
+	return (
+		<div className="mb-4 flex flex-col gap-1.5">
+			<Label htmlFor="post-cover-file">Cover image</Label>
+			<div className="flex items-center gap-4">
+				{src ? (
+					<img
+						src={src}
+						alt={cover?.altText ?? ''}
+						className="h-16 w-24 rounded-md object-cover"
+					/>
+				) : (
+					<div
+						aria-hidden="true"
+						className="bg-muted text-muted-foreground flex h-16 w-24 items-center justify-center rounded-md"
+					>
+						<Icon name="file-text" className="size-5" />
+					</div>
+				)}
+				<Input
+					id="post-cover-file"
+					type="file"
+					name="coverFile"
+					accept="image/*"
+					className="max-w-xs"
+					onChange={(event) => {
+						const file = event.currentTarget.files?.[0]
+						if (!file) return
+						const reader = new FileReader()
+						reader.onload = (e) =>
+							setPreview(e.target?.result?.toString() ?? null)
+						reader.readAsDataURL(file)
+					}}
+				/>
+			</div>
+			<p className="text-muted-foreground text-body-xs">
+				Shown on the feed card and as the social share image. Optional.
+			</p>
+		</div>
+	)
+}
+
+/**
+ * The Unpublish control: a destructive transition behind a confirm `Dialog`
+ * (a transient client overlay, per ADR 023 — not a route). Confirming submits
+ * the editor form with `intent=unpublish`, which clears `publishedAt` and
+ * returns the post to Draft.
+ */
+function UnpublishButton({
+	formId,
+	disabled,
+	status,
+	onConfirm,
+}: {
+	formId: string
+	disabled: boolean
+	status: 'pending' | 'success' | 'error' | 'idle'
+	onConfirm: () => void
+}) {
+	return (
+		<Dialog>
+			<DialogTrigger asChild>
+				<Button type="button" variant="destructive" disabled={disabled}>
+					<Icon name="cross-1">Unpublish</Icon>
+				</Button>
+			</DialogTrigger>
+			<DialogOverlay />
+			<DialogContent aria-describedby="unpublish-desc">
+				<DialogTitle>Unpublish this post?</DialogTitle>
+				<DialogDescription id="unpublish-desc">
+					It will be removed from the public blog and returned to Draft. You can
+					publish it again at any time.
+				</DialogDescription>
+				<div className="mt-6 flex justify-end gap-3">
+					<DialogClose asChild>
+						<Button type="button" variant="secondary">
+							Cancel
+						</Button>
+					</DialogClose>
+					<StatusButton
+						form={formId}
+						type="submit"
+						name="intent"
+						value="unpublish"
+						variant="destructive"
+						status={status}
+						onClick={onConfirm}
+					>
+						Unpublish
+					</StatusButton>
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }
 
