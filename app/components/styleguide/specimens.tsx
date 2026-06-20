@@ -66,6 +66,7 @@ import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
 	Tooltip,
@@ -789,6 +790,26 @@ export const specimens: Specimen[] = [
 				<Pagination page={1} pageCount={8} getPageHref={(p) => `#page-${p}`} />
 				<Pagination page={5} pageCount={10} getPageHref={(p) => `#page-${p}`} />
 				<Pagination page={8} pageCount={8} getPageHref={(p) => `#page-${p}`} />
+			</div>
+		),
+	},
+	{
+		name: 'tag-input',
+		group: 'Forms',
+		subtitle:
+			'resolve-or-create multi-select — empty / with chips (focus + type to open the menu)',
+		viewport: { width: 480, height: 240 },
+		render: () => (
+			<div className="flex w-full max-w-sm flex-col gap-6">
+				{/* Empty — placeholder visible; focus + type to open the suggestion
+				    menu with its "Create «query»" row. */}
+				<TagInput aria-label="Tags (empty)" suggestions={['React', 'Remix', 'CSS']} />
+				{/* Populated — each tag is a removable chip on --secondary. */}
+				<TagInput
+					aria-label="Tags (with chips)"
+					defaultValue={['React', 'TypeScript']}
+					suggestions={['React', 'Remix', 'CSS', 'TypeScript']}
+				/>
 			</div>
 		),
 	},

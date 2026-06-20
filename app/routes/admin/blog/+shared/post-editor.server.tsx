@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '#app/utils/db.server.ts'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import { canApplySlug, isSlugTaken, resolveSlug } from '#app/utils/slug.ts'
+import { resolveTags } from '#app/utils/tag.server.ts'
 import { PostEditorSchema } from './post-editor.tsx'
 
 /**
@@ -79,15 +80,28 @@ export async function action({ request }: ActionFunctionArgs) {
 	const { id, title, excerpt, body } = submission.value
 	const slug = resolveSlug({ desired: submission.value.slug, title })
 
+	// Resolve the typed tag names to canonical rows (reuse-or-create) before the
+	// write, so the post connects to ids. `set` replaces the post's whole tag set
+	// on update, mirroring what the editor submitted.
+	const tags = await resolveTags(submission.value.tags ?? [])
+	const tagIds = tags.map((tag) => ({ id: tag.id }))
+
 	const post = id
 		? await prisma.post.update({
 				where: { id },
 				select: { id: true },
-				data: { title, slug, excerpt: excerpt || null, body },
+				data: { title, slug, excerpt: excerpt || null, body, tags: { set: tagIds } },
 			})
 		: await prisma.post.create({
 				select: { id: true },
-				data: { title, slug, excerpt: excerpt || null, body, authorId: userId },
+				data: {
+					title,
+					slug,
+					excerpt: excerpt || null,
+					body,
+					authorId: userId,
+					tags: { connect: tagIds },
+				},
 			})
 
 	return redirect(`/admin/blog/${post.id}/edit`)

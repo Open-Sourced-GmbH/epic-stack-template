@@ -23,7 +23,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from '#app/components/ui/card.tsx'
+import { Label } from '#app/components/ui/label.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { cn, useDebounce, useIsPending } from '#app/utils/misc.tsx'
 import { slugify } from '#app/utils/slug.ts'
 
@@ -31,6 +33,7 @@ const titleMaxLength = 150
 const slugMaxLength = 100
 const excerptMaxLength = 300
 const bodyMaxLength = 50_000
+const tagMaxLength = 50
 
 /**
  * The shape the editor writes. `slug` is optional on the wire — when blank the
@@ -44,6 +47,9 @@ export const PostEditorSchema = z.object({
 	slug: z.string().max(slugMaxLength).optional(),
 	excerpt: z.string().max(excerptMaxLength).optional(),
 	body: z.string().min(1, 'A body is required').max(bodyMaxLength),
+	// Tag *names* as typed — the action resolves them to canonical Tag rows
+	// (reuse-or-create) server-side. Optional: a post can have no tags.
+	tags: z.array(z.string().max(tagMaxLength)).optional(),
 })
 
 export type PostEditorPost = {
@@ -52,13 +58,18 @@ export type PostEditorPost = {
 	slug: string
 	excerpt: string | null
 	body: string
+	/** The post's current tag names — the editor's `TagInput` starts here. */
+	tags: string[]
 }
 
 export function PostEditor({
 	post,
+	suggestions = [],
 	actionData,
 }: {
 	post?: PostEditorPost
+	/** Every existing tag name, offered as menu suggestions in the `TagInput`. */
+	suggestions?: string[]
 	actionData?: { result?: SubmissionResult } | null
 }) {
 	const isPending = useIsPending()
@@ -133,6 +144,17 @@ export function PostEditor({
 							}}
 							errors={fields.excerpt.errors}
 						/>
+						<div className="mb-4 flex flex-col gap-1.5">
+							<Label htmlFor={fields.tags.id}>Tags</Label>
+							<TagInput
+								id={fields.tags.id}
+								name={fields.tags.name}
+								aria-label="Tags"
+								defaultValue={post?.tags ?? []}
+								suggestions={suggestions}
+							/>
+							<ErrorList id={fields.tags.errorId} errors={fields.tags.errors} />
+						</div>
 						<BodyEditor
 							textareaProps={{ ...getTextareaProps(fields.body), rows: 16 }}
 							errors={fields.body.errors}

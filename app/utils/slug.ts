@@ -14,6 +14,26 @@ export function slugify(input: string): string {
 }
 
 /**
+ * Collapse a list of names to a unique-by-slug set, keeping the first spelling
+ * seen and dropping any name that slugifies to the empty string. The slug is the
+ * canonical identity, so "React"/"react"/"  REACT  " collapse to one entry — the
+ * single rule both the `TagInput` (chips) and the server's tag resolver apply,
+ * so the editor menu and the write path can never disagree on what's a duplicate.
+ */
+export function dedupeBySlug(names: string[]): string[] {
+	const seen = new Set<string>()
+	const out: string[] = []
+	for (const name of names) {
+		const trimmed = name.trim()
+		const slug = slugify(trimmed)
+		if (!slug || seen.has(slug)) continue
+		seen.add(slug)
+		out.push(trimmed)
+	}
+	return out
+}
+
+/**
  * The slug to store for a post: the author's explicit slug when they typed one,
  * otherwise derived from the title. Both paths run through `slugify`, so a
  * hand-typed slug can't smuggle in spaces or capitals.

@@ -9,12 +9,20 @@ import {
 import { BASE_URL } from '#tests/utils.ts'
 import { action } from './post-editor.server.tsx'
 
-async function requestFor(userId: string, fields: Record<string, string>) {
+async function requestFor(
+	userId: string,
+	fields: Record<string, string>,
+	tags: string[] = [],
+) {
 	const cookie = await getSessionCookieFor(userId)
+	const body = new URLSearchParams(fields)
+	// Tags submit as repeated `tags` keys (one hidden input per chip), which the
+	// action parses into an array.
+	for (const tag of tags) body.append('tags', tag)
 	return new Request(`${BASE_URL}/admin/blog/new`, {
 		method: 'POST',
 		headers: { cookie },
-		body: new URLSearchParams(fields),
+		body,
 	})
 }
 
@@ -131,6 +139,53 @@ test("a published post's slug is locked", async () => {
 
 	const post = await prisma.post.findUnique({ where: { id: published.id } })
 	expect(post?.slug).toBe('live-slug')
+})
+
+test('saving a post resolves the typed tags and attaches them', async () => {
+	const admin = await makeAdmin()
+	// One tag already exists (must be reused); one is brand-new (created).
+	await prisma.tag.create({ data: { name: 'React', slug: 'react' } })
+
+	const request = await requestFor(
+		admin.id,
+		{ title: 'Tagged Post', slug: '', excerpt: '', body: 'body' },
+		['react', 'React Router'],
+	)
+	expectRedirect(await callAction(request))
+
+	const post = await prisma.post.findUnique({
+		where: { slug: 'tagged-post' },
+		select: { tags: { select: { slug: true }, orderBy: { slug: 'asc' } } },
+	})
+	expect(post?.tags.map((t) => t.slug)).toEqual(['react', 'react-router'])
+	// The existing React tag was reused, not duplicated.
+	expect(await prisma.tag.count({ where: { slug: 'react' } })).toBe(1)
+})
+
+test('editing a post replaces its tag set with what was submitted', async () => {
+	const admin = await makeAdmin()
+	const draft = await prisma.post.create({
+		select: { id: true },
+		data: {
+			title: 'Retag',
+			slug: 'retag',
+			body: 'body',
+			tags: { create: [{ name: 'Old', slug: 'old' }] },
+		},
+	})
+
+	const request = await requestFor(
+		admin.id,
+		{ id: draft.id, title: 'Retag', slug: 'retag', excerpt: '', body: 'body' },
+		['New'],
+	)
+	expectRedirect(await callAction(request))
+
+	const post = await prisma.post.findUnique({
+		where: { id: draft.id },
+		select: { tags: { select: { slug: true } } },
+	})
+	expect(post?.tags.map((t) => t.slug)).toEqual(['new'])
 })
 
 test('the editor refuses a non-admin (reader)', async () => {

@@ -16,6 +16,11 @@
 	   GROUNDED-SPEC §Net-new). */
 	--editor-min-h: 30rem;
 
+	/* Min height of the `TagInput` combobox control so the chips-plus-input field
+	   matches the height of a populated, multi-line tag row (non-foundational
+	   layout token, GROUNDED-SPEC §Net-new). */
+	--combobox-min-h: 2.6rem;
+
 	/* Button cursor pref (ADR 062). The theme customizer's cursor segment flips
 	   this between `default` and `pointer`; root re-applies it via an inline
 	   style on <html> so it's server-applied (no flash). Consumed by the rule in

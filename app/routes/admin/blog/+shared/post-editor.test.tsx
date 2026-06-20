@@ -88,6 +88,7 @@ test('an existing post treats its slug as already author-approved', async () => 
 		slug: 'original-slug',
 		excerpt: null,
 		body: 'body',
+		tags: [],
 	})
 
 	const title = screen.getByLabelText('Title')
@@ -96,4 +97,23 @@ test('an existing post treats its slug as already author-approved', async () => 
 
 	await user.type(title, ' Extended')
 	expect(slug).toHaveValue('original-slug')
+})
+
+test('the editor seeds the Tags field with the post’s existing tags', async () => {
+	renderEditor({
+		id: 'p1',
+		title: 'Original',
+		slug: 'original-slug',
+		excerpt: null,
+		body: 'body',
+		tags: ['React', 'Remix'],
+	})
+
+	// Each existing tag renders as a removable chip in the TagInput.
+	expect(
+		screen.getByRole('button', { name: /remove react/i }),
+	).toBeInTheDocument()
+	expect(
+		screen.getByRole('button', { name: /remove remix/i }),
+	).toBeInTheDocument()
 })

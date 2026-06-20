@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
 	canApplySlug,
+	dedupeBySlug,
 	isSlugLocked,
 	isSlugTaken,
 	resolveSlug,
@@ -15,6 +16,12 @@ test('slugify strips diacritics, punctuation, and edge hyphens', () => {
 	expect(slugify('  Héllo, Wörld!  ')).toBe('hello-world')
 	expect(slugify('Rust & Go: a tale')).toBe('rust-go-a-tale')
 	expect(slugify('already-a-slug')).toBe('already-a-slug')
+})
+
+test('dedupeBySlug collapses same-slug names (first spelling wins) and drops empties', () => {
+	expect(dedupeBySlug(['React', 'react', '  REACT  '])).toEqual(['React'])
+	expect(dedupeBySlug(['', '   ', '—', 'Design'])).toEqual(['Design'])
+	expect(dedupeBySlug(['React', 'Remix'])).toEqual(['React', 'Remix'])
 })
 
 test('isSlugTaken: a free slug (no owner) is never taken', () => {
