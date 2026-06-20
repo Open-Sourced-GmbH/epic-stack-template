@@ -42,6 +42,14 @@ export function landingCommands({
 }): Command[] {
 	const navigation: Command[] = [
 		{ id: 'nav-home', title: 'Home', group: 'Navigation', href: '/', icon: 'arrow-right' },
+		{
+			id: 'nav-blog',
+			title: 'Blog',
+			group: 'Navigation',
+			href: '/blog',
+			icon: 'file-text',
+			keywords: ['articles', 'posts', 'writing'],
+		},
 		...navSections.map(
 			(section): Command => ({
 				id: `nav-${section.id}`,

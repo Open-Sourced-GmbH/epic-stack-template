@@ -1,18 +1,15 @@
-import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
-import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
 import { CodeSample } from './__code-sample.tsx'
 import { CommandShowpiece } from './__command-palette.tsx'
 import { Faq } from './__faq.tsx'
 import { FinalCta } from './__final-cta.tsx'
-import { MarketingFooter } from './__footer.tsx'
-import { MarketingHeader, navSections } from './__header.tsx'
+import { navSections } from './__header.tsx'
 import { Hero } from './__hero.tsx'
 import { HowItWorks } from './__how-it-works.tsx'
+import { MarketingLayout } from './__layout.tsx'
 import { Playground } from './__playground.tsx'
 import { Pricing } from './__pricing.tsx'
 import { Services } from './__services.tsx'
-import { ThemeCustomizer } from './__theme-customizer.tsx'
 import { Work } from './__work.tsx'
 
 const SITE_TITLE = 'Open Sourced — Product engineering studio'
@@ -65,54 +62,37 @@ const sectionComponents: Partial<
 }
 
 export default function Index() {
-	const requestInfo = useOptionalRequestInfo()
 	return (
-		<div className="bg-background text-foreground flex min-h-screen flex-col">
-			<MarketingHeader
-				themeSwitch={
-					<ThemeCustomizer
-						accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
-						cursor={requestInfo?.userPrefs.cursor ?? 'default'}
-						theme={requestInfo?.userPrefs.theme ?? null}
-					/>
-				}
-			/>
-			<main className="flex-1">
-				<Hero />
-				{/*
-				 * Showpiece + narrative sections are mounted explicitly here in their
-				 * settled page order: the work proof, the process timeline, the ⌘K
-				 * command palette, the live design system, then the code sample.
-				 * `Work` is a `navSections` target but leads the page, so it's rendered
-				 * here and skipped in the loop below (which handles the remaining nav
-				 * sections in their declared order).
-				 */}
-				<Work />
-				<HowItWorks />
-				<CommandShowpiece />
-				<Playground />
-				<CodeSample />
-				{navSections.map((section) => {
-					if (section.id === 'work') return null
-					const Section = sectionComponents[section.id]
-					return Section ? (
-						<Section key={section.id} />
-					) : (
-						<SectionStub
-							key={section.id}
-							id={section.id}
-							title={section.label}
-						/>
-					)
-				})}
-				{/*
-				 * The closing CTA is the `#contact` anchor the hero/header CTAs point
-				 * to. It isn't a `navSections` target, so it's mounted explicitly after
-				 * the nav sections, just before the footer.
-				 */}
-				<FinalCta />
-			</main>
-			<MarketingFooter />
-		</div>
+		<MarketingLayout>
+			<Hero />
+			{/*
+			 * Showpiece + narrative sections are mounted explicitly here in their
+			 * settled page order: the work proof, the process timeline, the ⌘K
+			 * command palette, the live design system, then the code sample.
+			 * `Work` is a `navSections` target but leads the page, so it's rendered
+			 * here and skipped in the loop below (which handles the remaining nav
+			 * sections in their declared order).
+			 */}
+			<Work />
+			<HowItWorks />
+			<CommandShowpiece />
+			<Playground />
+			<CodeSample />
+			{navSections.map((section) => {
+				if (section.id === 'work') return null
+				const Section = sectionComponents[section.id]
+				return Section ? (
+					<Section key={section.id} />
+				) : (
+					<SectionStub key={section.id} id={section.id} title={section.label} />
+				)
+			})}
+			{/*
+			 * The closing CTA is the `#contact` anchor the hero/header CTAs point
+			 * to. It isn't a `navSections` target, so it's mounted explicitly after
+			 * the nav sections, just before the footer.
+			 */}
+			<FinalCta />
+		</MarketingLayout>
 	)
 }
