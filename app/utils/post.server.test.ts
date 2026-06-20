@@ -5,6 +5,7 @@ import {
 	deriveDescription,
 	getAdjacentPosts,
 	getPostBySlug,
+	getPostsByTag,
 	getPublishedPosts,
 } from './post.server.ts'
 
@@ -20,6 +21,7 @@ async function makePost({
 	body,
 	excerpt,
 	authorId,
+	tags = [],
 }: {
 	title: string
 	publishedAt: Date | null
@@ -27,6 +29,7 @@ async function makePost({
 	body?: string
 	excerpt?: string
 	authorId?: string
+	tags?: Array<{ name: string; slug: string }>
 }) {
 	return prisma.post.create({
 		select: { id: true, slug: true },
@@ -39,6 +42,12 @@ async function makePost({
 			excerpt,
 			publishedAt,
 			authorId,
+			tags: {
+				connectOrCreate: tags.map((t) => ({
+					where: { slug: t.slug },
+					create: t,
+				})),
+			},
 		},
 	})
 }
@@ -170,6 +179,73 @@ test('getAdjacentPosts returns the neighbouring Published posts, null at the end
 	const newest = await getAdjacentPosts({ publishedAt: new Date('2026-03-01') })
 	expect(newest.newer).toBeNull()
 	expect(newest.older?.title).toBe('Middle')
+})
+
+// getPostsByTag is the tag-archive half of the "public never returns a Draft"
+// invariant (GROUNDED-SPEC §/blog/tags/$tagSlug): only Published posts carrying
+// the requested tag, never a Draft and never another tag's posts.
+test('getPostsByTag returns only Published posts carrying that tag', async () => {
+	const react = { name: 'React', slug: 'react' }
+	const css = { name: 'CSS', slug: 'css' }
+	await makePost({
+		title: 'Published React',
+		publishedAt: new Date('2026-01-01'),
+		tags: [react],
+	})
+	await makePost({ title: 'Draft React', publishedAt: null, tags: [react] })
+	await makePost({
+		title: 'Published CSS',
+		publishedAt: new Date('2026-01-02'),
+		tags: [css],
+	})
+
+	const feed = await getPostsByTag('react')
+
+	expect(feed?.tag).toEqual(react)
+	expect(feed?.total).toBe(1)
+	expect(feed?.posts.map((p) => p.title)).toEqual(['Published React'])
+})
+
+test('getPostsByTag returns null for an unknown tag slug', async () => {
+	expect(await getPostsByTag('does-not-exist')).toBeNull()
+})
+
+test('getPostsByTag returns an empty feed for a known tag with no Published posts', async () => {
+	const draftOnly = { name: 'Draft Only', slug: 'draft-only' }
+	await makePost({ title: 'A Draft', publishedAt: null, tags: [draftOnly] })
+
+	const feed = await getPostsByTag('draft-only')
+
+	// Known tag → a real feed (not null), but with zero published posts so the
+	// route renders the empty state rather than a 404.
+	expect(feed).not.toBeNull()
+	expect(feed?.tag).toEqual(draftOnly)
+	expect(feed?.total).toBe(0)
+	expect(feed?.posts).toEqual([])
+})
+
+test('getPostsByTag paginates within a tag with a stable total and pageCount', async () => {
+	const ts = { name: 'TypeScript', slug: 'typescript' }
+	for (let i = 0; i < 5; i++) {
+		await makePost({
+			title: `TS ${i}`,
+			publishedAt: new Date(2026, 0, i + 1),
+			tags: [ts],
+		})
+	}
+
+	const first = await getPostsByTag('typescript', { page: 1, perPage: 2 })
+	expect(first?.total).toBe(5)
+	expect(first?.pageCount).toBe(3)
+	expect(first?.posts).toHaveLength(2)
+	// newest-first within the tag
+	expect(first?.posts[0]?.title).toBe('TS 4')
+
+	const last = await getPostsByTag('typescript', { page: 3, perPage: 2 })
+	expect(last?.posts).toHaveLength(1)
+	const firstIds = first?.posts.map((p) => p.id) ?? []
+	const lastIds = last?.posts.map((p) => p.id) ?? []
+	expect(firstIds.some((id) => lastIds.includes(id))).toBe(false)
 })
 
 test('deriveDescription prefers the excerpt, else the first body paragraph', async () => {

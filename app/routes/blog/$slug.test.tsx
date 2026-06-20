@@ -149,7 +149,14 @@ test('prev/next cards render links to the adjacent posts from loaderData', async
 		older: { title: 'Older One', slug: 'older-one' },
 	}
 	const Stub = createRoutesStub([
-		{ path: '/blog/:slug', Component: Article, loader: () => data },
+		{
+			path: '/blog/:slug',
+			Component: Article,
+			loader: () => data,
+			// Without a fallback react-router warns on initial hydration, which the
+			// test setup escalates to an unhandled error.
+			HydrateFallback: () => null,
+		},
 	])
 	render(<Stub initialEntries={['/blog/current']} />)
 

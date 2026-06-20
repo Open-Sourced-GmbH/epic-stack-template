@@ -40,17 +40,17 @@ export type PostFeed = {
 }
 
 /**
- * The single source of the **"public never returns a Draft"** invariant
- * (GROUNDED-SPEC §read module; echoes ADR 061's read-shape). Returns one page of
- * Published posts, newest-first by publication instant, with the total + page
- * count needed to render the pager. `page` is clamped to `[1, …]` so a junk
- * `?page=` query still resolves to a real page. Unauthenticated by design.
+ * The shared pager engine behind every public feed: one page of posts matching
+ * `where`, newest-first by publication instant, plus the total + page count the
+ * pager needs. `page` is clamped to `[1, …]` so a junk `?page=` still resolves
+ * to a real page, and `pageCount` is always ≥ 1. The `where` is the *only* thing
+ * a feed surface varies (the whole feed vs. one tag); the clamp, ordering,
+ * select, and `PostFeed` shape live here once so they can't drift apart.
  */
-export async function getPublishedPosts({
-	page = 1,
-	perPage = POSTS_PER_PAGE,
-}: { page?: number; perPage?: number } = {}): Promise<PostFeed> {
-	const where = { publishedAt: { not: null } } satisfies Prisma.PostWhereInput
+async function paginatePosts(
+	where: Prisma.PostWhereInput,
+	{ page = 1, perPage = POSTS_PER_PAGE }: { page?: number; perPage?: number } = {},
+): Promise<PostFeed> {
 	const currentPage = Math.max(1, Math.floor(page) || 1)
 
 	const [total, posts] = await Promise.all([
@@ -71,6 +71,51 @@ export async function getPublishedPosts({
 		perPage,
 		pageCount: Math.max(1, Math.ceil(total / perPage)),
 	}
+}
+
+/**
+ * The public index feed and the single source of the **"public never returns a
+ * Draft"** invariant (GROUNDED-SPEC §read module; echoes ADR 061's read-shape):
+ * one page of Published posts, newest-first. Unauthenticated by design.
+ */
+export function getPublishedPosts(
+	opts: { page?: number; perPage?: number } = {},
+): Promise<PostFeed> {
+	return paginatePosts({ publishedAt: { not: null } }, opts)
+}
+
+/** A feed scoped to one tag — the feed page plus the tag it belongs to. */
+export type TagFeed = PostFeed & {
+	/** The resolved tag (name + slug), so the header can show its label. */
+	tag: { name: string; slug: string }
+}
+
+/**
+ * One page of **Published** posts carrying the tag `slug`, or `null` when no
+ * tag owns that slug (GROUNDED-SPEC §/blog/tags/$tagSlug). The `null` is what
+ * lets the route tell an **unknown** tag (404) apart from a **known** tag with
+ * no published posts (empty state, a real feed with `total: 0`). Drafts and
+ * other tags' posts are filtered out, so this upholds the same "public never
+ * returns a Draft" invariant as {@link getPublishedPosts}.
+ */
+export async function getPostsByTag(
+	slug: string,
+	opts: { page?: number; perPage?: number } = {},
+): Promise<TagFeed | null> {
+	// Look the tag up first: a `null` here is what lets the route tell an unknown
+	// tag (404) apart from a known tag with no published posts (empty feed), and
+	// it skips the feed queries entirely on the 404 path.
+	const tag = await prisma.tag.findUnique({
+		where: { slug },
+		select: { name: true, slug: true },
+	})
+	if (!tag) return null
+
+	const feed = await paginatePosts(
+		{ publishedAt: { not: null }, tags: { some: { slug } } },
+		opts,
+	)
+	return { tag, ...feed }
 }
 
 /**
