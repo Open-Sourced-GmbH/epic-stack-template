@@ -1,21 +1,40 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeAll, expect, test } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createRoutesStub } from 'react-router'
+import { expect, test } from 'vitest'
 import { CodeSample } from './__code-sample.tsx'
 
-// Radix Checkbox measures itself via ResizeObserver, which jsdom lacks.
-beforeAll(() => {
-	globalThis.ResizeObserver ??= class {
-		observe() {}
-		unobserve() {}
-		disconnect() {}
-	}
-})
+/**
+ * Render the section inside a router stub whose `/resources/honeypot-demo` action
+ * mirrors the real one: a filled `name__confirm` trap is spam (400), an empty one
+ * passes. Lets the tests drive the actual fetcher roundtrip the demo relies on.
+ */
+function renderSection() {
+	const Stub = createRoutesStub([
+		{ path: '/', Component: () => <CodeSample /> },
+		{
+			path: '/resources/honeypot-demo',
+			action: async ({ request }) => {
+				const formData = await request.formData()
+				const trap = formData.get('name__confirm')
+				if (trap) {
+					return Response.json(
+						{ verdict: 'rejected', reason: 'Field "name__confirm" was not empty' },
+						{ status: 400 },
+					)
+				}
+				return Response.json({ verdict: 'accepted' })
+			},
+		},
+	])
+	render(<Stub />)
+}
 
 test('renders a section landmark labelled by its heading', () => {
-	render(<CodeSample />)
+	renderSection()
 
 	const heading = screen.getByRole('heading', { level: 2 })
 	const region = heading.closest('section')
@@ -23,29 +42,40 @@ test('renders a section landmark labelled by its heading', () => {
 	expect(region).toHaveAttribute('aria-labelledby', heading.id)
 })
 
-test('shows the source on the left as a copyable code block', () => {
-	render(<CodeSample />)
+test('shows the honeypot source on the left as a copyable code block', () => {
+	renderSection()
 
 	expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument()
+	expect(screen.getByText(/honeypot\.check/i)).toBeInTheDocument()
 })
 
-test('renders the live sign-in card from real Foundation components', () => {
-	render(<CodeSample />)
+test('renders the live form with both the human and the bot path', () => {
+	renderSection()
 
 	expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-	expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-	expect(
-		screen.getByRole('checkbox', { name: /remember me/i }),
-	).toBeInTheDocument()
 	expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
+	expect(
+		screen.getByRole('button', { name: /simulate bot/i }),
+	).toBeInTheDocument()
 })
 
-test('the live checkbox toggles on click (onCheckedChange wired)', () => {
-	render(<CodeSample />)
+test('a clean "Sign in" submit is accepted by the server', async () => {
+	const user = userEvent.setup()
+	renderSection()
 
-	const checkbox = screen.getByRole('checkbox', { name: /remember me/i })
-	expect(checkbox).not.toBeChecked()
+	await user.click(screen.getByRole('button', { name: /sign in/i }))
 
-	fireEvent.click(checkbox)
-	expect(checkbox).toBeChecked()
+	const status = await screen.findByRole('status')
+	expect(status).toHaveTextContent(/accepted/i)
+})
+
+test('"Simulate bot" fills the hidden trap and is rejected with a 400', async () => {
+	const user = userEvent.setup()
+	renderSection()
+
+	await user.click(screen.getByRole('button', { name: /simulate bot/i }))
+
+	const status = await screen.findByRole('status')
+	await waitFor(() => expect(status).toHaveTextContent(/rejected \(400\)/i))
+	expect(status).toHaveTextContent(/SpamError/i)
 })

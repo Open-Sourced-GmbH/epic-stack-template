@@ -1,4 +1,3 @@
-import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
 import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { type Route } from './+types/index.ts'
@@ -60,7 +59,6 @@ function SectionStub({ id, title }: { id: string; title: string }) {
 const sectionComponents: Partial<
 	Record<(typeof navSections)[number]['id'], React.ComponentType>
 > = {
-	work: Work,
 	services: Services,
 	pricing: Pricing,
 	faq: Faq,
@@ -72,26 +70,30 @@ export default function Index() {
 		<div className="bg-background text-foreground flex min-h-screen flex-col">
 			<MarketingHeader
 				themeSwitch={
-					<ThemeSwitch userPreference={requestInfo?.userPrefs.theme} />
+					<ThemeCustomizer
+						accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
+						cursor={requestInfo?.userPrefs.cursor ?? 'default'}
+						theme={requestInfo?.userPrefs.theme ?? null}
+					/>
 				}
 			/>
 			<main className="flex-1">
 				<Hero />
 				{/*
-				 * Showpiece + narrative sections that aren't nav targets (no
-				 * `navSections` entry) are mounted explicitly here. Final page ordering
-				 * is settled in a later assembly slice; for now the proof-of-craft code
-				 * sample rides directly under the hero, then the process timeline.
+				 * Showpiece + narrative sections are mounted explicitly here in their
+				 * settled page order: the work proof, the process timeline, the ⌘K
+				 * command palette, the live design system, then the code sample.
+				 * `Work` is a `navSections` target but leads the page, so it's rendered
+				 * here and skipped in the loop below (which handles the remaining nav
+				 * sections in their declared order).
 				 */}
-				<CodeSample />
+				<Work />
 				<HowItWorks />
-				<Playground />
-				{/*
-				 * ⌘K command palette showpiece — a global trigger + demo bar; not a
-				 * nav target, so it's mounted explicitly alongside the other showpieces.
-				 */}
 				<CommandShowpiece />
+				<Playground />
+				<CodeSample />
 				{navSections.map((section) => {
+					if (section.id === 'work') return null
 					const Section = sectionComponents[section.id]
 					return Section ? (
 						<Section key={section.id} />
@@ -111,15 +113,6 @@ export default function Index() {
 				<FinalCta />
 			</main>
 			<MarketingFooter />
-			{/*
-			 * The live theme customizer dock — re-themes the page through the
-			 * cookie + SSR accent plumbing (EPT-10/19). Server-applied, no flash.
-			 */}
-			<ThemeCustomizer
-				accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
-				cursor={requestInfo?.userPrefs.cursor ?? 'default'}
-				theme={requestInfo?.userPrefs.theme ?? null}
-			/>
 		</div>
 	)
 }

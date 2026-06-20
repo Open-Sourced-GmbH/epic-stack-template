@@ -59,12 +59,17 @@
 	--ring: var(--brand);
 }
 
-.dark {
-	/* Brand accent is mode-independent: the same Pine in light and dark, so the
-	   customizer's per-request override needs no dark variant (ADR 062). */
-	--brand: oklch(60% 0.135 172);
-	--brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
-	--brand-glow: oklch(from var(--brand) l c h / 0.32);
+/* `.theme-inverse` is a showcase surface that renders as the *opposite* of the
+   active page theme so it always keeps contrast (the hero product panel). On a
+   light page it falls under this dark block; on a dark page the `.dark
+   .theme-inverse` block below flips it back to light. */
+.dark,
+.theme-inverse {
+	/* Brand accent is mode-independent (ADR 062), so this block deliberately does
+	   NOT re-declare --brand/-soft/-glow/--primary/--ring. Re-stating them would
+	   pin them to a closer ancestor than <html>, shadowing the customizer's SSR
+	   inline override for any nested subtree (e.g. the hero panel). Left
+	   undeclared, they inherit the (possibly customized) value from :root/<html>. */
 
 	--background: oklch(13.71% 0.036 258.53);
 	--foreground: oklch(98.38% 0.0035 247.86);
@@ -75,10 +80,9 @@
 	--popover: oklch(13.71% 0.036 258.53);
 	--popover-foreground: oklch(98.38% 0.0035 247.86);
 
-	/* --primary follows --brand here too, so the near-white foreground from
-	   :root holds in dark mode (the old dark-on-light pairing would be unreadable
-	   on the Pine button). */
-	--primary: var(--brand);
+	/* --primary follows --brand and so is left undeclared here (see the brand note
+	   above); only the near-white foreground is mode-pinned, holding in dark mode
+	   (the old dark-on-light pairing would be unreadable on the Pine button). */
 	--primary-foreground: oklch(98.38% 0.0035 247.86);
 
 	--secondary: oklch(34.74% 0.0295 260.13);
@@ -100,8 +104,41 @@
 	--foreground-destructive: oklch(63.72% 0.2071 21.89);
 	/* --error-text aliases --foreground-destructive (retained one release). */
 	--error-text: var(--foreground-destructive);
+}
 
-	--ring: var(--brand);
+/* Page is dark → flip the inverse showcase panel back to LIGHT so it still
+   contrasts. Mirrors the :root light tokens (higher specificity than the shared
+   dark block above wins), and like that block omits the brand chain so the
+   customizer's --brand override keeps inheriting in. */
+.dark .theme-inverse {
+	--background: oklch(100% 0 0);
+	--foreground: oklch(13.71% 0.036 258.53);
+
+	--card: oklch(100% 0 0);
+	--card-foreground: oklch(13.71% 0.036 258.53);
+
+	--popover: oklch(100% 0 0);
+	--popover-foreground: oklch(13.71% 0.036 258.53);
+
+	--primary-foreground: oklch(98.38% 0.0035 247.86);
+
+	--secondary: oklch(86.48% 0.0153 248);
+	--secondary-foreground: oklch(20.79% 0.0399 265.73);
+
+	--muted: oklch(94.32% 0.0123 247.96);
+	--muted-foreground: oklch(40.68% 0.0281 257.44);
+
+	--accent: oklch(91.87% 0.01770618193703561 248.02064625050508);
+	--accent-foreground: oklch(20.79% 0.0399 265.73);
+
+	--border: oklch(92.9% 0.0126 255.53);
+	--input: oklch(92.56% 0.0133 255.54);
+	--input-invalid: oklch(63.68% 0.2078 25.33);
+
+	--destructive: oklch(57.14% 0.2121 27.25);
+	--destructive-foreground: oklch(98.38% 0.0035 247.86);
+	--foreground-destructive: oklch(51.46% 0.1979 16.57);
+	--error-text: var(--foreground-destructive);
 }
 
 @theme inline {
@@ -182,6 +219,14 @@
 	--animate-slide-left: slide-left 0.3s ease-out;
 	--animate-slide-top: slide-top 0.3s ease-out;
 	--animate-caret-blink: caret-blink 1.25s ease-out infinite;
+	/* Accordion open/close. A keyframe `animation` (not a `transition`) is
+	   required: Radix's `Presence` only keeps a closing panel mounted while it
+	   detects a running CSS animation, so a transition never plays on close. The
+	   height target is Radix's measured `--radix-accordion-content-height`. Height
+	   (`.34s`) intentionally trails the trigger icon's `.3s` rotate on a shared
+	   ease so the icon leads and the panel follows as one gesture. */
+	--animate-accordion-down: accordion-down 0.34s cubic-bezier(0.3, 0.7, 0.3, 1);
+	--animate-accordion-up: accordion-up 0.34s cubic-bezier(0.3, 0.7, 0.3, 1);
 
 	@keyframes roll-reveal {
 		from {
@@ -229,6 +274,26 @@
 		20%,
 		50% {
 			opacity: 0;
+		}
+	}
+
+	@keyframes accordion-down {
+		from {
+			height: 0;
+		}
+
+		to {
+			height: var(--radix-accordion-content-height);
+		}
+	}
+
+	@keyframes accordion-up {
+		from {
+			height: var(--radix-accordion-content-height);
+		}
+
+		to {
+			height: 0;
 		}
 	}
 }
@@ -282,6 +347,39 @@
 	   utility (e.g. the dock's own controls, which always stay `pointer`) wins. */
 	:where(button:not(:disabled)) {
 		cursor: var(--btn-cursor, default);
+	}
+
+	/* Themed scrollbars. Both the standards-track `scrollbar-*` properties (Firefox
+	   + newer engines) and the WebKit `::-webkit-scrollbar` pseudo-elements draw
+	   from the same theme tokens, so the bar re-tints with the active mode with no
+	   per-component edits. The track stays transparent so it sits flush on any
+	   surface; the resting thumb is the neutral --border token, deepening to the
+	   neutral --muted-foreground on hover, rounded to match the control radius. */
+	* {
+		scrollbar-color: var(--border) transparent;
+		scrollbar-width: thin;
+	}
+
+	::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
+	}
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background-color: var(--border);
+		border-radius: 9999px;
+		/* Transparent border carves an inset so the thumb reads slimmer than the
+		   track and never touches its edges; background-clip keeps the paint inside. */
+		border: 2px solid transparent;
+		background-clip: padding-box;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background-color: var(--muted-foreground);
+	}
+	::-webkit-scrollbar-corner {
+		background: transparent;
 	}
 }
 

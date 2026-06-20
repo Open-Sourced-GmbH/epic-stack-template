@@ -90,11 +90,13 @@ export function Hero() {
 					</div>
 				</div>
 
-				{/* Right product panel — forced `.dark` for contrast against the page.
-				    `contents` keeps the absolute glow + chip positioned against the
-				    outer cell while the panel still inherits the dark tokens. */}
+				{/* Right product panel — `.theme-inverse` renders it as the opposite of
+				    the active page theme (dark panel on a light page, light panel on a
+				    dark page) so it always keeps contrast. `contents` keeps the absolute
+				    glow + chip positioned against the outer cell while the panel inherits
+				    the inverted tokens. */}
 				<div className="anim d4 relative hidden items-center justify-center min-[880px]:flex">
-					<div className="dark contents">
+					<div className="theme-inverse contents">
 						<div
 							aria-hidden
 							className="bg-brand-glow breathe absolute h-[78%] w-[78%] rounded-[40px] opacity-90 blur-[10px]"
@@ -128,7 +130,7 @@ export function Hero() {
 								<Button variant="outline">Preview</Button>
 							</div>
 						</div>
-						<div className="bg-card border-border floaty absolute -top-4 -left-3.5 flex items-center gap-2 rounded-xl border px-[15px] py-2.5 text-[13px] font-medium shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
+						<div className="bg-card text-card-foreground border-border floaty absolute -top-4 -left-3.5 flex items-center gap-2 rounded-xl border px-[15px] py-2.5 text-[13px] font-medium shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
 							<span className="bg-brand grid h-[18px] w-[18px] place-items-center rounded-full text-white">
 								<Icon name="check" className="h-3 w-3" />
 							</span>

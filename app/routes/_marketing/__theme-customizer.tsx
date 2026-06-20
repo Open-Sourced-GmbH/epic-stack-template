@@ -101,127 +101,128 @@ export function ThemeCustomizer({
 
 	const accentName = activePreset?.name ?? 'Custom'
 
-	if (!open) {
-		return (
-			<div className="fixed right-4 bottom-4 z-50">
-				<button
-					type="button"
-					aria-expanded={false}
-					aria-label="Customize theme"
-					onClick={() => setOpen(true)}
-					className="bg-card text-card-foreground border-border focus-visible:ring-ring flex cursor-pointer items-center gap-2 rounded-full border py-2 pr-4 pl-2 shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden"
-				>
-					<span
-						className="size-6 rounded-full"
-						style={{ backgroundColor: brandColor(draft) }}
-					/>
-					<span className="text-sm font-medium">{accentName}</span>
-				</button>
-			</div>
-		)
-	}
-
+	// Anchored in the marketing navbar: an inline trigger pill that toggles a
+	// popover card hung below it (`absolute top-full right-0`), rather than a
+	// page-fixed dock. The trigger owns `aria-expanded`; the card renders in the
+	// header's stacking context (`z-50`) so it floats over the page content.
 	return (
-		<div className="fixed right-4 bottom-4 z-50">
-			<div
-				role="region"
-				aria-label="Theme customizer"
-				className="bg-card text-card-foreground border-border tc-pop w-72 rounded-xl border p-4 shadow-xl"
+		<div className="relative">
+			<button
+				type="button"
+				aria-expanded={open}
+				aria-label="Customize theme"
+				onClick={() => setOpen((current) => !current)}
+				className="bg-card text-card-foreground border-border focus-visible:ring-ring flex cursor-pointer items-center gap-2 rounded-full border py-1.5 pr-3 pl-1.5 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden"
 			>
-				<div className="flex items-center justify-between">
-					<p className="text-sm font-semibold">Customize</p>
-					<button
-						type="button"
-						aria-expanded={true}
-						aria-label="Customize theme"
-						onClick={() => setOpen(false)}
-						className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex size-7 cursor-pointer items-center justify-center rounded-md focus-visible:ring-2 focus-visible:outline-hidden"
-					>
-						<Icon name="cross-1" />
-					</button>
-				</div>
+				<span
+					className="size-5 rounded-full"
+					style={{ backgroundColor: brandColor(draft) }}
+				/>
+				<span className="hidden text-sm font-medium sm:inline">
+					{accentName}
+				</span>
+			</button>
 
-				{/* Accent preset swatches. */}
-				<div className="mt-4 flex items-center gap-2">
-					{accentPresets.map((preset) => {
-						const active = preset.id === activePreset?.id
-						return (
-							<button
-								key={preset.id}
-								type="button"
-								aria-pressed={active}
-								title={preset.name}
-								onClick={() => commitAccent(preset.accent, preset.id)}
-								className={cn(
-									'focus-visible:ring-ring size-7 cursor-pointer rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2',
-									active && 'ring-foreground ring-2 ring-offset-2',
-								)}
-								style={{ backgroundColor: brandColor(preset.accent) }}
+			{open ? (
+				<div
+					role="region"
+					aria-label="Theme customizer"
+					className="bg-card text-card-foreground border-border tc-pop absolute top-full right-0 z-50 mt-2 w-72 rounded-xl border p-4 shadow-xl"
+				>
+					<div className="flex items-center justify-between">
+						<p className="text-sm font-semibold">Customize</p>
+						<button
+							type="button"
+							aria-label="Close customizer"
+							onClick={() => setOpen(false)}
+							className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex size-7 cursor-pointer items-center justify-center rounded-md focus-visible:ring-2 focus-visible:outline-hidden"
+						>
+							<Icon name="cross-1" />
+						</button>
+					</div>
+
+					{/* Accent preset swatches. */}
+					<div className="mt-4 flex items-center gap-2">
+						{accentPresets.map((preset) => {
+							const active = preset.id === activePreset?.id
+							return (
+								<button
+									key={preset.id}
+									type="button"
+									aria-pressed={active}
+									title={preset.name}
+									onClick={() => commitAccent(preset.accent, preset.id)}
+									className={cn(
+										'focus-visible:ring-ring size-7 cursor-pointer rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2',
+										active && 'ring-foreground ring-2 ring-offset-2',
+									)}
+									style={{ backgroundColor: brandColor(preset.accent) }}
+								>
+									<span className="sr-only">{preset.name}</span>
+								</button>
+							)
+						})}
+					</div>
+
+					{/* Free oklch sliders — gradient tracks built from the live accent. */}
+					<div className="mt-5 grid gap-4">
+						<AccentSlider
+							label="Hue"
+							value={draft.h}
+							min={0}
+							max={360}
+							step={1}
+							trackGradient={`linear-gradient(to right in oklch, oklch(${draft.l}% ${draft.c} 0), oklch(${draft.l}% ${draft.c} 120), oklch(${draft.l}% ${draft.c} 240), oklch(${draft.l}% ${draft.c} 360))`}
+							onChange={(h) => commitAccent({ ...draft, h })}
+						/>
+						<AccentSlider
+							label="Chroma"
+							value={draft.c}
+							min={0}
+							max={0.3}
+							step={0.005}
+							trackGradient={`linear-gradient(to right in oklch, oklch(${draft.l}% 0 ${draft.h}), oklch(${draft.l}% 0.3 ${draft.h}))`}
+							onChange={(c) => commitAccent({ ...draft, c })}
+						/>
+						<AccentSlider
+							label="Light"
+							value={draft.l}
+							min={ACCENT_LIGHT_MIN}
+							max={ACCENT_LIGHT_MAX}
+							step={1}
+							trackGradient={`linear-gradient(to right in oklch, oklch(${ACCENT_LIGHT_MIN}% ${draft.c} ${draft.h}), oklch(${ACCENT_LIGHT_MAX}% ${draft.c} ${draft.h}))`}
+							onChange={(l) => commitAccent({ ...draft, l })}
+						/>
+					</div>
+
+					{/* Theme segment — reuses the existing theme cookie + optimistic hook. */}
+					<Segment label="Theme" className="mt-5">
+						{themeModes.map((mode) => (
+							<SegmentButton
+								key={mode.value}
+								active={mode.value === activeTheme}
+								onClick={() => commitTheme(mode.value)}
 							>
-								<span className="sr-only">{preset.name}</span>
-							</button>
-						)
-					})}
+								<Icon name={mode.icon} className="mr-1.5" />
+								{mode.label}
+							</SegmentButton>
+						))}
+					</Segment>
+
+					{/* Button-cursor segment. */}
+					<Segment label="Cursor" className="mt-3">
+						{cursorModes.map((mode) => (
+							<SegmentButton
+								key={mode.value}
+								active={mode.value === draftCursor}
+								onClick={() => commitCursor(mode.value)}
+							>
+								{mode.label}
+							</SegmentButton>
+						))}
+					</Segment>
 				</div>
-
-				{/* Free oklch sliders — gradient tracks built from the live accent. */}
-				<div className="mt-5 grid gap-4">
-					<AccentSlider
-						label="Hue"
-						value={draft.h}
-						min={0}
-						max={360}
-						step={1}
-						trackGradient={`linear-gradient(to right in oklch, oklch(${draft.l}% ${draft.c} 0), oklch(${draft.l}% ${draft.c} 120), oklch(${draft.l}% ${draft.c} 240), oklch(${draft.l}% ${draft.c} 360))`}
-						onChange={(h) => commitAccent({ ...draft, h })}
-					/>
-					<AccentSlider
-						label="Chroma"
-						value={draft.c}
-						min={0}
-						max={0.3}
-						step={0.005}
-						trackGradient={`linear-gradient(to right in oklch, oklch(${draft.l}% 0 ${draft.h}), oklch(${draft.l}% 0.3 ${draft.h}))`}
-						onChange={(c) => commitAccent({ ...draft, c })}
-					/>
-					<AccentSlider
-						label="Light"
-						value={draft.l}
-						min={ACCENT_LIGHT_MIN}
-						max={ACCENT_LIGHT_MAX}
-						step={1}
-						trackGradient={`linear-gradient(to right in oklch, oklch(${ACCENT_LIGHT_MIN}% ${draft.c} ${draft.h}), oklch(${ACCENT_LIGHT_MAX}% ${draft.c} ${draft.h}))`}
-						onChange={(l) => commitAccent({ ...draft, l })}
-					/>
-				</div>
-
-				{/* Theme segment — reuses the existing theme cookie + optimistic hook. */}
-				<Segment label="Theme" className="mt-5">
-					{themeModes.map((mode) => (
-						<SegmentButton
-							key={mode.value}
-							active={mode.value === activeTheme}
-							onClick={() => commitTheme(mode.value)}
-						>
-							<Icon name={mode.icon} className="mr-1.5" />
-							{mode.label}
-						</SegmentButton>
-					))}
-				</Segment>
-
-				{/* Button-cursor segment. */}
-				<Segment label="Cursor" className="mt-3">
-					{cursorModes.map((mode) => (
-						<SegmentButton
-							key={mode.value}
-							active={mode.value === draftCursor}
-							onClick={() => commitCursor(mode.value)}
-						>
-							{mode.label}
-						</SegmentButton>
-					))}
-				</Segment>
-			</div>
+			) : null}
 		</div>
 	)
 }

@@ -22,7 +22,12 @@ const AUTOPLAY_MS = 7_000
 
 function PlayPauseIcon({ playing }: { playing: boolean }) {
 	return (
-		<svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+		<svg
+			viewBox="0 0 16 16"
+			className="h-3.5 w-3.5"
+			fill="currentColor"
+			aria-hidden
+		>
 			{playing ? (
 				<>
 					<rect x="4" y="3" width="3" height="10" rx="1" />
@@ -89,7 +94,9 @@ export function Carousel({
 	useLayoutEffect(() => {
 		if (!enhanced) return
 		const el = panelRef.current
-		if (el) setHeight(el.offsetHeight)
+		// Ceil the fractional height so a bordered child (e.g. a Card) isn't
+		// clipped by the overflow-hidden viewport on sub-pixel rounding.
+		if (el) setHeight(Math.ceil(el.getBoundingClientRect().height))
 	}, [enhanced, active])
 
 	return (

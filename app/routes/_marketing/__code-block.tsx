@@ -7,7 +7,7 @@ import { cn } from '#app/utils/misc.tsx'
  * palette below; an undefined `kind` renders in the base `--code-text` colour.
  */
 export type CodeToken = { text: string; kind?: TokenKind }
-export type TokenKind = 'keyword' | 'string' | 'tag' | 'attr' | 'punc'
+export type TokenKind = 'keyword' | 'string' | 'tag' | 'attr' | 'punc' | 'comment'
 /** One line of source, as an ordered list of tokens. */
 export type CodeLine = CodeToken[]
 
@@ -26,6 +26,7 @@ const CODE_PALETTE = {
 	'--tk-tag': 'oklch(0.78 0.12 230)',
 	'--tk-attr': 'oklch(0.84 0.13 80)',
 	'--tk-punc': 'oklch(0.7 0.02 264)',
+	'--tk-comment': 'oklch(0.6 0.025 264)',
 } as React.CSSProperties
 
 const COPIED_RESET_MS = 1600
