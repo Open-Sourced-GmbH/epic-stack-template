@@ -1,63 +1,16 @@
 import { RouterContextProvider } from 'react-router'
 import { expect, test } from 'vitest'
-import { getSessionExpirationDate } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { getPermissionMatrix } from '#app/utils/user.ts'
-import { createUser } from '#tests/db-utils.ts'
-import { BASE_URL, getSessionCookieHeader } from '#tests/utils.ts'
+import {
+	getSessionCookieFor,
+	makeAdmin,
+	makeReader,
+} from '#tests/post-admin-utils.ts'
+import { BASE_URL } from '#tests/utils.ts'
 import { action } from './post-editor.server.tsx'
 
-let roleCounter = 0
-
-/**
- * A user holding the `post` permissions — the admin authoring role. The test DB
- * is migrated but not seeded, so the `post` Permission rows (derived from the
- * RBAC vocabulary) are upserted here and connected to a fresh role.
- */
-async function makeAdmin() {
-	const permRows = await Promise.all(
-		getPermissionMatrix()
-			.filter((p) => p.entity === 'post')
-			.map((p) =>
-				prisma.permission.upsert({
-					where: {
-						action_entity_access: {
-							action: p.action,
-							entity: p.entity,
-							access: p.access,
-						},
-					},
-					create: p,
-					update: {},
-					select: { id: true },
-				}),
-			),
-	)
-	return prisma.user.create({
-		select: { id: true },
-		data: {
-			...createUser(),
-			roles: {
-				create: {
-					name: `post-admin-${roleCounter++}`,
-					permissions: { connect: permRows.map((p) => ({ id: p.id })) },
-				},
-			},
-		},
-	})
-}
-
-/** A signed-in user holding no roles — a reader, not an author. */
-function makeReader() {
-	return prisma.user.create({ select: { id: true }, data: createUser() })
-}
-
 async function requestFor(userId: string, fields: Record<string, string>) {
-	const session = await prisma.session.create({
-		select: { id: true },
-		data: { expirationDate: getSessionExpirationDate(), userId },
-	})
-	const cookie = await getSessionCookieHeader(session)
+	const cookie = await getSessionCookieFor(userId)
 	return new Request(`${BASE_URL}/admin/blog/new`, {
 		method: 'POST',
 		headers: { cookie },

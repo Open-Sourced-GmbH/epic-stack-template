@@ -4,6 +4,7 @@ import { createUser } from '#tests/db-utils.ts'
 import {
 	deriveDescription,
 	getAdjacentPosts,
+	getAllPostsForAdmin,
 	getPostBySlug,
 	getPostsByTag,
 	getPublishedPosts,
@@ -246,6 +247,34 @@ test('getPostsByTag paginates within a tag with a stable total and pageCount', a
 	const firstIds = first?.posts.map((p) => p.id) ?? []
 	const lastIds = last?.posts.map((p) => p.id) ?? []
 	expect(firstIds.some((id) => lastIds.includes(id))).toBe(false)
+})
+
+// The admin list is the *inverse* of the public feed: it must surface Drafts as
+// well as Published posts so an author can manage everything in one place
+// (GROUNDED-SPEC §/admin/blog), with the "N total · M published" header counts.
+test('getAllPostsForAdmin returns Drafts as well as Published, with counts', async () => {
+	await makePost({ title: 'Published', publishedAt: new Date('2026-01-01') })
+	await makePost({ title: 'Draft', publishedAt: null })
+
+	const { posts, total, publishedCount } = await getAllPostsForAdmin()
+
+	expect(total).toBe(2)
+	expect(publishedCount).toBe(1)
+	expect(posts.map((p) => p.title).sort()).toEqual(['Draft', 'Published'])
+})
+
+test('getAllPostsForAdmin floats the most recently edited post to the top', async () => {
+	const first = await makePost({ title: 'First', publishedAt: null })
+	await makePost({ title: 'Second', publishedAt: null })
+
+	// Editing the older post must re-sort it above the newer one.
+	await prisma.post.update({
+		where: { id: first.id },
+		data: { title: 'First (edited)' },
+	})
+
+	const { posts } = await getAllPostsForAdmin()
+	expect(posts[0]?.title).toBe('First (edited)')
 })
 
 test('deriveDescription prefers the excerpt, else the first body paragraph', async () => {

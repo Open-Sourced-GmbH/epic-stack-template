@@ -119,6 +119,57 @@ export async function getPostsByTag(
 }
 
 /**
+ * The shape the admin post list (`/admin/blog`) reads per row: enough to render
+ * the thumb, title + author line, status badge, and updated time. Unlike the
+ * public {@link feedPostSelect} it carries no `excerpt`/`tags` (the list doesn't
+ * show them) but does carry `updatedAt` (the list's sort + "Updated" column) and
+ * — crucially — is read with **no `publishedAt` filter**, so Drafts appear too.
+ */
+const adminPostSelect = {
+	id: true,
+	title: true,
+	slug: true,
+	publishedAt: true,
+	updatedAt: true,
+	coverImage: { select: { objectKey: true, altText: true } },
+	author: {
+		select: {
+			name: true,
+			username: true,
+			image: { select: { objectKey: true } },
+		},
+	},
+} satisfies Prisma.PostSelect
+
+export type AdminPost = Prisma.PostGetPayload<{ select: typeof adminPostSelect }>
+
+export type AdminPostList = {
+	posts: AdminPost[]
+	/** Every post (Drafts + Published) — drives the "N total" header count. */
+	total: number
+	/** How many of those are live — drives the "M published" header count. */
+	publishedCount: number
+}
+
+/**
+ * The admin post list: **every** post (Drafts + Published), newest-edited first
+ * so work-in-progress floats to the top, plus the total/published counts the
+ * header shows. This is the deliberate inverse of {@link getPublishedPosts} —
+ * the one read that *does* return Drafts — so it is admin-only at the route.
+ */
+export async function getAllPostsForAdmin(): Promise<AdminPostList> {
+	// The list is unpaginated — it fetches every post — so both counts derive
+	// from the rows already in hand; a separate `count` query would be wasted I/O.
+	// (Add `take`/`skip` later → switch these to real `count`s.)
+	const posts = await prisma.post.findMany({
+		orderBy: { updatedAt: 'desc' },
+		select: adminPostSelect,
+	})
+	const publishedCount = posts.reduce((n, p) => n + (p.publishedAt ? 1 : 0), 0)
+	return { posts, total: posts.length, publishedCount }
+}
+
+/**
  * The shape the single-article surface (`/blog/$slug`) reads: everything the
  * feed card needs plus the full Markdown `body` and the author's RBAC role (for
  * the byline role pill). `author` is nullable — a deleted author (`SetNull`)
