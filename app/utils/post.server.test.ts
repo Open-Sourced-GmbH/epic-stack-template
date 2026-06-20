@@ -1,6 +1,12 @@
 import { expect, test } from 'vitest'
 import { prisma } from '#app/utils/db.server.ts'
-import { getPublishedPosts } from './post.server.ts'
+import { createUser } from '#tests/db-utils.ts'
+import {
+	deriveDescription,
+	getAdjacentPosts,
+	getPostBySlug,
+	getPublishedPosts,
+} from './post.server.ts'
 
 /**
  * Create a Post with control over its publication instant. A `publishedAt` of
@@ -10,17 +16,29 @@ import { getPublishedPosts } from './post.server.ts'
 async function makePost({
 	title,
 	publishedAt,
+	slug,
+	body,
+	excerpt,
+	authorId,
 }: {
 	title: string
 	publishedAt: Date | null
+	slug?: string
+	body?: string
+	excerpt?: string
+	authorId?: string
 }) {
 	return prisma.post.create({
-		select: { id: true },
+		select: { id: true, slug: true },
 		data: {
 			title,
-			slug: `${title.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 8)}`,
-			body: 'body',
+			slug:
+				slug ??
+				`${title.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 8)}`,
+			body: body ?? 'body',
+			excerpt,
 			publishedAt,
+			authorId,
 		},
 	})
 }
@@ -79,4 +97,91 @@ test('an out-of-range page is clamped to a valid page number', async () => {
 
 	expect(page).toBe(1)
 	expect(posts).toHaveLength(1)
+})
+
+// getPostBySlug owns the same "public never returns a Draft" invariant for the
+// single-article read (GROUNDED-SPEC §/blog/$slug): drafts must 404 publicly.
+test('getPostBySlug returns a Published post by its slug with body and tags', async () => {
+	await prisma.post.create({
+		data: {
+			title: 'Hello',
+			slug: 'hello-world',
+			body: '# Heading\n\nReal body text.',
+			excerpt: 'A short dek.',
+			publishedAt: new Date('2026-01-01'),
+			tags: { create: [{ name: 'React', slug: 'react' }] },
+		},
+		select: { id: true },
+	})
+
+	const post = await getPostBySlug('hello-world')
+
+	expect(post?.title).toBe('Hello')
+	expect(post?.body).toContain('Real body text.')
+	expect(post?.tags.map((t) => t.slug)).toEqual(['react'])
+})
+
+test('getPostBySlug returns null for an unknown slug', async () => {
+	expect(await getPostBySlug('does-not-exist')).toBeNull()
+})
+
+test('getPostBySlug returns null for a Draft slug (draft-safety)', async () => {
+	const draft = await makePost({
+		title: 'Secret Draft',
+		slug: 'secret-draft',
+		publishedAt: null,
+	})
+
+	expect(draft.slug).toBe('secret-draft')
+	expect(await getPostBySlug('secret-draft')).toBeNull()
+})
+
+test('getPostBySlug surfaces the author RBAC roles for the byline pill', async () => {
+	const author = await prisma.user.create({
+		select: { id: true },
+		data: {
+			...createUser(),
+			roles: { create: { name: 'editor', description: '' } },
+		},
+	})
+	await makePost({
+		title: 'Bylined',
+		slug: 'bylined',
+		publishedAt: new Date('2026-01-01'),
+		authorId: author.id,
+	})
+
+	const post = await getPostBySlug('bylined')
+
+	expect(post?.author?.roles.map((r) => r.name)).toEqual(['editor'])
+})
+
+test('getAdjacentPosts returns the neighbouring Published posts, null at the ends', async () => {
+	await makePost({ title: 'Older', publishedAt: new Date('2026-01-01') })
+	await makePost({ title: 'Middle', publishedAt: new Date('2026-02-01') })
+	await makePost({ title: 'Newer', publishedAt: new Date('2026-03-01') })
+	// A Draft published "between" must never appear in prev/next.
+	await makePost({ title: 'Draft', publishedAt: null })
+
+	const mid = await getAdjacentPosts({ publishedAt: new Date('2026-02-01') })
+	expect(mid.newer?.title).toBe('Newer')
+	expect(mid.older?.title).toBe('Older')
+
+	const newest = await getAdjacentPosts({ publishedAt: new Date('2026-03-01') })
+	expect(newest.newer).toBeNull()
+	expect(newest.older?.title).toBe('Middle')
+})
+
+test('deriveDescription prefers the excerpt, else the first body paragraph', async () => {
+	expect(
+		deriveDescription({ excerpt: '  A hand-written dek.  ', body: 'Body.' }),
+	).toBe('A hand-written dek.')
+
+	// Empty excerpt → first real paragraph, skipping the heading and fence.
+	expect(
+		deriveDescription({
+			excerpt: '',
+			body: '# Title\n\n```ts\ncode\n```\n\nThe lede paragraph.',
+		}),
+	).toBe('The lede paragraph.')
 })

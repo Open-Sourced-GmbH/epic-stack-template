@@ -72,3 +72,108 @@ export async function getPublishedPosts({
 		pageCount: Math.max(1, Math.ceil(total / perPage)),
 	}
 }
+
+/**
+ * The shape the single-article surface (`/blog/$slug`) reads: everything the
+ * feed card needs plus the full Markdown `body` and the author's RBAC role (for
+ * the byline role pill). `author` is nullable — a deleted author (`SetNull`)
+ * leaves the post standing with no credit, which the byline renders as
+ * "Unknown" rather than crashing.
+ */
+const articlePostSelect = {
+	id: true,
+	title: true,
+	slug: true,
+	excerpt: true,
+	body: true,
+	publishedAt: true,
+	coverImage: { select: { objectKey: true, altText: true } },
+	author: {
+		select: {
+			name: true,
+			username: true,
+			image: { select: { objectKey: true } },
+			roles: { select: { name: true }, orderBy: { name: 'asc' } },
+		},
+	},
+	tags: { select: { name: true, slug: true }, orderBy: { name: 'asc' } },
+} satisfies Prisma.PostSelect
+
+export type ArticlePost = Prisma.PostGetPayload<{
+	select: typeof articlePostSelect
+}>
+
+/**
+ * Read one **Published** post by slug, or `null` when the slug is unknown **or**
+ * names a Draft. This is the article-page half of the "public never returns a
+ * Draft" invariant (GROUNDED-SPEC §/blog/$slug): a Draft row exists but must be
+ * indistinguishable from a missing one to the public, so the route 404s on both.
+ */
+export async function getPostBySlug(slug: string): Promise<ArticlePost | null> {
+	return prisma.post.findFirst({
+		where: { slug, publishedAt: { not: null } },
+		select: articlePostSelect,
+	})
+}
+
+/** A prev/next navigation card — just enough to render the adjacent post link. */
+const navPostSelect = {
+	title: true,
+	slug: true,
+} satisfies Prisma.PostSelect
+
+export type NavPost = Prisma.PostGetPayload<{ select: typeof navPostSelect }>
+
+/**
+ * The Published posts immediately adjacent to `post` in the feed's newest-first
+ * order: `newer` was published just after it, `older` just before. Either is
+ * `null` at the ends of the timeline. Drafts never appear, so prev/next walks
+ * the same public timeline as the index.
+ */
+export async function getAdjacentPosts(post: {
+	publishedAt: Date | null
+}): Promise<{ newer: NavPost | null; older: NavPost | null }> {
+	const at = post.publishedAt
+	if (!at) return { newer: null, older: null }
+
+	const [newer, older] = await Promise.all([
+		prisma.post.findFirst({
+			where: { publishedAt: { gt: at } },
+			orderBy: { publishedAt: 'asc' },
+			select: navPostSelect,
+		}),
+		prisma.post.findFirst({
+			where: { publishedAt: { lt: at } },
+			orderBy: { publishedAt: 'desc' },
+			select: navPostSelect,
+		}),
+	])
+
+	return { newer, older }
+}
+
+/**
+ * The per-post meta description: a trimmed excerpt when the author wrote one,
+ * else the post's first body paragraph (GROUNDED-SPEC §/blog/$slug SEO). Pure
+ * so the loader can pass the result straight to `meta`. Headings, fenced code,
+ * and blank lines are skipped so the fallback reads like a real sentence; the
+ * result is collapsed to one line and clamped to a meta-friendly length.
+ */
+export function deriveDescription({
+	excerpt,
+	body,
+}: {
+	excerpt?: string | null
+	body: string
+}): string {
+	const trimmedExcerpt = excerpt?.trim()
+	if (trimmedExcerpt) return trimmedExcerpt
+
+	const paragraph =
+		body
+			.split(/\n\s*\n/)
+			.map((block) => block.trim())
+			.find((block) => block && !block.startsWith('#') && !block.startsWith('```')) ?? ''
+	const oneLine = paragraph.replace(/\s+/g, ' ')
+	return oneLine.length > 200 ? `${oneLine.slice(0, 197).trimEnd()}…` : oneLine
+}

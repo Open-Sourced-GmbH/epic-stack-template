@@ -21,7 +21,7 @@ import { type FeedPost } from '#app/utils/post.server.ts'
  */
 
 /** Decorative cover gradients used when a post has no uploaded cover image. */
-const COVER_GRADIENTS = {
+export const COVER_GRADIENTS = {
 	pine: 'radial-gradient(120% 120% at 15% 10%, oklch(0.7 0.13 172) 0%, oklch(0.45 0.11 195) 55%, oklch(0.28 0.06 220) 100%)',
 	slate: 'radial-gradient(120% 120% at 85% 0%, oklch(0.5 0.05 255) 0%, oklch(0.32 0.04 262) 55%, oklch(0.2 0.03 264) 100%)',
 	amber: 'radial-gradient(120% 120% at 20% 90%, oklch(0.78 0.13 70) 0%, oklch(0.55 0.13 45) 55%, oklch(0.34 0.08 30) 100%)',
@@ -31,13 +31,13 @@ const COVER_KEYS = Object.keys(COVER_GRADIENTS) as Array<
 >
 
 /** Stable per-post art pick so a coverless post always shows the same gradient. */
-function coverArt(seed: string): keyof typeof COVER_GRADIENTS {
+export function coverArt(seed: string): keyof typeof COVER_GRADIENTS {
 	let hash = 0
 	for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
 	return COVER_KEYS[hash % COVER_KEYS.length]!
 }
 
-function initials(name: string): string {
+export function initials(name: string): string {
 	return (
 		name
 			.split(/\s+/)
@@ -48,7 +48,7 @@ function initials(name: string): string {
 	)
 }
 
-function formatDate(value: Date | string): string {
+export function formatDate(value: Date | string): string {
 	return new Date(value).toLocaleDateString('en-US', {
 		year: 'numeric',
 		month: 'short',
@@ -79,7 +79,7 @@ function Cover({ post, className }: { post: FeedPost; className?: string }) {
 }
 
 /** Tag pills that link into the tag archive; layered above the card link. */
-function TagPills({ tags }: { tags: FeedPost['tags'] }) {
+export function TagPills({ tags }: { tags: FeedPost['tags'] }) {
 	if (tags.length === 0) return null
 	return (
 		<div className="relative z-10 flex flex-wrap gap-1.5">
