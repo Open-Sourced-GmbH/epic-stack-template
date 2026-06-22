@@ -15,24 +15,12 @@ let roleCounter = 0
 
 /** A user holding every `post` permission — the admin authoring role. */
 export async function makeAdmin() {
-	const permRows = await Promise.all(
-		getPermissionMatrix()
-			.filter((p) => p.entity === 'post')
-			.map((p) =>
-				prisma.permission.upsert({
-					where: {
-						action_entity_access: {
-							action: p.action,
-							entity: p.entity,
-							access: p.access,
-						},
-					},
-					create: p,
-					update: {},
-					select: { id: true },
-				}),
-			),
-	)
+	const postPerms = getPermissionMatrix().filter((p) => p.entity === 'post')
+	// Resolve the `post` Permission rows and attach them in a single atomic write.
+	// `connectOrCreate` (rather than a separate upsert-then-connect-by-id) closes
+	// the read-then-connect gap that raced the per-test base-DB copy in
+	// `db-setup.ts` — under full-suite timing the gathered ids could point at rows
+	// not all present at connect time ("Expected N records to be connected").
 	return prisma.user.create({
 		select: { id: true },
 		data: {
@@ -40,7 +28,18 @@ export async function makeAdmin() {
 			roles: {
 				create: {
 					name: `post-admin-${roleCounter++}`,
-					permissions: { connect: permRows.map((p) => ({ id: p.id })) },
+					permissions: {
+						connectOrCreate: postPerms.map((p) => ({
+							where: {
+								action_entity_access: {
+									action: p.action,
+									entity: p.entity,
+									access: p.access,
+								},
+							},
+							create: p,
+						})),
+					},
 				},
 			},
 		},

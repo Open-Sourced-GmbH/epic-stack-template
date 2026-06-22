@@ -19,7 +19,17 @@ if (cacheDatabasePath && cacheDatabasePath !== ':memory:') {
 }
 
 beforeEach(async () => {
+	// Reset the worker DB to the pristine base before each test. The base file is
+	// swapped in *while a Prisma connection is open*, so we must first disconnect
+	// and clear the SQLite `-wal`/`-shm` sidecars — otherwise the live connection
+	// reads the fresh main file against a stale WAL index and SQLite reports
+	// "database disk image is malformed" (err 779). Dynamic import so the swap
+	// happens against the pool-scoped DATABASE_URL set above.
+	const { prisma } = await import('#app/utils/db.server.ts')
+	await prisma.$disconnect()
 	await fsExtra.copyFile(BASE_DATABASE_PATH, databasePath)
+	await fsExtra.remove(`${databasePath}-wal`)
+	await fsExtra.remove(`${databasePath}-shm`)
 })
 
 afterAll(async () => {
