@@ -3,11 +3,13 @@ import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { Img } from 'openimg/react'
+import { type ReactNode } from 'react'
 import { data, Link, useFetcher } from 'react-router'
 import { z } from 'zod'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
+import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireUserId, sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -97,84 +99,130 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
+/** A branded hub row linking to a settings sub-page or resource. */
+function AccountLinkRow({
+	to,
+	icon,
+	children,
+	reloadDocument,
+	download,
+}: {
+	to: string
+	icon: IconName
+	children: ReactNode
+	/** Trigger a full document navigation (for the data-download resource). */
+	reloadDocument?: boolean
+	/** Suggested filename when the target is a download. */
+	download?: string
+}) {
+	return (
+		<li>
+			<Link
+				to={to}
+				reloadDocument={reloadDocument}
+				download={download}
+				className="group hover:bg-muted -mx-3 flex items-center gap-3 rounded-lg px-3 py-3 transition-colors"
+			>
+				<Icon
+					name={icon}
+					className="text-muted-foreground size-4 shrink-0"
+				/>
+				<span className="flex-1">{children}</span>
+				<Icon
+					name="arrow-right"
+					className="text-muted-foreground/60 group-hover:text-brand size-4 shrink-0 transition-colors"
+				/>
+			</Link>
+		</li>
+	)
+}
+
 export default function EditUserProfile({ loaderData }: Route.ComponentProps) {
 	return (
-		<div className="flex flex-col gap-12">
-			<div className="flex justify-center">
-				<div className="relative size-52">
-					<Img
-						src={getUserImgSrc(loaderData.user.image?.objectKey)}
-						alt={loaderData.user.name ?? loaderData.user.username}
-						className="h-full w-full rounded-full object-cover"
-						width={832}
-						height={832}
-						isAboveFold
-					/>
-					<Button
-						asChild
-						variant="outline"
-						className="absolute top-3 -right-3 flex size-10 items-center justify-center rounded-full p-0"
-					>
-						<Link
-							preventScrollReset
-							to="photo"
-							title="Change profile photo"
-							aria-label="Change profile photo"
+		<div className="flex flex-col gap-8">
+			<FormCard
+				title="Profile"
+				description="Your photo, name, and username."
+			>
+				<div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start">
+					<div className="relative size-40 shrink-0">
+						<Img
+							src={getUserImgSrc(loaderData.user.image?.objectKey)}
+							alt={loaderData.user.name ?? loaderData.user.username}
+							className="h-full w-full rounded-full object-cover"
+							width={832}
+							height={832}
+							isAboveFold
+						/>
+						<Button
+							asChild
+							variant="outline"
+							className="absolute top-1 -right-1 flex size-10 items-center justify-center rounded-full p-0"
 						>
-							<Icon name="camera" className="size-4" />
-						</Link>
-					</Button>
+							<Link
+								preventScrollReset
+								to="photo"
+								title="Change profile photo"
+								aria-label="Change profile photo"
+							>
+								<Icon name="camera" className="size-4" />
+							</Link>
+						</Button>
+					</div>
+					<div className="w-full flex-1">
+						<UpdateProfile loaderData={loaderData} />
+					</div>
 				</div>
-			</div>
-			<UpdateProfile loaderData={loaderData} />
+			</FormCard>
 
-			<div className="border-foreground col-span-6 my-6 h-1 border-b-[1.5px]" />
-			<div className="col-span-full flex flex-col gap-6">
-				<div>
-					<Link to="change-email">
-						<Icon name="envelope-closed">
-							Change email from {loaderData.user.email}
-						</Icon>
-					</Link>
-				</div>
-				<div>
-					<Link to="two-factor">
-						{loaderData.isTwoFactorEnabled ? (
-							<Icon name="lock-closed">2FA is enabled</Icon>
-						) : (
-							<Icon name="lock-open-1">Enable 2FA</Icon>
-						)}
-					</Link>
-				</div>
-				<div>
-					<Link to={loaderData.hasPassword ? 'password' : 'password/create'}>
-						<Icon name="dots-horizontal">
-							{loaderData.hasPassword ? 'Change Password' : 'Create a Password'}
-						</Icon>
-					</Link>
-				</div>
-				<div>
-					<Link to="connections">
-						<Icon name="link-2">Manage connections</Icon>
-					</Link>
-				</div>
-				<div>
-					<Link to="passkeys">
-						<Icon name="passkey">Manage passkeys</Icon>
-					</Link>
-				</div>
-				<div>
-					<Link
+			<FormCard title="Account & security">
+				<ul className="flex flex-col">
+					<AccountLinkRow to="change-email" icon="envelope-closed">
+						Change email from {loaderData.user.email}
+					</AccountLinkRow>
+					<AccountLinkRow
+						to="two-factor"
+						icon={loaderData.isTwoFactorEnabled ? 'lock-closed' : 'lock-open-1'}
+					>
+						{loaderData.isTwoFactorEnabled ? '2FA is enabled' : 'Enable 2FA'}
+					</AccountLinkRow>
+					<AccountLinkRow
+						to={loaderData.hasPassword ? 'password' : 'password/create'}
+						icon="dots-horizontal"
+					>
+						{loaderData.hasPassword ? 'Change Password' : 'Create a Password'}
+					</AccountLinkRow>
+					<AccountLinkRow to="connections" icon="link-2">
+						Manage connections
+					</AccountLinkRow>
+					<AccountLinkRow to="passkeys" icon="passkey">
+						Manage passkeys
+					</AccountLinkRow>
+					<AccountLinkRow
+						to="/resources/download-user-data"
+						icon="download"
 						reloadDocument
 						download="my-epic-notes-data.json"
-						to="/resources/download-user-data"
 					>
-						<Icon name="download">Download your data</Icon>
-					</Link>
-				</div>
+						Download your data
+					</AccountLinkRow>
+				</ul>
+			</FormCard>
+
+			<FormCard
+				title="Active sessions"
+				description="Sign out everywhere except this device."
+			>
 				<SignOutOfSessions loaderData={loaderData} />
+			</FormCard>
+
+			<FormCard
+				variant="destructive"
+				title="Delete account & data"
+				description="Permanently delete your account and all of its data. This cannot be undone."
+			>
 				<DeleteData />
-			</div>
+			</FormCard>
 		</div>
 	)
 }

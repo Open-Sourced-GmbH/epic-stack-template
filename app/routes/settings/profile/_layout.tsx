@@ -4,6 +4,7 @@ import { Link, Outlet, useMatches } from 'react-router'
 import { z } from 'zod'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { PageHeader } from '#app/components/ui/page-header.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { cn } from '#app/utils/misc.tsx'
@@ -64,6 +65,7 @@ export default function EditUserProfile() {
 							key={i}
 							className={cn('flex items-center gap-3', {
 								'text-muted-foreground': i < arr.length - 1,
+								'text-brand': i === arr.length - 1,
 							})}
 						>
 							<Icon name="arrow-right" size="sm">
@@ -75,6 +77,12 @@ export default function EditUserProfile() {
 			</div>
 			<Spacer size="xs" />
 			<main className="bg-muted mx-auto px-6 py-8 md:container md:rounded-3xl">
+				<PageHeader
+					eyebrow="Account"
+					title="Settings"
+					headingLevel={1}
+					className="mb-8"
+				/>
 				<Outlet />
 			</main>
 		</div>
