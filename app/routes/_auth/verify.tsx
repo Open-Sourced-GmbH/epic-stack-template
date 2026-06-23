@@ -5,7 +5,7 @@ import { Form, useSearchParams } from 'react-router'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, OTPField } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
@@ -31,6 +31,25 @@ export async function action({ request }: Route.ActionArgs) {
 	return validateRequest(request, formData)
 }
 
+type VerifyHeading = { eyebrow: string; title: string; description: string }
+
+const checkEmail: VerifyHeading = {
+	eyebrow: 'Verify your email',
+	title: 'Check your email',
+	description: "We've sent you a code to verify your email address.",
+}
+
+const headings: Record<VerificationTypes, VerifyHeading> = {
+	onboarding: checkEmail,
+	'reset-password': checkEmail,
+	'change-email': checkEmail,
+	'2fa': {
+		eyebrow: 'Two-factor auth',
+		title: 'Check your 2FA app',
+		description: 'Please enter your 2FA code to verify your identity.',
+	},
+}
+
 export default function VerifyRoute({ actionData }: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const isPending = useIsPending()
@@ -38,29 +57,7 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
 		searchParams.get(typeQueryParam),
 	)
 	const type = parseWithZoddType.success ? parseWithZoddType.data : null
-
-	const checkEmail = (
-		<>
-			<h1 className="text-h1">Check your email</h1>
-			<p className="text-body-md text-muted-foreground mt-3">
-				We've sent you a code to verify your email address.
-			</p>
-		</>
-	)
-
-	const headings: Record<VerificationTypes, React.ReactNode> = {
-		onboarding: checkEmail,
-		'reset-password': checkEmail,
-		'change-email': checkEmail,
-		'2fa': (
-			<>
-				<h1 className="text-h1">Check your 2FA app</h1>
-				<p className="text-body-md text-muted-foreground mt-3">
-					Please enter your 2FA code to verify your identity.
-				</p>
-			</>
-		),
-	}
+	const heading = type ? headings[type] : null
 
 	const [form, fields] = useForm({
 		id: 'verify-form',
@@ -78,56 +75,60 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
 	})
 
 	return (
-		<main className="container flex flex-col justify-center pt-20 pb-32">
-			<div className="text-center">
-				{type ? headings[type] : 'Invalid Verification Type'}
+		<main className="w-full max-w-[360px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					{heading?.eyebrow ?? 'Verification'}
+				</p>
+				<h1 className="text-h4">
+					{heading?.title ?? 'Invalid verification type'}
+				</h1>
+				{heading ? (
+					<p className="text-muted-foreground text-body-sm">
+						{heading.description}
+					</p>
+				) : null}
 			</div>
 
-			<Spacer size="xs" />
-
-			<div className="mx-auto flex w-72 max-w-full flex-col justify-center gap-1">
-				<div>
-					<ErrorList errors={form.errors} id={form.errorId} />
-				</div>
-				<div className="flex w-full gap-2">
-					<Form method="POST" {...getFormProps(form)} className="flex-1">
-						<HoneypotInputs />
-						<div className="flex items-center justify-center">
-							<OTPField
-								labelProps={{
-									htmlFor: fields[codeQueryParam].id,
-									children: 'Code',
-								}}
-								inputProps={{
-									...getInputProps(fields[codeQueryParam], { type: 'text' }),
-									autoComplete: 'one-time-code',
-									autoFocus: true,
-								}}
-								errors={fields[codeQueryParam].errors}
-							/>
-						</div>
-						<input
-							{...getInputProps(fields[typeQueryParam], { type: 'hidden' })}
+			<FormCard className="mt-6 p-6 text-left">
+				<ErrorList errors={form.errors} id={form.errorId} />
+				<Form method="POST" {...getFormProps(form)}>
+					<HoneypotInputs />
+					<div className="flex items-center justify-center">
+						<OTPField
+							labelProps={{
+								htmlFor: fields[codeQueryParam].id,
+								children: 'Code',
+							}}
+							inputProps={{
+								...getInputProps(fields[codeQueryParam], { type: 'text' }),
+								autoComplete: 'one-time-code',
+								autoFocus: true,
+							}}
+							errors={fields[codeQueryParam].errors}
 						/>
-						<input
-							{...getInputProps(fields[targetQueryParam], { type: 'hidden' })}
-						/>
-						<input
-							{...getInputProps(fields[redirectToQueryParam], {
-								type: 'hidden',
-							})}
-						/>
-						<StatusButton
-							className="w-full"
-							status={isPending ? 'pending' : (form.status ?? 'idle')}
-							type="submit"
-							disabled={isPending}
-						>
-							Submit
-						</StatusButton>
-					</Form>
-				</div>
-			</div>
+					</div>
+					<input
+						{...getInputProps(fields[typeQueryParam], { type: 'hidden' })}
+					/>
+					<input
+						{...getInputProps(fields[targetQueryParam], { type: 'hidden' })}
+					/>
+					<input
+						{...getInputProps(fields[redirectToQueryParam], {
+							type: 'hidden',
+						})}
+					/>
+					<StatusButton
+						className="mt-2 w-full"
+						status={isPending ? 'pending' : (form.status ?? 'idle')}
+						type="submit"
+						disabled={isPending}
+					>
+						Submit
+					</StatusButton>
+				</Form>
+			</FormCard>
 		</main>
 	)
 }

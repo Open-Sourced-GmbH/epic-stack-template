@@ -4,6 +4,7 @@ import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { data, redirect, Form } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import {
 	checkIsCommonPassword,
@@ -97,15 +98,19 @@ export default function ResetPasswordPage({
 	})
 
 	return (
-		<div className="container flex flex-col justify-center pt-20 pb-32">
-			<div className="text-center">
-				<h1 className="text-h1">Password Reset</h1>
-				<p className="text-body-md text-muted-foreground mt-3">
+		<div className="w-full max-w-[360px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Password reset
+				</p>
+				<h1 className="text-h4">Choose a new password</h1>
+				<p className="text-muted-foreground text-body-sm">
 					Hi, {loaderData.resetPasswordUsername}. No worries. It happens all the
 					time.
 				</p>
 			</div>
-			<div className="mx-auto mt-16 max-w-sm min-w-full sm:min-w-[368px]">
+
+			<FormCard className="mt-6 p-6 text-left">
 				<Form method="POST" {...getFormProps(form)}>
 					<Field
 						labelProps={{
@@ -134,7 +139,7 @@ export default function ResetPasswordPage({
 					<ErrorList errors={form.errors} id={form.errorId} />
 
 					<StatusButton
-						className="w-full"
+						className="mt-2 w-full"
 						status={isPending ? 'pending' : (form.status ?? 'idle')}
 						type="submit"
 						disabled={isPending}
@@ -142,7 +147,7 @@ export default function ResetPasswordPage({
 						Reset password
 					</StatusButton>
 				</Form>
-			</div>
+			</FormCard>
 		</div>
 	)
 }
