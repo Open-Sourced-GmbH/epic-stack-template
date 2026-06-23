@@ -46,6 +46,7 @@ import {
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
 import { Field } from '#app/components/ui/field.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import {
 	InputOTP,
 	InputOTPGroup,
@@ -655,6 +656,54 @@ export const specimens: Specimen[] = [
 				/>
 				{/* Title only — the settings/account hub header. */}
 				<PageHeader eyebrow="Account" title="Settings" />
+			</div>
+		),
+	},
+	{
+		name: 'form-card',
+		group: 'Surfaces',
+		subtitle: 'plain (auth form) / with header (settings section) / destructive',
+		viewport: { width: 560, height: 560 },
+		render: () => (
+			<div className="flex w-full max-w-md flex-col gap-8">
+				{/* With header — the settings-section framing (title + description). */}
+				<FormCard
+					title="Profile"
+					description="Update your name and username."
+				>
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-1.5">
+							<Label htmlFor="form-card-name">Name</Label>
+							<Input id="form-card-name" defaultValue="Ada Lovelace" />
+						</div>
+						<div className="flex justify-end">
+							<Button>Save</Button>
+						</div>
+					</div>
+				</FormCard>
+				{/* Plain — the auth-form framing (a PageHeader sits above it in the
+				    shell, so the card itself carries no header). */}
+				<FormCard>
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-1.5">
+							<Label htmlFor="form-card-email">Email</Label>
+							<Input
+								id="form-card-email"
+								type="email"
+								placeholder="you@example.com"
+							/>
+						</div>
+						<Button>Continue</Button>
+					</div>
+				</FormCard>
+				{/* Destructive — the "delete account & data" zone. */}
+				<FormCard
+					variant="destructive"
+					title="Delete account & data"
+					description="This permanently removes your account and all of its data."
+				>
+					<Button variant="destructive">Delete account</Button>
+				</FormCard>
 			</div>
 		),
 	},
