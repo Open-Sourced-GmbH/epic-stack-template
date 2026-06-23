@@ -77,3 +77,4 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Accepted                          |
 | 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Accepted                          |
 | 065 | [Per-Entity Access Scoping](065-per-entity-access-scoping.md)            | Accepted (amends [059](059-seed-derives-permission-matrix-from-registry.md)) |
+| 066 | [Auth & Admin Shell Chrome Boundary](066-auth-and-admin-shell-chrome-boundary.md) | Accepted                          |
