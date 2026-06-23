@@ -62,6 +62,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '#app/components/ui/select.tsx'
+import { Separator } from '#app/components/ui/separator.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
@@ -601,6 +602,35 @@ export const specimens: Specimen[] = [
 				<Avatar className="size-16">
 					<AvatarFallback className="text-lg">GR</AvatarFallback>
 				</Avatar>
+			</div>
+		),
+	},
+	{
+		name: 'separator',
+		group: 'Surfaces',
+		subtitle: 'plain rule / labeled ("or continue with") / vertical',
+		viewport: { width: 480, height: 220 },
+		render: () => (
+			<div className="flex max-w-sm flex-col gap-6">
+				{/* Plain rule — divides stacked settings sections. */}
+				<div className="flex flex-col gap-3">
+					<span className="text-body-sm text-muted-foreground">
+						Account details
+					</span>
+					<Separator />
+					<span className="text-body-sm text-muted-foreground">
+						Danger zone
+					</span>
+				</div>
+				{/* Labeled variant — sits between the auth email form and the
+				    OAuth/passkey button rows. */}
+				<Separator label="or continue with" />
+				{/* Vertical rule — inline divider between two actions. */}
+				<div className="flex h-5 items-center gap-3">
+					<span className="text-body-sm text-muted-foreground">Edit</span>
+					<Separator orientation="vertical" />
+					<span className="text-body-sm text-muted-foreground">Delete</span>
+				</div>
 			</div>
 		),
 	},

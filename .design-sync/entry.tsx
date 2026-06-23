@@ -89,6 +89,7 @@ export {
 	SelectTrigger,
 	SelectValue,
 } from '#app/components/ui/select.tsx'
+export { Separator } from '#app/components/ui/separator.tsx'
 export { Skeleton } from '#app/components/ui/skeleton.tsx'
 export { Slider } from '#app/components/ui/slider.tsx'
 export { Spinner } from '#app/components/ui/spinner.tsx'
