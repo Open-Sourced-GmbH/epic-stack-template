@@ -107,3 +107,51 @@ test('theme command flips light↔dark and persists across reload', async ({
 	await navigate('/')
 	await expect(html).toHaveClass(/dark/)
 })
+
+test('theme customizer dock re-themes and persists without a redirect 404', async ({
+	page,
+	navigate,
+}) => {
+	await navigate('/')
+
+	// Open the floating dock (it starts minimized as a FAB).
+	await page.getByRole('button', { name: 'Customize theme' }).click()
+	const dock = page.getByRole('region', { name: 'Theme customizer' })
+	await expect(dock).toBeVisible()
+
+	// eslint-disable-next-line playwright/no-raw-locators
+	const html = page.locator('html')
+
+	// Flip the theme via the dock's Theme segment (posts to /resources/theme-switch).
+	await dock
+		.getByRole('group', { name: 'Theme' })
+		.getByRole('button', { name: 'Dark' })
+		.click()
+	await expect(html).toHaveClass(/dark/)
+
+	// Pick an accent swatch (posts to /resources/accent). These submissions are
+	// fetcher-only and must NOT redirect: a redirect here returns a single-fetch
+	// 202 to the index `.data` URL that 404s through the splat route. We assert
+	// the page stays put (no error boundary) and the cookie commits.
+	await dock.getByRole('button', { name: 'Iris' }).click()
+	await expect(
+		page.getByText(/can't find this page/i),
+	).toHaveCount(0)
+
+	await expect
+		.poll(async () => {
+			const cookies = await page.context().cookies()
+			return cookies.find((c) => c.name === 'en_accent')?.value
+		})
+		.toBeTruthy()
+
+	// A fresh server round-trip re-applies both preferences from their cookies.
+	await navigate('/')
+	await expect(html).toHaveClass(/dark/)
+	await page.getByRole('button', { name: 'Customize theme' }).click()
+	await expect(
+		page
+			.getByRole('region', { name: 'Theme customizer' })
+			.getByRole('button', { name: 'Iris' }),
+	).toHaveAttribute('aria-pressed', 'true')
+})

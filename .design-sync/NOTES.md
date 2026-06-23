@@ -6,8 +6,12 @@ before re-running `/design-sync`.
 ## Shape: synth / no-dist (package shape)
 
 - Epic Stack **app**, not a published package — there is no component `dist/`.
-  `.design-sync/entry.tsx` is a **barrel** re-exporting the curated 12 components
-  (was 9; Accordion, Slider, CommandPalette added 2026-06-19).
+  `.design-sync/entry.tsx` is a **barrel** re-exporting the curated **23**
+  components (was 9 → 12 with Accordion/Slider/CommandPalette on 2026-06-19 →
+  **21** on 2026-06-20 with the EPT-21–36 hardening: **Alert, Avatar, Badge,
+  Card, Dialog, Field, Select, Skeleton, Spinner**, all synced 2026-06-20 →
+  **23** on 2026-06-22 with Slice ②'s net-new primitives **Pagination**
+  (EPT-41) + **TagInput** (EPT-48), synced 2026-06-22).
 - The barrel is kept in lockstep with `app/components/styleguide/specimens.tsx`,
   enforced by `app/components/styleguide/design-sync.test.ts` (vitest, CI).
 - DropdownMenu / Tooltip / InputOTP / **Accordion** are **compound** — the barrel
@@ -24,6 +28,11 @@ before re-running `/design-sync`.
   `Command` would force the styleguide to import bare `Command`, which it never
   renders; `CommandPalette` is exactly what the `command` specimen imports, so
   lockstep stays honest.)
+  - **⌘K binding + loading:** the palette registers no global hotkey — the
+    consumer wires ⌘K / Ctrl-K (canonical snippet in `command.tsx`'s doc comment
+    and `conventions.md`). For remote command sources, pass `loading` to swap the
+    list for Skeleton/Spinner placeholders; the `command-loading` specimen +
+    `CommandPalette.Loading` preview cover that state (EPT-36).
 - **The lockstep test reads `.design-sync/config.json`** (fixed 2026-06-19; it
   previously read `design-sync.config.json` at the repo root, which no longer
   exists after the config moved into `.design-sync/`. That stale path threw on
@@ -54,7 +63,7 @@ before re-running `/design-sync`.
 
 ## Previews
 
-- All 12 previews under `.design-sync/previews/` are **HAND-OWNED** (no marker
+- All 21 previews under `.design-sync/previews/` are **HAND-OWNED** (no marker
   line) — they mirror the variant grids in `specimens.tsx` (Button variants+sizes,
   StatusButton 4 states, Input 3 states, Checkbox 3 states, Label+Input field,
   Textarea, plus DropdownMenu/Tooltip/InputOTP compound specimens rendered open,
@@ -74,19 +83,51 @@ before re-running `/design-sync`.
 - Card groups (Actions/Forms/etc.) come from `manifest.json` and are applied at
   register-time, not derived by the converter.
 
+## Known validate FAILS that are false-positives (do NOT block upload)
+
+- **`✗ [BUNDLE_EXPORT] N/N not a component on window.EpicUI`** — appeared with
+  skill v2.1.181's new bundle-export smoke check (2026-06-22). The smoke loads
+  the bundle via `page.setContent` / `addScriptTag` (dynamic injection), where
+  this synth-entry bundle's `window.React` externals interop doesn't land →
+  `window.EpicUI` reads empty → all N components flagged. **Proven false** by
+  loading the bundle the REAL way (parser-inserted `<script src>` in a served
+  doc, exactly how the claude.ai/design app + the preview cards load it):
+  `window.EpicUI` has **72 exports** incl. Pagination/TagInput, React set, zero
+  pageerrors. The per-preview render check (which uses self-contained
+  `window.__dsPreview`, not `window.EpicUI`) also passes 23/23. So this `fail()`
+  is a smoke-method artifact, not a bundle defect — verify with a parser-load
+  probe and proceed. (If a future skill version fixes the smoke to use a real
+  document load, this note can go.)
+
 ## Known render warns (triaged — not new on re-sync)
+
+- `[FONT_MISSING] "Cascadia Code", "Source Code Pro"` — NEW 2026-06-22 with the
+  ADR-064 `--font-mono` stack (code blocks + the editor's md textarea). The DS
+  ships no `@font-face` for them; the DS pane renders code in the system mono
+  fallback. Expected and **non-blocking** — these are host-app-provided code
+  fonts, not brand families worth bundling. Same triage as the other warns.
+- `[TOKENS_MISSING]` now also lists `--shell-max` (Slice ② layout token) — same
+  family as `--tw-*`: a layout/runtime var, not a semantic design token;
+  non-blocking.
 
 - `[CSS_RUNTIME]` — expected and **non-blocking**. The Tailwind token vars +
   utilities all live in `_ds_bundle.css` (linked alongside `styles.css` per the
   README contract), so an empty `tokens/` is cosmetic; components still render
   styled.
-- `[GRID_OVERFLOW]` on **DropdownMenu** and **Tooltip** — expected and
-  **non-blocking**. Both are portal/overlay specimens rendered `open`, so their
-  content escapes the grid cell; no grid layout can present a portal. Pre-existing
-  (these shipped in the original 9). Optional polish: set
-  `cfg.overrides.{DropdownMenu,Tooltip}: {"cardMode": "single", "primaryStory":
-  "Open"}` and batch-rebuild — left as-is for now since the cards still convey the
-  component. CommandPalette renders **inline** (no portal) so it does NOT overflow.
+- `[GRID_OVERFLOW]` on **DropdownMenu**, **Tooltip**, and **Select** — expected
+  and **non-blocking**. All three are portal/overlay specimens rendered `open`, so
+  their content escapes the grid cell; no grid layout can present a portal.
+  DropdownMenu/Tooltip are pre-existing (original 9); **Select** joined on
+  2026-06-20 (its `Open` story renders the panel). Optional polish: set
+  `cfg.overrides.{DropdownMenu,Tooltip,Select}: {"cardMode": "single",
+  "primaryStory": "Open"}` and batch-rebuild — left as-is for now since the cards
+  still convey the component. CommandPalette renders **inline** (no portal) so it
+  does NOT overflow.
+- `[TOKENS_MISSING]` (~15 vars: `--tw-*` engine internals + code/syntax-highlight
+  vars) — expected and **non-blocking**, same family as `[CSS_RUNTIME]`. These are
+  runtime/utility vars, not semantic design tokens; the filtered `styles.compiled.css`
+  (css-token-filter, EPT-21) drops the `--tw-*` *declarations* from the token
+  surface so `check_design_system` stays clean. Don't chase.
 
 ## Known limitations
 

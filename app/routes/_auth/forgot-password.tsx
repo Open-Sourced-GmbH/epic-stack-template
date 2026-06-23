@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { ForgotPasswordEmail } from '#app/components/emails/forgot-password.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
@@ -104,55 +105,53 @@ export default function ForgotPasswordRoute() {
 	})
 
 	return (
-		<div className="container pt-20 pb-32">
-			<div className="flex flex-col justify-center">
-				<div className="text-center">
-					<h1 className="text-h1">Forgot Password</h1>
-					<p className="text-body-md text-muted-foreground mt-3">
-						No worries, we'll send you reset instructions.
-					</p>
-				</div>
-				<div className="mx-auto mt-16 max-w-sm min-w-full sm:min-w-[368px]">
-					<forgotPassword.Form method="POST" {...getFormProps(form)}>
-						<HoneypotInputs />
-						<div>
-							<Field
-								labelProps={{
-									htmlFor: fields.usernameOrEmail.id,
-									children: 'Username or Email',
-								}}
-								inputProps={{
-									autoFocus: true,
-									...getInputProps(fields.usernameOrEmail, { type: 'text' }),
-								}}
-								errors={fields.usernameOrEmail.errors}
-							/>
-						</div>
-						<ErrorList errors={form.errors} id={form.errorId} />
-
-						<div className="mt-6">
-							<StatusButton
-								className="w-full"
-								status={
-									forgotPassword.state === 'submitting'
-										? 'pending'
-										: (form.status ?? 'idle')
-								}
-								type="submit"
-								disabled={forgotPassword.state !== 'idle'}
-							>
-								Recover password
-							</StatusButton>
-						</div>
-					</forgotPassword.Form>
-					<Link
-						to="/login"
-						className="text-body-sm mt-11 text-center font-bold"
-					>
-						Back to Login
-					</Link>
-				</div>
+		<div className="w-full max-w-[360px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Account recovery
+				</p>
+				<h1 className="text-h4">Forgot password</h1>
+				<p className="text-muted-foreground text-body-sm">
+					No worries, we'll send you reset instructions.
+				</p>
 			</div>
+
+			<FormCard className="mt-6 p-6 text-left">
+				<forgotPassword.Form method="POST" {...getFormProps(form)}>
+					<HoneypotInputs />
+					<Field
+						labelProps={{
+							htmlFor: fields.usernameOrEmail.id,
+							children: 'Username or Email',
+						}}
+						inputProps={{
+							autoFocus: true,
+							...getInputProps(fields.usernameOrEmail, { type: 'text' }),
+						}}
+						errors={fields.usernameOrEmail.errors}
+					/>
+					<ErrorList errors={form.errors} id={form.errorId} />
+					<StatusButton
+						className="mt-2 w-full"
+						status={
+							forgotPassword.state === 'submitting'
+								? 'pending'
+								: (form.status ?? 'idle')
+						}
+						type="submit"
+						disabled={forgotPassword.state !== 'idle'}
+					>
+						Recover password
+					</StatusButton>
+				</forgotPassword.Form>
+			</FormCard>
+
+			<p className="text-muted-foreground text-body-sm mt-6 text-center">
+				Remember your password?{' '}
+				<Link to="/login" className="text-brand font-semibold">
+					Back to login
+				</Link>
+			</p>
 		</div>
 	)
 }

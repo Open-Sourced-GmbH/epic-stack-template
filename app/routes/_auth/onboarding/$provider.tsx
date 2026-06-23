@@ -15,14 +15,18 @@ import {
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import {
 	sessionKey,
 	signupWithConnection,
 	requireAnonymous,
 } from '#app/utils/auth.server.ts'
-import { ProviderNameSchema } from '#app/utils/connections.tsx'
+import {
+	ProviderNameSchema,
+	providerIcons,
+	providerLabels,
+} from '#app/utils/connections.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
@@ -76,7 +80,7 @@ async function requireData({
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-	const { email } = await requireData({ request, params })
+	const { email, providerName } = await requireData({ request, params })
 
 	const verifySession = await verifySessionStorage.getSession(
 		request.headers.get('cookie'),
@@ -85,6 +89,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	return {
 		email,
+		providerName,
 		status: 'idle',
 		submission: {
 			initialValue: prefilledProfile ?? {},
@@ -183,20 +188,32 @@ export default function OnboardingProviderRoute({
 	})
 
 	return (
-		<div className="container flex min-h-full flex-col justify-center pt-20 pb-32">
-			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome aboard {loaderData.email}!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
-					</p>
-				</div>
-				<Spacer size="xs" />
-				<Form
-					method="POST"
-					className="mx-auto max-w-sm min-w-full sm:min-w-[368px]"
-					{...getFormProps(form)}
-				>
+		<div className="w-full max-w-[400px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Almost there
+				</p>
+				<h1 className="text-h4">Welcome aboard {loaderData.email}!</h1>
+				<p className="text-muted-foreground text-body-sm">
+					Please enter your details.
+				</p>
+			</div>
+
+			<FormCard className="mt-6 p-6 text-left">
+				<Form method="POST" {...getFormProps(form)}>
+					<div className="bg-brand-soft mb-6 flex items-center gap-3 rounded-lg px-4 py-3">
+						<span className="bg-brand text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+							{providerIcons[loaderData.providerName]}
+						</span>
+						<div>
+							<p className="text-body-sm font-medium">
+								Connected with {providerLabels[loaderData.providerName]}
+							</p>
+							<p className="text-body-xs text-muted-foreground">
+								Confirm your details to finish.
+							</p>
+						</div>
+					</div>
 					{fields.imageUrl.initialValue ? (
 						<div className="mb-4 flex flex-col items-center justify-center gap-4">
 							<img
@@ -255,18 +272,16 @@ export default function OnboardingProviderRoute({
 
 					<ErrorList errors={form.errors} id={form.errorId} />
 
-					<div className="flex items-center justify-between gap-6">
-						<StatusButton
-							className="w-full"
-							status={isPending ? 'pending' : (form.status ?? 'idle')}
-							type="submit"
-							disabled={isPending}
-						>
-							Create an account
-						</StatusButton>
-					</div>
+					<StatusButton
+						className="mt-2 w-full"
+						status={isPending ? 'pending' : (form.status ?? 'idle')}
+						type="submit"
+						disabled={isPending}
+					>
+						Create an account
+					</StatusButton>
 				</Form>
-			</div>
+			</FormCard>
 		</div>
 	)
 }

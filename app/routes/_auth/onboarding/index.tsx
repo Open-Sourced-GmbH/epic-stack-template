@@ -5,7 +5,7 @@ import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import {
 	checkIsCommonPassword,
@@ -152,20 +152,19 @@ export default function OnboardingRoute({
 	})
 
 	return (
-		<div className="container flex min-h-full flex-col justify-center pt-20 pb-32">
-			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome aboard {loaderData.email}!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
-					</p>
-				</div>
-				<Spacer size="xs" />
-				<Form
-					method="POST"
-					className="mx-auto max-w-sm min-w-full sm:min-w-[368px]"
-					{...getFormProps(form)}
-				>
+		<div className="w-full max-w-[400px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Almost there
+				</p>
+				<h1 className="text-h4">Welcome aboard {loaderData.email}!</h1>
+				<p className="text-muted-foreground text-body-sm">
+					Please enter your details.
+				</p>
+			</div>
+
+			<FormCard className="mt-6 p-6 text-left">
+				<Form method="POST" {...getFormProps(form)}>
 					<HoneypotInputs />
 					<Field
 						labelProps={{ htmlFor: fields.username.id, children: 'Username' }}
@@ -229,18 +228,16 @@ export default function OnboardingRoute({
 					<input {...getInputProps(fields.redirectTo, { type: 'hidden' })} />
 					<ErrorList errors={form.errors} id={form.errorId} />
 
-					<div className="flex items-center justify-between gap-6">
-						<StatusButton
-							className="w-full"
-							status={isPending ? 'pending' : (form.status ?? 'idle')}
-							type="submit"
-							disabled={isPending}
-						>
-							Create an account
-						</StatusButton>
-					</div>
+					<StatusButton
+						className="mt-2 w-full"
+						status={isPending ? 'pending' : (form.status ?? 'idle')}
+						type="submit"
+						disabled={isPending}
+					>
+						Create an account
+					</StatusButton>
 				</Form>
-			</div>
+			</FormCard>
 		</div>
 	)
 }

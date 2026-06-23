@@ -13,6 +13,7 @@ const badgeVariants = cva(
 				destructive:
 					'border-transparent bg-destructive text-destructive-foreground',
 				outline: 'border-border text-foreground',
+				brand: 'border-transparent bg-brand-soft text-brand',
 			},
 		},
 		defaultVariants: {
@@ -26,13 +27,28 @@ export type BadgeVariant = VariantProps<typeof badgeVariants>
 const Badge = ({
 	className,
 	variant,
+	dot = false,
+	children,
 	...props
-}: React.ComponentProps<'span'> & BadgeVariant) => (
+}: React.ComponentProps<'span'> &
+	BadgeVariant & {
+		/** Render a leading status dot that tracks the variant's text color. */
+		dot?: boolean
+	}) => (
 	<span
 		data-slot="badge"
-		className={cn(badgeVariants({ variant, className }))}
+		className={cn(badgeVariants({ variant, className }), dot && 'gap-1.5')}
 		{...props}
-	/>
+	>
+		{dot ? (
+			<span
+				data-slot="badge-dot"
+				aria-hidden="true"
+				className="size-1.5 shrink-0 rounded-full bg-current"
+			/>
+		) : null}
+		{children}
+	</span>
 )
 
 export { Badge, badgeVariants }

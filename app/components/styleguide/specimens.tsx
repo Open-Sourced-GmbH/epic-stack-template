@@ -11,6 +11,11 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from '#app/components/ui/alert.tsx'
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -25,6 +30,14 @@ import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import { type Command } from '#app/components/ui/command.matcher.ts'
 import { CommandPalette } from '#app/components/ui/command.tsx'
 import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogOverlay,
+	DialogTitle,
+} from '#app/components/ui/dialog.tsx'
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -33,18 +46,32 @@ import {
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
 import { Field } from '#app/components/ui/field.tsx'
-import { Input } from '#app/components/ui/input.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import {
 	InputOTP,
 	InputOTPGroup,
 	InputOTPSeparator,
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
+import { Input } from '#app/components/ui/input.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { PageHeader } from '#app/components/ui/page-header.tsx'
+import { Pagination } from '#app/components/ui/pagination.tsx'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '#app/components/ui/select.tsx'
+import { Separator } from '#app/components/ui/separator.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { Switch } from '#app/components/ui/switch.tsx'
+import { Table } from '#app/components/ui/table.tsx'
+import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
 	Tooltip,
@@ -170,6 +197,7 @@ const badgeVariants = [
 	'secondary',
 	'destructive',
 	'outline',
+	'brand',
 ] as const
 const alertTones = [
 	{ tone: 'info', title: 'Heads up', body: 'A neutral, informational note.' },
@@ -251,6 +279,77 @@ const commandEmptyActions: Command[] = [
 		run: () => toast.success('Contact support'),
 	},
 ]
+
+// Team roster for the `screen-team` reference screen. The `variant` walks the
+// Badge scale (Owner = primary, Admin = secondary, Member = outline) so the row
+// uses the real Badge primitive instead of a hand-rolled status pill.
+const teamMembers = [
+	{
+		name: 'Ada Lovelace',
+		email: 'ada@epic.dev',
+		role: 'Owner',
+		initials: 'AL',
+		variant: 'default',
+	},
+	{
+		name: 'Grace Hopper',
+		email: 'grace@epic.dev',
+		role: 'Admin',
+		initials: 'GH',
+		variant: 'secondary',
+	},
+	{
+		name: 'Alan Turing',
+		email: 'alan@epic.dev',
+		role: 'Member',
+		initials: 'AT',
+		variant: 'outline',
+	},
+] as const
+
+/**
+ * A representative, hand-tokenised code snippet for the code specimens. It is a
+ * palette demonstration, not live pipeline output: each span carries the same
+ * inline `style="color:var(--code-*)"` shape the Markdown pipeline emits
+ * (`app/utils/markdown.server.ts`) onto the always-dark `--code-*` tokens, so the
+ * styleguide shows the real code colours — but the tokenisation here is authored
+ * by hand, not produced by Shiki.
+ */
+function HighlightedSnippet() {
+	const tok = (color: string, italic?: boolean) => (text: string) => (
+		<span style={{ color: `var(${color})`, fontStyle: italic ? 'italic' : undefined }}>
+			{text}
+		</span>
+	)
+	const kw = tok('--code-kw')
+	const fn = tok('--code-fn')
+	const str = tok('--code-string')
+	const num = tok('--code-number')
+	const com = tok('--code-comment', true)
+	return (
+		<code className="font-mono">
+			<span className="block">{com('// render a Post body to safe HTML')}</span>
+			<span className="block">
+				{kw('export async function')} {fn('renderPostBody')}(markdown) {'{'}
+			</span>
+			<span className="block">
+				{'  '}
+				{kw('const')} html = {kw('await')} {fn('unified')}()
+			</span>
+			<span className="block">
+				{'    '}.{fn('use')}(remarkParse).{fn('use')}(remarkGfm).{fn('process')}(markdown)
+			</span>
+			<span className="block">
+				{'  '}
+				{kw('return')} {fn('String')}(html) {com('// ')}
+				{num('200')}
+			</span>
+			<span className="block">{'}'}</span>
+			<span className="block"> </span>
+			<span className="block">{str("'highlighted, sanitised, cached on read'")}</span>
+		</code>
+	)
+}
 
 export const specimens: Specimen[] = [
 	{
@@ -405,15 +504,25 @@ export const specimens: Specimen[] = [
 	{
 		name: 'badge',
 		group: 'Actions',
-		subtitle: 'default / secondary / destructive / outline',
-		viewport: { width: 480, height: 120 },
+		subtitle: 'variants + tonal brand & status dots (Published / Draft)',
+		viewport: { width: 480, height: 160 },
 		render: () => (
-			<div className="flex flex-wrap items-center gap-2">
-				{badgeVariants.map((variant) => (
-					<Badge key={variant} variant={variant}>
-						{variant}
+			<div className="flex flex-col gap-3">
+				<div className="flex flex-wrap items-center gap-2">
+					{badgeVariants.map((variant) => (
+						<Badge key={variant} variant={variant}>
+							{variant}
+						</Badge>
+					))}
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Badge variant="brand" dot>
+						Published
 					</Badge>
-				))}
+					<Badge variant="secondary" dot>
+						Draft
+					</Badge>
+				</div>
 			</div>
 		),
 	},
@@ -486,6 +595,256 @@ export const specimens: Specimen[] = [
 				</CardFooter>
 			</Card>
 		),
+	},
+	{
+		name: 'avatar',
+		group: 'Surfaces',
+		subtitle: 'image with initials fallback — sized via utility classes',
+		viewport: { width: 480, height: 160 },
+		render: () => (
+			<div className="flex items-center gap-6">
+				{/* Image present — loads to a photo. */}
+				<Avatar>
+					<AvatarImage src="/img/user.png" alt="Ada Lovelace" />
+					<AvatarFallback>AL</AvatarFallback>
+				</Avatar>
+				{/* No image source — degrades to initials, not a broken-image glyph. */}
+				<Avatar>
+					<AvatarFallback>EM</AvatarFallback>
+				</Avatar>
+				{/* Sized up via a utility class on the root. */}
+				<Avatar className="size-16">
+					<AvatarFallback className="text-lg">GR</AvatarFallback>
+				</Avatar>
+			</div>
+		),
+	},
+	{
+		name: 'separator',
+		group: 'Surfaces',
+		subtitle: 'plain rule / labeled ("or continue with") / vertical',
+		viewport: { width: 480, height: 220 },
+		render: () => (
+			<div className="flex max-w-sm flex-col gap-6">
+				{/* Plain rule — divides stacked settings sections. */}
+				<div className="flex flex-col gap-3">
+					<span className="text-body-sm text-muted-foreground">
+						Account details
+					</span>
+					<Separator />
+					<span className="text-body-sm text-muted-foreground">
+						Danger zone
+					</span>
+				</div>
+				{/* Labeled variant — sits between the auth email form and the
+				    OAuth/passkey button rows. */}
+				<Separator label="or continue with" />
+				{/* Vertical rule — inline divider between two actions. */}
+				<div className="flex h-5 items-center gap-3">
+					<span className="text-body-sm text-muted-foreground">Edit</span>
+					<Separator orientation="vertical" />
+					<span className="text-body-sm text-muted-foreground">Delete</span>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'page-header',
+		group: 'Surfaces',
+		subtitle: 'eyebrow + title — with and without actions',
+		viewport: { width: 560, height: 220 },
+		render: () => (
+			<div className="flex w-full max-w-xl flex-col gap-8">
+				{/* With actions — the admin/list header (outline + primary). */}
+				<PageHeader
+					eyebrow="Admin"
+					title="Blog"
+					actions={
+						<>
+							<Button variant="outline">Preview</Button>
+							<Button>New post</Button>
+						</>
+					}
+				/>
+				{/* Title only — the settings/account hub header. */}
+				<PageHeader eyebrow="Account" title="Settings" />
+			</div>
+		),
+	},
+	{
+		name: 'form-card',
+		group: 'Surfaces',
+		subtitle: 'plain (auth form) / with header (settings section) / destructive',
+		viewport: { width: 560, height: 560 },
+		render: () => (
+			<div className="flex w-full max-w-md flex-col gap-8">
+				{/* With header — the settings-section framing (title + description). */}
+				<FormCard
+					title="Profile"
+					description="Update your name and username."
+				>
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-1.5">
+							<Label htmlFor="form-card-name">Name</Label>
+							<Input id="form-card-name" defaultValue="Ada Lovelace" />
+						</div>
+						<div className="flex justify-end">
+							<Button>Save</Button>
+						</div>
+					</div>
+				</FormCard>
+				{/* Plain — the auth-form framing (a PageHeader sits above it in the
+				    shell, so the card itself carries no header). */}
+				<FormCard>
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-1.5">
+							<Label htmlFor="form-card-email">Email</Label>
+							<Input
+								id="form-card-email"
+								type="email"
+								placeholder="you@example.com"
+							/>
+						</div>
+						<Button>Continue</Button>
+					</div>
+				</FormCard>
+				{/* Destructive — the "delete account & data" zone. */}
+				<FormCard
+					variant="destructive"
+					title="Delete account & data"
+					description="This permanently removes your account and all of its data."
+				>
+					<Button variant="destructive">Delete account</Button>
+				</FormCard>
+			</div>
+		),
+	},
+	{
+		name: 'table',
+		group: 'Surfaces',
+		subtitle: 'populated (selection + status pills + ⋯ menu + pager) / empty / loading',
+		viewport: { width: 720, height: 720 },
+		render: () => {
+			type Post = {
+				id: string
+				title: string
+				monogram: string
+				status: 'published' | 'draft'
+				updated: string
+			}
+			const posts: Post[] = [
+				{ id: '1', title: 'Shipping the Pine design system', monogram: 'S', status: 'published', updated: '2h ago' },
+				{ id: '2', title: 'Notes on grounded design', monogram: 'N', status: 'draft', updated: 'Yesterday' },
+				{ id: '3', title: 'Building on the Epic Stack', monogram: 'B', status: 'published', updated: '3d ago' },
+			]
+			// A static view of the selection contract (one row selected) so the
+			// specimen snapshots the brand left bar + indeterminate header without
+			// any interaction.
+			const selection = {
+				isSelected: (id: string) => id === '1',
+				toggle: () => {},
+				toggleAll: () => {},
+				allSelected: false,
+				someSelected: true,
+			}
+			const columns = [
+				{
+					key: 'title',
+					header: 'Post',
+					cell: (post: Post) => (
+						<div className="flex items-center gap-3">
+							<span className="bg-brand-soft text-brand flex size-8 items-center justify-center rounded-lg text-body-sm font-semibold">
+								{post.monogram}
+							</span>
+							<span className="font-medium">{post.title}</span>
+						</div>
+					),
+				},
+				{
+					key: 'status',
+					header: 'Status',
+					cell: (post: Post) =>
+						post.status === 'published' ? (
+							<Badge variant="brand" dot>
+								Published
+							</Badge>
+						) : (
+							<Badge variant="secondary" dot>
+								Draft
+							</Badge>
+						),
+				},
+				{
+					key: 'updated',
+					header: 'Updated',
+					cell: (post: Post) => post.updated,
+					className: 'text-muted-foreground text-body-sm',
+				},
+			]
+			return (
+				<div className="flex w-full max-w-3xl flex-col gap-8">
+					{/* Populated — the admin list: selection, status pills, ⋯ menu, pager. */}
+					<Table
+						aria-label="Posts"
+						columns={columns}
+						data={posts}
+						getRowId={(post) => post.id}
+						columnTemplate="1fr auto auto"
+						selection={selection}
+						getRowLabel={(post) => post.title}
+						rowActions={(post) => (
+							<>
+								<DropdownMenuItem>Edit</DropdownMenuItem>
+								<DropdownMenuItem>Copy link</DropdownMenuItem>
+								<DropdownMenuItem>Delete {post.title}</DropdownMenuItem>
+							</>
+						)}
+						getRowActionsLabel={(post) => `Actions for ${post.title}`}
+						footer={
+							<Pagination
+								page={1}
+								pageCount={4}
+								getPageHref={(p) => `#page-${p}`}
+							/>
+						}
+					/>
+					{/* Empty — dashed brand-tiled state with a CTA. */}
+					<Table
+						aria-label="Posts (empty)"
+						columns={columns}
+						data={[]}
+						getRowId={(post) => post.id}
+						columnTemplate="1fr auto auto"
+						emptyState={{
+							icon: (
+								<svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
+									<path
+										d="M4 5h16M4 12h16M4 19h10"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										fill="none"
+									/>
+								</svg>
+							),
+							title: 'No posts yet',
+							description: 'Draft your first post and it will appear here.',
+							action: <Button>New post</Button>,
+						}}
+					/>
+					{/* Loading — Skeleton placeholder rows. */}
+					<Table
+						aria-label="Posts (loading)"
+						columns={columns}
+						data={[]}
+						getRowId={(post) => post.id}
+						columnTemplate="1fr auto auto"
+						loading
+						loadingRows={3}
+					/>
+				</div>
+			)
+		},
 	},
 	{
 		name: 'input',
@@ -590,6 +949,55 @@ export const specimens: Specimen[] = [
 		),
 	},
 	{
+		name: 'switch',
+		group: 'Forms',
+		subtitle: 'off / on / disabled / dark-mode toggle (sun · switch · moon)',
+		viewport: { width: 480, height: 240 },
+		render: () => (
+			<div className="flex flex-col gap-4">
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-off" />
+					<Label htmlFor="sg-sw-off">Off</Label>
+				</div>
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-on" defaultChecked />
+					<Label htmlFor="sg-sw-on">On</Label>
+				</div>
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-disabled" disabled />
+					<Label htmlFor="sg-sw-disabled">Disabled</Label>
+				</div>
+				{/* Dark-mode toggle composition: sun/moon glyphs flank a labelled
+				    Switch. Icon isn't part of the curated bundle, so the glyphs are
+				    drawn inline (mirroring the app's sun/moon sprite). */}
+				<div className="flex items-center gap-3">
+					<span className="text-muted-foreground" aria-hidden>
+						<svg viewBox="0 0 24 24" fill="none" className="size-4">
+							<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+							<path
+								d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+							/>
+						</svg>
+					</span>
+					<Switch aria-label="Dark mode" defaultChecked />
+					<span className="text-muted-foreground" aria-hidden>
+						<svg viewBox="0 0 24 24" fill="none" className="size-4">
+							<path
+								d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinejoin="round"
+							/>
+						</svg>
+					</span>
+				</div>
+			</div>
+		),
+	},
+	{
 		name: 'input-otp',
 		group: 'Forms',
 		subtitle: '6-digit, two groups + separator / invalid',
@@ -660,6 +1068,87 @@ export const specimens: Specimen[] = [
 					<p className="text-error-text text-body-2xs">
 						Choose a value below 80.
 					</p>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'pagination',
+		group: 'Navigation',
+		subtitle: 'page 1 (prev disabled) / middle (ellipsis both sides) / last',
+		viewport: { width: 480, height: 220 },
+		render: () => (
+			<div className="flex flex-col gap-6">
+				<Pagination page={1} pageCount={8} getPageHref={(p) => `#page-${p}`} />
+				<Pagination page={5} pageCount={10} getPageHref={(p) => `#page-${p}`} />
+				<Pagination page={8} pageCount={8} getPageHref={(p) => `#page-${p}`} />
+			</div>
+		),
+	},
+	{
+		name: 'tag-input',
+		group: 'Forms',
+		subtitle:
+			'resolve-or-create multi-select — empty / with chips (focus + type to open the menu)',
+		viewport: { width: 480, height: 240 },
+		render: () => (
+			<div className="flex w-full max-w-sm flex-col gap-6">
+				{/* Empty — placeholder visible; focus + type to open the suggestion
+				    menu with its "Create «query»" row. */}
+				<TagInput aria-label="Tags (empty)" suggestions={['React', 'Remix', 'CSS']} />
+				{/* Populated — each tag is a removable chip on --secondary. */}
+				<TagInput
+					aria-label="Tags (with chips)"
+					defaultValue={['React', 'TypeScript']}
+					suggestions={['React', 'Remix', 'CSS', 'TypeScript']}
+				/>
+			</div>
+		),
+	},
+	{
+		name: 'select',
+		group: 'Forms',
+		subtitle: 'trigger matches Input — with value / Field-paired / invalid',
+		// Rendered closed (click to open the real panel). Unlike Dialog / DropdownMenu,
+		// Radix Select has no `modal={false}` escape — its open content is always wrapped
+		// in react-remove-scroll, so an always-open specimen would lock the whole
+		// styleguide page's scroll. The open panel (groups, selected check, separator) is
+		// snapshotted from the isolated `.design-sync/previews/Select.tsx` instead.
+		viewport: { width: 480, height: 320 },
+		render: () => (
+			<div className="flex w-full max-w-sm flex-col gap-6">
+				<Select defaultValue="medium">
+					<SelectTrigger aria-label="Size">
+						<SelectValue placeholder="Select a size" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="small">Small</SelectItem>
+						<SelectItem value="medium">Medium</SelectItem>
+						<SelectItem value="large">Large</SelectItem>
+					</SelectContent>
+				</Select>
+				<Field label="Plan" htmlFor="sg-plan">
+					<Select>
+						<SelectTrigger>
+							<SelectValue placeholder="Choose a plan" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="free">Free</SelectItem>
+							<SelectItem value="pro">Pro</SelectItem>
+						</SelectContent>
+					</Select>
+				</Field>
+				<div className="flex flex-col gap-1">
+					<Select>
+						<SelectTrigger aria-invalid aria-label="Country">
+							<SelectValue placeholder="Select a country" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="ch">Switzerland</SelectItem>
+							<SelectItem value="de">Germany</SelectItem>
+						</SelectContent>
+					</Select>
+					<p className="text-error-text text-body-2xs">This field is required.</p>
 				</div>
 			</div>
 		),
@@ -783,6 +1272,278 @@ export const specimens: Specimen[] = [
 		// An empty registry forces the no-match state; the chips are injected.
 		render: () => (
 			<CommandPalette commands={[]} emptyActions={commandEmptyActions} />
+		),
+	},
+	{
+		name: 'command-loading',
+		group: 'Overlays',
+		subtitle: 'pending remote source — Skeleton/Spinner placeholders',
+		viewport: { width: 560, height: 280 },
+		// `loading` paints Skeleton rows + a Spinner instead of the empty/no-results
+		// state, so an in-flight fetch never reads as "No results found.".
+		render: () => <CommandPalette commands={[]} loading />,
+	},
+	{
+		name: 'dialog',
+		group: 'Overlays',
+		subtitle: 'modal overlay — title, description, close actions',
+		viewport: { width: 560, height: 320 },
+		// Rendered contained: the overlay/content are positioned `absolute` within
+		// this `relative` box (and modal={false}) so the static specimen shows the
+		// dialog surface in place, without a full-screen portal that would lock and
+		// dim the whole styleguide page.
+		render: () => (
+			<div className="relative flex h-72 items-center justify-center overflow-hidden rounded-lg">
+				<Dialog open modal={false}>
+					<DialogOverlay className="absolute" />
+					<DialogContent className="absolute w-[26rem]">
+						<DialogTitle>Delete project</DialogTitle>
+						<DialogDescription className="mt-2">
+							This permanently removes the project and all of its data. This
+							action cannot be undone.
+						</DialogDescription>
+						<div className="mt-6 flex justify-end gap-2">
+							<DialogClose asChild>
+								<Button variant="outline">Cancel</Button>
+							</DialogClose>
+							<DialogClose asChild>
+								<Button variant="destructive">Delete</Button>
+							</DialogClose>
+						</div>
+					</DialogContent>
+				</Dialog>
+			</div>
+		),
+	},
+
+	// --- Reference screens -----------------------------------------------------
+	//
+	// The four `improove-001` handoff screens, rebuilt from real primitives only.
+	// In the design exploration each hand-rolled the missing pieces (Field, Card,
+	// Badge, Avatar, Skeleton, Alert) with bespoke markup; here every one is the
+	// shipping component, so these double as proof that no hand-rolled primitive
+	// remains and as the acceptance reference snapshotted to Claude Design.
+	{
+		name: 'screen-auth',
+		group: 'Reference screens',
+		subtitle: 'sign in — Card + Field + Checkbox + Button',
+		viewport: { width: 420, height: 480 },
+		render: () => (
+			<Card className="mx-auto w-full max-w-sm">
+				<CardHeader>
+					<CardTitle>Welcome back</CardTitle>
+					<CardDescription>Sign in to your account</CardDescription>
+				</CardHeader>
+				<CardContent className="flex flex-col gap-5">
+					<Field label="Email" htmlFor="screen-auth-email">
+						<Input
+							id="screen-auth-email"
+							type="email"
+							placeholder="you@example.com"
+						/>
+					</Field>
+					<Field label="Password" htmlFor="screen-auth-password">
+						<Input
+							id="screen-auth-password"
+							type="password"
+							placeholder="••••••••"
+						/>
+					</Field>
+					<div className="flex items-center gap-2">
+						<Checkbox id="screen-auth-remember" defaultChecked />
+						<Label htmlFor="screen-auth-remember">Remember me</Label>
+					</div>
+				</CardContent>
+				<CardFooter>
+					<Button size="wide">Sign in</Button>
+				</CardFooter>
+			</Card>
+		),
+	},
+	{
+		name: 'screen-settings',
+		group: 'Reference screens',
+		subtitle: 'profile + save bar — Card + Field + StatusButton',
+		viewport: { width: 460, height: 480 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-3">
+				<Card>
+					<CardHeader>
+						<CardTitle>Profile</CardTitle>
+						<CardDescription>Update your public details.</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col gap-5">
+						<Field label="Display name" htmlFor="screen-settings-name">
+							<Input id="screen-settings-name" defaultValue="Ada Lovelace" />
+						</Field>
+						<Field label="Bio" htmlFor="screen-settings-bio">
+							<Textarea
+								id="screen-settings-bio"
+								rows={3}
+								defaultValue="Mathematician. First programmer."
+							/>
+						</Field>
+					</CardContent>
+				</Card>
+				{/* Save bar: a layout strip, not a primitive — styled with tokens only. */}
+				<div className="border-border bg-card flex items-center justify-between rounded-lg border px-4 py-3">
+					<span className="text-muted-foreground text-body-sm">
+						Unsaved changes
+					</span>
+					<div className="flex gap-2">
+						<Button variant="ghost">Discard</Button>
+						<StatusButton status="idle">Save</StatusButton>
+					</div>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'screen-team',
+		group: 'Reference screens',
+		subtitle: 'team rows — Avatar + Badge + DropdownMenu row actions',
+		viewport: { width: 480, height: 280 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-1">
+				{teamMembers.map(({ name, email, role, initials, variant }) => (
+					<div
+						key={email}
+						className="hover:bg-muted/60 flex items-center justify-between rounded-md px-2 py-2"
+					>
+						<div className="flex items-center gap-3">
+							<Avatar>
+								<AvatarFallback>{initials}</AvatarFallback>
+							</Avatar>
+							<div className="flex flex-col">
+								<span className="text-body-sm font-medium">{name}</span>
+								<span className="text-muted-foreground text-body-2xs">
+									{email}
+								</span>
+							</div>
+						</div>
+						<div className="flex items-center gap-3">
+							<Badge variant={variant}>{role}</Badge>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon-sm"
+										aria-label={`Actions for ${name}`}
+									>
+										<span aria-hidden>⋯</span>
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem>View profile</DropdownMenuItem>
+									<DropdownMenuItem>Change role</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem>Remove</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</div>
+				))}
+			</div>
+		),
+	},
+	{
+		name: 'screen-states',
+		group: 'Reference screens',
+		subtitle: 'empty · error · loading — Button + Alert + Skeleton',
+		viewport: { width: 460, height: 520 },
+		render: () => (
+			<div className="mx-auto flex w-full max-w-md flex-col gap-4">
+				{/* Empty */}
+				<div className="border-border flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center">
+					<div className="bg-muted text-muted-foreground mb-1 flex size-10 items-center justify-center rounded-full">
+						<span aria-hidden className="text-body-lg">
+							+
+						</span>
+					</div>
+					<span className="text-body-sm font-medium">No projects yet</span>
+					<span className="text-muted-foreground text-body-2xs">
+						Create your first project to get started.
+					</span>
+					<Button className="mt-2">New project</Button>
+				</div>
+				{/* Error */}
+				<Alert tone="error">
+					<AlertTitle>Couldn't load projects.</AlertTitle>
+					<AlertDescription>
+						Check your connection and try again.
+					</AlertDescription>
+				</Alert>
+				{/* Loading */}
+				<Card>
+					<CardContent className="flex flex-col gap-3">
+						<Skeleton className="h-4 w-2/5" />
+						<Skeleton className="h-4 w-5/6" />
+						<Skeleton className="h-4 w-3/4" />
+					</CardContent>
+				</Card>
+			</div>
+		),
+	},
+	{
+		name: 'code-block',
+		group: 'Code',
+		subtitle: 'always-dark Shiki surface, traffic-light caption (ADR 063)',
+		viewport: { width: 720, height: 300 },
+		// The block chrome the article + preview wrap around the pipeline's
+		// highlighted `<pre>`: 0.7rem radius, 1px --code-border, a traffic-light
+		// caption bar on --code-bg-2. The surface stays dark on any page theme
+		// because every colour is a fixed --code-* token.
+		render: () => (
+			<div className="overflow-hidden rounded-[0.7rem] border border-[var(--code-border)] bg-[var(--code-bg)]">
+				<div className="flex items-center gap-2 border-b border-[var(--code-border)] bg-[var(--code-bg-2)] px-4 py-2.5">
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
+					<span className="ml-2 font-mono text-xs text-[var(--code-comment)]">
+						markdown.server.ts
+					</span>
+				</div>
+				<pre className="overflow-x-auto p-4 text-sm leading-relaxed text-[var(--code-fg)]">
+					<HighlightedSnippet />
+				</pre>
+			</div>
+		),
+	},
+	{
+		name: 'prose-article',
+		group: 'Type',
+		subtitle: 'long-form reading ramp — 68ch measure, em-relative headings (ADR 064)',
+		viewport: { width: 720, height: 620 },
+		// The scoped `.prose` ramp rendered Markdown flows into. Exercises the
+		// heading ramp, body rhythm, brand-tinted links + markers, blockquote
+		// rule, the inline-code chip, and a fenced code block styled by `.prose
+		// pre`. Reuses existing colour tokens (ADR 064) — no new colours.
+		render: () => (
+			<article className="prose">
+				<h2>Render on read, cached</h2>
+				<p>
+					A post stores raw Markdown as the single source of truth. The loader
+					renders it to safe HTML on read and caches the result, so an article
+					re-renders only when its body changes.
+				</p>
+				<p>
+					Inline spans like <code>renderPostBody()</code> sit on a soft, bordered
+					chip, while links to the{' '}
+					<a href="/blog">feed</a> pick up the brand accent.
+				</p>
+				<h3>What the pipeline guarantees</h3>
+				<ul>
+					<li>GFM tables, headings, and lists render predictably.</li>
+					<li>Author HTML is sanitised before highlighting runs.</li>
+					<li>Code blocks paint onto the always-dark code palette.</li>
+				</ul>
+				<blockquote>
+					Raw Markdown is the source of truth; rendered HTML is never persisted.
+				</blockquote>
+				<pre>
+					<HighlightedSnippet />
+				</pre>
+			</article>
 		),
 	},
 ]

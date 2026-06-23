@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/_ds_bundle.css">
+  <link rel="stylesheet" href="_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/styles.css">
+  <script>
+  (function(){
+    function loadBundle(){
+      if (document.getElementById('epic-ds-bundle')) return;
+      var s = document.createElement('script');
+      s.id = 'epic-ds-bundle';
+      s.src = '_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/_ds_bundle.js';
+      document.head.appendChild(s);
+    }
+    if (window.React && window.ReactDOM) { loadBundle(); return; }
+    var tries = 0;
+    var t = setInterval(function(){ if ((window.React && window.ReactDOM) || tries++ > 600) { clearInterval(t); loadBundle(); } }, 8);
+  })();
+  </script>
+  <style>
+    input,textarea,button,[class*="ring-"]{transition:box-shadow .2s cubic-bezier(.32,.72,0,1),border-color .2s cubic-bezier(.32,.72,0,1),background-color .2s ease,color .15s ease;}
+    @keyframes pine-spin{to{transform:rotate(360deg);}}
+    @media (prefers-reduced-motion:reduce){.pine-spinner{animation:none!important;}input,textarea,button{transition:none;}}
+  </style>
+</helmet>
+
+<div ref="{{ canvasRef }}" style="--brand:oklch(60% 0.135 172);--brand-soft:oklch(96% 0.025 172);--brand-deep:oklch(31% 0.05 168);--brand-glow:oklch(from var(--brand) l c h / 0.28);--primary:var(--brand);--primary-foreground:oklch(98.5% 0.003 247);--ring:var(--brand);font-family:var(--font-sans,ui-sans-serif,system-ui,sans-serif);width:max-content;min-width:100%;min-height:100vh;box-sizing:border-box;padding:48px;background:#e7e5df;display:flex;flex-direction:column;gap:64px;">
+
+  <!-- masthead -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="display:flex;align-items:center;gap:9px;color:var(--brand);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L18 10 H14.5 L20 17 H4 L9.5 10 H6 Z"></path><rect x="11" y="17" width="2" height="4.5"></rect></svg>
+      <span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#2c4036;">Pine Brand Restyle</span>
+    </div>
+    <div style="font-size:30px;font-weight:650;letter-spacing:-0.02em;color:#1b231f;">Account &amp; settings — pine restyle</div>
+    <div style="font-size:15px;color:#566159;max-width:780px;line-height:1.5;">Slice ③ account surfaces: wayfinding, profile hub, photo, password, email, connections, passkeys, and 2FA. Built from real Epic Stack UI components; toggles use the net-new Switch and destructive flows render in place (route-driven, snapshot convention).</div>
+  </div>
+
+  <!-- ===== SECTION: WAYFINDING (Exploration #2) ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Exploration #2 · settings wayfinding</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Restyled breadcrumb (baseline) vs sectioned sidebar (stretch)</div>
+      <div style="font-size:14px;color:#566159;margin-top:4px;max-width:720px;">Both are purely presentational — same routes, same URLs. The sidebar only groups existing pages; it adds no navigation targets.</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- Breadcrumb baseline -->
+      <div style="flex:none;width:560px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Baseline · restyled breadcrumb</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;">
+          <div style="height:440px;background:var(--background);color:var(--foreground);padding:26px 30px;display:grid;gap:20px;align-content:start;">
+            <div style="display:flex;align-items:center;gap:7px;font-size:13px;">
+              <a href="#" style="color:var(--muted-foreground);text-decoration:none;">Settings</a>
+              <span style="color:var(--border);">/</span>
+              <span style="color:var(--brand);font-weight:600;">Profile</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+              <div style="display:grid;gap:4px;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);">Account</div>
+                <div style="font-size:24px;font-weight:650;letter-spacing:-0.01em;white-space:nowrap;">Your profile</div>
+              </div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:22px;display:grid;gap:16px;">
+              <div style="display:grid;gap:6px;">
+                <x-import component-from-global-scope="EpicUI.Label" html-for="bc-name" hint-size="auto,18px">Display name</x-import>
+                <x-import component-from-global-scope="EpicUI.Input" id="bc-name" default-value="Ada Lovelace" hint-size="100%,38px"></x-import>
+              </div>
+              <div style="display:grid;gap:6px;">
+                <x-import component-from-global-scope="EpicUI.Label" html-for="bc-user" hint-size="auto,18px">Username</x-import>
+                <x-import component-from-global-scope="EpicUI.Input" id="bc-user" default-value="ada" hint-size="100%,38px"></x-import>
+              </div>
+              <div style="display:flex;justify-content:flex-end;">
+                <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Save</x-import>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar stretch (light) -->
+      <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;width:760px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Stretch · sectioned sidebar <span style="color:#8a958e;font-weight:500;">— presentational grouping only</span></div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;">
+          <div style="height:440px;background:var(--background);color:var(--foreground);display:flex;">
+            <div style="width:212px;flex:none;border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;gap:4px;background:color-mix(in oklch, var(--background), var(--brand) 3%);">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 10px 14px;color:var(--brand);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L18 10 H14.5 L20 17 H4 L9.5 10 H6 Z"></path><rect x="11" y="17" width="2" height="4.5"></rect></svg>
+                <span style="font-size:14px;font-weight:600;color:var(--foreground);">Settings</span>
+              </div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:6px 10px 4px;">Account</div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;font-weight:500;text-decoration:none;background:var(--brand);color:#fff;">Profile</a>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:12px 10px 4px;">Security</div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);" style-hover="background:var(--accent);">Password</a>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);" style-hover="background:var(--accent);">Two-factor auth</a>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);" style-hover="background:var(--accent);">Passkeys</a>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:12px 10px 4px;">Connections</div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);" style-hover="background:var(--accent);">Linked accounts</a>
+            </div>
+            <div style="flex:1;padding:26px 28px;display:grid;gap:20px;align-content:start;">
+              <div style="display:grid;gap:4px;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);">Account</div>
+                <div style="font-size:22px;font-weight:650;letter-spacing:-0.01em;">Your profile</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:22px;display:grid;gap:16px;">
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="sb-name" hint-size="auto,18px">Display name</x-import>
+                  <x-import component-from-global-scope="EpicUI.Input" id="sb-name" default-value="Ada Lovelace" hint-size="100%,38px"></x-import>
+                </div>
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="sb-user" hint-size="auto,18px">Username</x-import>
+                  <x-import component-from-global-scope="EpicUI.Input" id="sb-user" default-value="ada" hint-size="100%,38px"></x-import>
+                </div>
+                <div style="display:flex;justify-content:flex-end;">
+                  <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Save</x-import>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- Sidebar dark -->
+      <div style="flex:none;width:760px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Stretch · sectioned sidebar — dark</div>
+        <div style="background:#0d130f;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.25);overflow:hidden;">
+          <div class="dark" style="height:440px;background:var(--background);color:var(--foreground);display:flex;">
+            <div style="width:212px;flex:none;border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;gap:4px;background:color-mix(in oklch, var(--background), var(--brand) 6%);">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 10px 14px;color:oklch(from var(--brand) 0.72 c h);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L18 10 H14.5 L20 17 H4 L9.5 10 H6 Z"></path><rect x="11" y="17" width="2" height="4.5"></rect></svg>
+                <span style="font-size:14px;font-weight:600;color:var(--foreground);">Settings</span>
+              </div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:6px 10px 4px;">Account</div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;font-weight:500;text-decoration:none;background:var(--brand);color:#fff;">Profile</a>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:12px 10px 4px;">Security</div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);">Password</a>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);">Two-factor auth</a>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);">Passkeys</a>
+            </div>
+            <div style="flex:1;padding:26px 28px;display:grid;gap:20px;align-content:start;">
+              <div style="display:grid;gap:4px;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:oklch(from var(--brand) 0.72 c h);">Account</div>
+                <div style="font-size:22px;font-weight:650;letter-spacing:-0.01em;">Your profile</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:22px;display:grid;gap:16px;">
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="sbd-name" hint-size="auto,18px">Display name</x-import>
+                  <x-import component-from-global-scope="EpicUI.Input" id="sbd-name" default-value="Ada Lovelace" hint-size="100%,38px"></x-import>
+                </div>
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="sbd-user" hint-size="auto,18px">Username</x-import>
+                  <x-import component-from-global-scope="EpicUI.Input" id="sbd-user" default-value="ada" hint-size="100%,38px"></x-import>
+                </div>
+                <div style="display:flex;justify-content:flex-end;">
+                  <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Save</x-import>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: HUB FORMCARDS ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Profile hub</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Stacked FormCards — incl. the Switch &amp; the destructive zone</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- Hub column -->
+      <div style="flex:none;width:560px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Settings hub</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);display:grid;gap:20px;">
+
+          <!-- profile + avatar FormCard -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);overflow:hidden;">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);">
+              <div style="font-size:15px;font-weight:600;color:var(--foreground);">Profile</div>
+              <div style="font-size:13px;color:var(--muted-foreground);margin-top:2px;">Visible to your team.</div>
+            </div>
+            <div style="padding:22px;display:flex;gap:18px;align-items:center;">
+              <x-import component-from-global-scope="EpicUI.Avatar" class="size-14" hint-size="56px,56px">
+                <x-import component-from-global-scope="EpicUI.AvatarFallback" hint-size="auto,auto">AL</x-import>
+              </x-import>
+              <div style="flex:1;display:grid;gap:6px;">
+                <x-import component-from-global-scope="EpicUI.Label" html-for="hub-name" hint-size="auto,18px">Display name</x-import>
+                <x-import component-from-global-scope="EpicUI.Input" id="hub-name" default-value="Ada Lovelace" hint-size="100%,38px"></x-import>
+              </div>
+            </div>
+          </div>
+
+          <!-- preferences w/ Switch -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);overflow:hidden;">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);">
+              <div style="font-size:15px;font-weight:600;color:var(--foreground);">Preferences</div>
+            </div>
+            <div style="padding:8px 22px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-size:14px;color:var(--foreground);">Product emails</div><div style="font-size:12px;color:var(--muted-foreground);">Occasional updates and tips.</div></div>
+                <div style="width:42px;height:24px;border-radius:999px;background:var(--brand);position:relative;flex:none;"><div style="position:absolute;top:2px;left:20px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);"></div></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;">
+                <div><div style="font-size:14px;color:var(--foreground);">Public profile</div><div style="font-size:12px;color:var(--muted-foreground);">Show your profile to anyone.</div></div>
+                <div style="width:42px;height:24px;border-radius:999px;background:var(--muted);position:relative;flex:none;"><div style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- sessions -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div><div style="font-size:14px;font-weight:600;color:var(--foreground);">Other sessions</div><div style="font-size:13px;color:var(--muted-foreground);margin-top:2px;">Signed in on 2 other devices.</div></div>
+            <x-import component-from-global-scope="EpicUI.Button" variant="outline" size="sm" hint-size="auto,34px"><span style="white-space:nowrap;">Sign out others</span></x-import>
+          </div>
+
+          <!-- destructive zone -->
+          <div style="background:color-mix(in oklch, var(--card), var(--destructive) 5%);border:1px solid color-mix(in oklch, var(--border), var(--destructive) 35%);border-radius:calc(var(--radius) + 6px);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div><div style="font-size:14px;font-weight:600;color:var(--destructive);">Delete account &amp; data</div><div style="font-size:13px;color:var(--muted-foreground);margin-top:2px;">Permanent. This cannot be undone.</div></div>
+            <x-import component-from-global-scope="EpicUI.Button" variant="destructive" size="sm" hint-size="auto,34px"><span style="white-space:nowrap;">Delete…</span></x-import>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Connections -->
+      <div style="flex:none;width:440px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Connections <span style="color:#8a958e;font-weight:500;">— tooltip-restricted disconnect</span></div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);overflow:hidden;">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--foreground);">Linked accounts</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from -45deg,#ea4335,#fbbc05,#34a853,#4285f4,#ea4335);"></span><div><div style="font-size:14px;color:var(--foreground);">Google</div><div style="font-size:12px;color:var(--muted-foreground);">ada@gmail.com</div></div></div>
+              <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" hint-size="auto,32px">Disconnect</x-import>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:26px;height:26px;border-radius:50%;background:var(--foreground);"></span><div><div style="font-size:14px;color:var(--foreground);">GitHub</div><div style="font-size:12px;color:var(--muted-foreground);">@ada · last sign-in method</div></div></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+                <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" disabled="true" hint-size="auto,32px">Disconnect</x-import>
+              </div>
+            </div>
+            <div style="padding:8px 22px 14px;font-size:12px;color:var(--muted-foreground);display:flex;align-items:center;gap:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+              You can't disconnect your only remaining sign-in method.
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:26px;height:26px;border-radius:50%;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);font-size:14px;">+</span><div style="font-size:14px;color:var(--muted-foreground);">GitLab</div></div>
+              <x-import component-from-global-scope="EpicUI.Button" variant="outline" size="sm" hint-size="auto,32px">Connect</x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: PHOTO ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Profile photo</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Upload states</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- empty -->
+      <div style="flex:none;width:300px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Empty</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:26px;display:grid;gap:16px;justify-items:center;text-align:center;">
+            <div style="width:88px;height:88px;border-radius:50%;background:var(--muted);display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            </div>
+            <div style="font-size:13px;color:var(--muted-foreground);">No photo yet.</div>
+            <x-import component-from-global-scope="EpicUI.Button" variant="outline" size="sm" hint-size="auto,34px">Upload photo</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- preview -->
+      <div style="flex:none;width:300px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Selected · preview</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:26px;display:grid;gap:16px;justify-items:center;text-align:center;">
+            <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg, oklch(from var(--brand) 0.7 0.13 h), var(--brand-deep));box-shadow:0 0 0 3px var(--brand-glow);"></div>
+            <div style="font-size:13px;color:var(--muted-foreground);">ada-portrait.jpg</div>
+            <div style="display:flex;gap:8px;">
+              <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Save photo</x-import>
+              <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" hint-size="auto,34px">Cancel</x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- uploading -->
+      <div style="flex:none;width:300px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Uploading</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:26px;display:grid;gap:16px;justify-items:center;text-align:center;">
+            <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg, oklch(from var(--brand) 0.7 0.13 h), var(--brand-deep));opacity:.55;position:relative;display:flex;align-items:center;justify-content:center;">
+              <span class="pine-spinner" style="width:26px;height:26px;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:pine-spin .7s linear infinite;"></span>
+            </div>
+            <div style="font-size:13px;color:var(--muted-foreground);">Uploading… 64%</div>
+            <div style="width:100%;height:6px;border-radius:999px;background:var(--muted);overflow:hidden;"><div style="width:64%;height:100%;background:var(--brand);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- delete confirm -->
+      <div style="flex:none;width:300px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Delete · confirm (in place)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:14px;text-align:center;justify-items:center;">
+            <div style="width:48px;height:48px;border-radius:14px;background:color-mix(in oklch, var(--card), var(--destructive) 12%);color:var(--destructive);display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Remove photo?</div>
+            <div style="font-size:13px;color:var(--muted-foreground);">Your avatar will revert to initials.</div>
+            <div style="display:flex;gap:8px;width:100%;">
+              <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" class="flex-1" hint-size="100%,34px">Cancel</x-import>
+              <x-import component-from-global-scope="EpicUI.Button" variant="destructive" size="sm" class="flex-1" hint-size="100%,34px">Remove</x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: PASSWORD & EMAIL ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Security · credentials</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Password &amp; email</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- password change -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Change password</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Change password</div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pw-cur" hint-size="auto,18px">Current password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pw-cur" type="password" default-value="secret123" hint-size="100%,38px"></x-import></div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pw-new" hint-size="auto,18px">New password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pw-new" type="password" placeholder="••••••••" hint-size="100%,38px"></x-import></div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pw-conf" hint-size="auto,18px">Confirm new password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pw-conf" type="password" placeholder="••••••••" hint-size="100%,38px"></x-import></div>
+            <x-import component-from-global-scope="EpicUI.Button" size="wide" hint-size="100%,40px">Update password</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- create initial -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Create initial (OAuth-only account)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Set a password</div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:-6px;">You signed up with Google. Add a password to sign in directly too.</div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pi-new" hint-size="auto,18px">New password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pi-new" type="password" placeholder="••••••••" hint-size="100%,38px"></x-import></div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pi-conf" hint-size="auto,18px">Confirm password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pi-conf" type="password" placeholder="••••••••" hint-size="100%,38px"></x-import></div>
+            <x-import component-from-global-scope="EpicUI.Button" size="wide" hint-size="100%,40px">Create password</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- mismatch error -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Mismatch · field error</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Change password</div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="pm-new" hint-size="auto,18px">New password</x-import><x-import component-from-global-scope="EpicUI.Input" id="pm-new" type="password" default-value="newpass99" hint-size="100%,38px"></x-import></div>
+            <div style="display:grid;gap:6px;">
+              <x-import component-from-global-scope="EpicUI.Label" html-for="pm-conf" hint-size="auto,18px">Confirm new password</x-import>
+              <x-import component-from-global-scope="EpicUI.Input" id="pm-conf" type="password" default-value="newpass98" aria-invalid="true" hint-size="100%,38px"></x-import>
+              <div style="font-size:13px;color:var(--destructive);">Passwords don't match.</div>
+            </div>
+            <x-import component-from-global-scope="EpicUI.Button" size="wide" hint-size="100%,40px">Update password</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- change email resting -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Change email · resting</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Change email</div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:-6px;">Current: <span style="color:var(--foreground);">ada@epic.dev</span></div>
+            <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="ce-new" hint-size="auto,18px">New email</x-import><x-import component-from-global-scope="EpicUI.Input" id="ce-new" type="email" placeholder="you@example.com" hint-size="100%,38px"></x-import></div>
+            <x-import component-from-global-scope="EpicUI.Button" size="wide" hint-size="100%,40px">Send confirmation</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- change email success -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Change email · sent</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:radial-gradient(120% 60% at 50% -10%, var(--brand-glow), transparent 58%), var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:28px 24px;display:grid;gap:14px;justify-items:center;text-align:center;">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7 L12 13 L21 7"></path></svg></div>
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Confirm the change</div>
+            <div style="font-size:13px;color:var(--muted-foreground);line-height:1.5;">We emailed a confirmation link to <span style="color:var(--foreground);font-weight:500;">new@example.com</span>. Your address changes once you click it.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: PASSKEYS & 2FA ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Security · multi-factor</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Passkeys &amp; two-factor</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- passkeys list -->
+      <div style="flex:none;width:400px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Passkeys · list</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);overflow:hidden;">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><span style="font-size:15px;font-weight:600;color:var(--foreground);">Passkeys</span><x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,32px">Add passkey</x-import></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:32px;height:32px;border-radius:9px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="9" r="4"></circle><path d="M12 12 L21 12 M18 12 V16 M21 12 V15"></path></svg></span><div><div style="font-size:14px;color:var(--foreground);">MacBook Pro</div><div style="font-size:12px;color:var(--muted-foreground);">Added Apr 2 · last used today</div></div></div>
+              <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" hint-size="auto,32px">Remove</x-import>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:32px;height:32px;border-radius:9px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="9" r="4"></circle><path d="M12 12 L21 12 M18 12 V16 M21 12 V15"></path></svg></span><div><div style="font-size:14px;color:var(--foreground);">iPhone 15</div><div style="font-size:12px;color:var(--muted-foreground);">Added Jan 9</div></div></div>
+              <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" hint-size="auto,32px">Remove</x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- passkeys empty -->
+      <div style="flex:none;width:340px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Passkeys · empty</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px dashed var(--border);border-radius:calc(var(--radius) + 6px);padding:30px 24px;display:grid;gap:14px;justify-items:center;text-align:center;">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="9" r="4"></circle><path d="M12 12 L21 12 M18 12 V16 M21 12 V15"></path></svg></div>
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">No passkeys yet</div>
+            <div style="font-size:13px;color:var(--muted-foreground);line-height:1.5;">Add a passkey to sign in with Face ID, Touch ID, or your security key.</div>
+            <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Add your first passkey</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2FA enrolment -->
+      <div style="flex:none;width:400px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">2FA · enrolment (QR + OTP)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:24px;display:grid;gap:16px;justify-items:center;text-align:center;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">Scan to enable 2FA</div>
+            <div style="position:relative;width:128px;height:128px;border-radius:10px;border:1px solid var(--border);background:#fff;background-image:linear-gradient(45deg,#1b231f 25%,transparent 25%),linear-gradient(-45deg,#1b231f 25%,transparent 25%);background-size:13px 13px;background-position:0 0,0 0;">
+              <span style="position:absolute;top:8px;left:8px;width:28px;height:28px;border:5px solid #1b231f;background:#fff;"></span>
+              <span style="position:absolute;top:8px;right:8px;width:28px;height:28px;border:5px solid #1b231f;background:#fff;"></span>
+              <span style="position:absolute;bottom:8px;left:8px;width:28px;height:28px;border:5px solid #1b231f;background:#fff;"></span>
+            </div>
+            <div style="font-size:12px;color:var(--muted-foreground);">Then enter the 6-digit code from your app.</div>
+            <div style="display:flex;gap:7px;">
+              <div style="width:38px;height:46px;border:1px solid var(--brand);border-radius:9px;box-shadow:0 0 0 3px var(--brand-glow);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:var(--foreground);">2</div>
+              <div style="width:38px;height:46px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--muted-foreground);"></div>
+              <div style="width:38px;height:46px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--muted-foreground);"></div>
+              <div style="width:38px;height:46px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--muted-foreground);"></div>
+              <div style="width:38px;height:46px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--muted-foreground);"></div>
+              <div style="width:38px;height:46px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--muted-foreground);"></div>
+            </div>
+            <x-import component-from-global-scope="EpicUI.Button" size="wide" hint-size="100%,40px">Verify &amp; enable</x-import>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2FA status + disable -->
+      <div style="flex:none;width:400px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">2FA · status (enabled) &amp; disable</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);display:grid;gap:18px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="display:flex;align-items:center;gap:11px;">
+              <span style="width:34px;height:34px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 L20 6 V11 C20 16 16.5 19.5 12 21 C7.5 19.5 4 16 4 11 V6 Z"></path><path d="M9 12 l2 2 l4 -4"></path></svg></span>
+              <div><div style="font-size:14px;font-weight:600;color:var(--foreground);">Two-factor auth</div><div style="font-size:12px;color:var(--muted-foreground);">Authenticator app</div></div>
+            </div>
+            <x-import component-from-global-scope="EpicUI.Badge" hint-size="auto,22px">Enabled</x-import>
+          </div>
+          <div style="background:color-mix(in oklch, var(--card), var(--destructive) 5%);border:1px solid color-mix(in oklch, var(--border), var(--destructive) 35%);border-radius:calc(var(--radius) + 6px);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div><div style="font-size:14px;font-weight:600;color:var(--destructive);">Disable 2FA</div><div style="font-size:12px;color:var(--muted-foreground);margin-top:2px;">Weakens your account security.</div></div>
+            <x-import component-from-global-scope="EpicUI.Button" variant="destructive" size="sm" hint-size="auto,34px"><span style="white-space:nowrap;">Disable…</span></x-import>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;oklch(60% 0.135 172)&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showSidebarStretch&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  canvasRef = React.createRef();
+  applyBrand() {
+    const c = this.canvasRef.current;
+    if (c && this.props.brandColor) c.style.setProperty('--brand', this.props.brandColor);
+  }
+  injectBorderFix() {
+    if (document.getElementById('pine-border-fix')) return;
+    const s = document.createElement('style');
+    s.id = 'pine-border-fix';
+    s.textContent = [
+      'input.border-input,textarea.border-input{border-width:1px!important;border-style:solid!important;border-color:color-mix(in oklch, var(--input), var(--foreground) 26%)!important;}',
+      'button.border-input{border-width:1px!important;border-style:solid!important;border-color:color-mix(in oklch, var(--input), var(--foreground) 36%)!important;}',
+      'input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--input-invalid, var(--destructive))!important;}',
+      'input:focus,textarea:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-glow)!important;}',
+      'button{white-space:nowrap;}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  componentDidMount() { this.applyBrand(); this.injectBorderFix(); }
+  componentDidUpdate() { this.applyBrand(); }
+  renderVals() {
+    return {
+      canvasRef: this.canvasRef,
+      showSidebar: this.props.showSidebarStretch ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

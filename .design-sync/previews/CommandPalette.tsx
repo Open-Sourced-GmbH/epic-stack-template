@@ -59,3 +59,7 @@ export const Results = () => <CommandPalette commands={commandRegistry} />
 export const EmptyState = () => (
 	<CommandPalette commands={[]} emptyActions={commandEmptyActions} />
 )
+
+// Pending remote source: `loading` swaps the list for Skeleton/Spinner
+// placeholders so an in-flight fetch never reads as "No results found.".
+export const Loading = () => <CommandPalette commands={[]} loading />

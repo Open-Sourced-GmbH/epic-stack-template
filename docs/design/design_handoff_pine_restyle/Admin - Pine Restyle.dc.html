@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/_ds_bundle.css">
+  <link rel="stylesheet" href="_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/styles.css">
+  <script>
+  (function(){
+    function loadBundle(){
+      if (document.getElementById('epic-ds-bundle')) return;
+      var s = document.createElement('script');
+      s.id = 'epic-ds-bundle';
+      s.src = '_ds/epic-stack-template-ui-e6ba00a3-b80a-441b-96b7-317177bf55b1/_ds_bundle.js';
+      document.head.appendChild(s);
+    }
+    if (window.React && window.ReactDOM) { loadBundle(); return; }
+    var tries = 0;
+    var t = setInterval(function(){ if ((window.React && window.ReactDOM) || tries++ > 600) { clearInterval(t); loadBundle(); } }, 8);
+  })();
+  </script>
+  <style>
+    input,textarea,button,[class*="ring-"]{transition:box-shadow .2s cubic-bezier(.32,.72,0,1),border-color .2s cubic-bezier(.32,.72,0,1),background-color .2s ease,color .15s ease;}
+    @keyframes pine-spin{to{transform:rotate(360deg);}}
+    @media (prefers-reduced-motion:reduce){.pine-spinner{animation:none!important;}input,textarea,button{transition:none;}}
+  </style>
+</helmet>
+
+<div ref="{{ canvasRef }}" style="--brand:oklch(60% 0.135 172);--brand-soft:oklch(96% 0.025 172);--brand-deep:oklch(31% 0.05 168);--brand-glow:oklch(from var(--brand) l c h / 0.28);--primary:var(--brand);--primary-foreground:oklch(98.5% 0.003 247);--ring:var(--brand);font-family:var(--font-sans,ui-sans-serif,system-ui,sans-serif);width:max-content;min-width:100%;min-height:100vh;box-sizing:border-box;padding:48px;background:#e7e5df;display:flex;flex-direction:column;gap:64px;">
+
+  <!-- masthead -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="display:flex;align-items:center;gap:9px;color:var(--brand);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L18 10 H14.5 L20 17 H4 L9.5 10 H6 Z"></path><rect x="11" y="17" width="2" height="4.5"></rect></svg>
+      <span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#2c4036;">Pine Brand Restyle</span>
+    </div>
+    <div style="font-size:30px;font-weight:650;letter-spacing:-0.02em;color:#1b231f;">Admin — pine restyle</div>
+    <div style="font-size:15px;color:#566159;max-width:780px;line-height:1.5;">Slice ③ admin surfaces: the shell, blog list, post editor, and cache. This is where the net-new Table primitive earns its keep — header treatment, row hover, status Badge + row-action menu in cells, empty &amp; loading states.</div>
+  </div>
+
+  <!-- ===== SECTION: ADMIN SHELL (Exploration #5) ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Admin shell · chosen nav</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Left nav rail</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- Left rail -->
+      <div style="flex:none;width:840px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Left nav rail (chosen)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;">
+          <div style="height:380px;background:var(--background);color:var(--foreground);display:flex;">
+            <div style="width:200px;flex:none;border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:4px;background:color-mix(in oklch, var(--background), var(--brand) 3%);">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 10px 16px;color:var(--brand);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L18 10 H14.5 L20 17 H4 L9.5 10 H6 Z"></path><rect x="11" y="17" width="2" height="4.5"></rect></svg><span style="font-size:14px;font-weight:600;color:var(--foreground);">Pine Admin</span></div>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;font-weight:500;text-decoration:none;background:var(--brand);color:#fff;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"></path></svg>Blog</a>
+              <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);font-size:13px;text-decoration:none;color:var(--foreground);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path></svg>Cache</a>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <div style="border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+                <div style="display:grid;gap:3px;"><div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);">Admin</div><div style="font-size:20px;font-weight:650;letter-spacing:-0.01em;white-space:nowrap;">Blog posts</div></div>
+                <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">New post</x-import>
+              </div>
+              <div style="padding:18px 24px;display:flex;flex-direction:column;gap:11px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted-foreground);"><span>The pine way to ship</span><span style="color:var(--brand);">Published</span></div>
+                <div style="height:1px;background:var(--border);"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted-foreground);"><span>Draft: roadmap notes</span><span>Draft</span></div>
+                <div style="height:1px;background:var(--border);"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted-foreground);"><span>Token migration recap</span><span style="color:var(--brand);">Published</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+    <div style="font-size:13px;color:#6b756e;">Presentational only — the same two routes (Blog / Cache), no new targets.</div>
+  </div>
+
+  <!-- ===== SECTION: BLOG LIST (Table) ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Exploration #3 · the Table primitive</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Blog list — Table, badges, row actions, empty &amp; loading</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- Table populated -->
+      <div style="flex:none;width:780px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Modern Table · toolbar, selection, status pills, row-action menu (open)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,40,32,.06);">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <div style="display:inline-flex;padding:3px;gap:2px;background:var(--muted);border-radius:10px;">
+                <span style="font-size:12.5px;font-weight:500;padding:5px 12px;border-radius:8px;background:var(--card);color:var(--foreground);box-shadow:0 1px 2px rgba(0,0,0,.07);">All</span>
+                <span style="font-size:12.5px;font-weight:500;padding:5px 12px;border-radius:8px;color:var(--muted-foreground);">Published</span>
+                <span style="font-size:12.5px;font-weight:500;padding:5px 12px;border-radius:8px;color:var(--muted-foreground);">Drafts</span>
+              </div>
+              <div style="position:relative;display:flex;align-items:center;width:210px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="position:absolute;left:11px;color:var(--muted-foreground);"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+                <input placeholder="Search posts…" style="width:100%;height:34px;border-radius:9px;border:1px solid color-mix(in oklch,var(--input),var(--foreground) 26%);background:var(--background);padding:0 10px 0 32px;font-size:13px;color:var(--foreground);outline:none;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:36px 1fr 132px 128px 40px;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-foreground);align-items:center;">
+              <div style="display:flex;"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid color-mix(in oklch,var(--input),var(--foreground) 30%);"></span></div>
+              <div>Title</div>
+              <div>Status</div>
+              <div style="display:inline-flex;align-items:center;gap:4px;color:var(--foreground);">Updated <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+              <div></div>
+            </div>
+
+            <div class="pine-row" style="position:relative;display:grid;grid-template-columns:36px 1fr 132px 128px 40px;gap:12px;padding:12px 16px;align-items:center;border-bottom:1px solid var(--border);background:color-mix(in oklch,var(--card),var(--brand) 6%);box-shadow:inset 3px 0 0 var(--brand);">
+              <div style="display:flex;"><span style="width:16px;height:16px;border-radius:5px;background:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 L9 17 L4 12"></path></svg></span></div>
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+                <span style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;">P</span>
+                <div style="min-width:0;"><div style="font-size:14px;font-weight:550;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">The pine way to ship</div><div style="font-size:12px;color:var(--muted-foreground);font-family:var(--font-mono,ui-monospace,monospace);">/blog/the-pine-way</div></div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px;background:color-mix(in oklch,var(--card),var(--brand) 13%);color:oklch(from var(--brand) calc(l - 0.14) c h);"><span style="width:6px;height:6px;border-radius:50%;background:var(--brand);"></span>Published</span></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">2 days ago</div>
+              <div style="display:flex;justify-content:flex-end;position:relative;">
+                <x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></x-import>
+                <div style="position:absolute;right:0;top:36px;z-index:6;min-width:172px;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:12px;box-shadow:0 14px 34px -12px rgba(20,40,32,.4);padding:6px;text-align:left;">
+                  <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:13px;border-radius:8px;color:var(--popover-foreground);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Edit</div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:13px;border-radius:8px;color:var(--popover-foreground);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.7 3"></path><path d="M3 4v5h5"></path></svg>Unpublish</div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:13px;border-radius:8px;color:var(--popover-foreground);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>Copy link</div>
+                  <div style="height:1px;background:var(--border);margin:5px 6px;"></div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:13px;border-radius:8px;color:var(--destructive);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg>Delete</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 132px 128px 40px;gap:12px;padding:12px 16px;align-items:center;border-bottom:1px solid var(--border);" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid color-mix(in oklch,var(--input),var(--foreground) 30%);"></span></div>
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+                <span style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;">R</span>
+                <div style="min-width:0;"><div style="font-size:14px;font-weight:550;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Roadmap notes</div><div style="font-size:12px;color:var(--muted-foreground);font-family:var(--font-mono,ui-monospace,monospace);">draft · unsaved</div></div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px;background:var(--muted);color:var(--muted-foreground);"><span style="width:6px;height:6px;border-radius:50%;background:var(--muted-foreground);"></span>Draft</span></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">5 hours ago</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></x-import></div>
+            </div>
+
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 132px 128px 40px;gap:12px;padding:12px 16px;align-items:center;border-bottom:1px solid var(--border);" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid color-mix(in oklch,var(--input),var(--foreground) 30%);"></span></div>
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+                <span style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;">T</span>
+                <div style="min-width:0;"><div style="font-size:14px;font-weight:550;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Token migration recap</div><div style="font-size:12px;color:var(--muted-foreground);font-family:var(--font-mono,ui-monospace,monospace);">/blog/token-migration</div></div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px;background:color-mix(in oklch,var(--card),var(--brand) 13%);color:oklch(from var(--brand) calc(l - 0.14) c h);"><span style="width:6px;height:6px;border-radius:50%;background:var(--brand);"></span>Published</span></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">Mar 28</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></x-import></div>
+            </div>
+
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 132px 128px 40px;gap:12px;padding:12px 16px;align-items:center;" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid color-mix(in oklch,var(--input),var(--foreground) 30%);"></span></div>
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+                <span style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;">W</span>
+                <div style="min-width:0;"><div style="font-size:14px;font-weight:550;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Why we chose SSR</div><div style="font-size:12px;color:var(--muted-foreground);font-family:var(--font-mono,ui-monospace,monospace);">/blog/why-ssr</div></div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px;background:color-mix(in oklch,var(--card),var(--brand) 13%);color:oklch(from var(--brand) calc(l - 0.14) c h);"><span style="width:6px;height:6px;border-radius:50%;background:var(--brand);"></span>Published</span></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">Mar 12</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></x-import></div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-foreground);">
+              <span>1–4 of 12 posts</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:15px;color:var(--muted-foreground);">‹</span>
+                <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:600;background:var(--brand);color:#fff;">1</span>
+                <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;color:var(--foreground);">2</span>
+                <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;color:var(--foreground);">3</span>
+                <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:15px;color:var(--foreground);">›</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty + skeleton stacked -->
+      <div style="flex:none;width:420px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Empty state &amp; loading skeleton</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);display:grid;gap:18px;">
+          <div style="background:var(--card);border:1px dashed var(--border);border-radius:calc(var(--radius) + 4px);padding:30px 22px;display:grid;gap:12px;justify-items:center;text-align:center;">
+            <div style="width:46px;height:46px;border-radius:13px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h7"></path></svg></div>
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">No drafts yet</div>
+            <div style="font-size:13px;color:var(--muted-foreground);line-height:1.5;">Start writing — your unpublished posts will live here.</div>
+            <x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">New post</x-import>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-4 w-40" hint-size="160px,16px"></x-import>
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-5 w-16 rounded-full" hint-size="64px,20px"></x-import>
+            </div>
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-4 w-32" hint-size="128px,16px"></x-import>
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-5 w-16 rounded-full" hint-size="64px,20px"></x-import>
+            </div>
+            <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-4 w-48" hint-size="192px,16px"></x-import>
+              <x-import component-from-global-scope="EpicUI.Skeleton" class="h-5 w-16 rounded-full" hint-size="64px,20px"></x-import>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: POST EDITOR ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Authoring</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Post editor — live-preview split</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- editor -->
+      <div style="flex:none;width:900px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Editor + preview · publish / locked-slug</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;">
+          <div style="background:var(--background);color:var(--foreground);">
+            <div style="border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted-foreground);"><a href="#" style="color:var(--muted-foreground);text-decoration:none;">Blog</a><span style="color:var(--border);">/</span><span style="color:var(--foreground);">Edit post</span></div>
+              <div style="display:flex;gap:8px;"><x-import component-from-global-scope="EpicUI.Button" variant="outline" size="sm" hint-size="auto,34px">Save draft</x-import><x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Publish</x-import></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;">
+              <div style="padding:24px;display:grid;gap:16px;border-right:1px solid var(--border);align-content:start;">
+                <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="ed-title" hint-size="auto,18px">Title</x-import><x-import component-from-global-scope="EpicUI.Input" id="ed-title" default-value="The pine way to ship" hint-size="100%,38px"></x-import></div>
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="ed-slug" hint-size="auto,18px">Slug</x-import>
+                  <div style="position:relative;display:flex;align-items:center;">
+                    <x-import component-from-global-scope="EpicUI.Input" id="ed-slug" default-value="/blog/the-pine-way" disabled="true" hint-size="100%,38px"></x-import>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="position:absolute;right:11px;color:var(--muted-foreground);"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                  </div>
+                  <div style="font-size:12px;color:var(--muted-foreground);">Slug locks once a post is published.</div>
+                </div>
+                <div style="display:grid;gap:6px;">
+                  <x-import component-from-global-scope="EpicUI.Label" html-for="ed-tags" hint-size="auto,18px">Tags</x-import>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:38px;padding:6px 8px;border-radius:var(--radius);border:1px solid color-mix(in oklch, var(--input), var(--foreground) 26%);background:var(--background);">
+                    <span style="display:inline-flex;align-items:center;gap:5px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:500;padding:3px 8px;border-radius:999px;">engineering<span style="cursor:pointer;opacity:.7;">×</span></span>
+                    <span style="display:inline-flex;align-items:center;gap:5px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:500;padding:3px 8px;border-radius:999px;">ssr<span style="cursor:pointer;opacity:.7;">×</span></span>
+                    <input id="ed-tags" placeholder="Add tag…" style="border:none;outline:none;background:transparent;font-size:13px;flex:1;min-width:80px;color:var(--foreground);font-family:inherit;">
+                  </div>
+                </div>
+                <div style="display:grid;gap:6px;"><x-import component-from-global-scope="EpicUI.Label" html-for="ed-body" hint-size="auto,18px">Body (Markdown)</x-import><x-import component-from-global-scope="EpicUI.Textarea" id="ed-body" rows="6" default-value="Shipping calmly means fewer, surer steps. Here's how the pine system keeps the path clear…" hint-size="100%,130px"></x-import></div>
+                <div style="display:flex;align-items:center;gap:10px;"><x-import component-from-global-scope="EpicUI.Button" variant="outline" size="sm" hint-size="auto,34px"><span style="display:inline-flex;align-items:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 15l5-4 4 3 4-5 5 6"></path></svg>Set cover image</span></x-import><span style="font-size:12px;color:var(--muted-foreground);">No cover yet</span></div>
+              </div>
+              <div style="padding:24px;background:color-mix(in oklch, var(--background), var(--foreground) 2%);">
+                <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:14px;">Live preview</div>
+                <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;">Engineering</div>
+                <div style="font-size:26px;font-weight:650;letter-spacing:-0.02em;line-height:1.2;color:var(--foreground);">The pine way to ship</div>
+                <div style="display:flex;gap:6px;margin:14px 0;">
+                  <span style="font-size:11px;color:var(--muted-foreground);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">engineering</span>
+                  <span style="font-size:11px;color:var(--muted-foreground);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">ssr</span>
+                </div>
+                <div style="font-size:14px;line-height:1.65;color:var(--foreground);opacity:.85;">Shipping calmly means fewer, surer steps. Here's how the pine system keeps the path clear…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cover dialog in place -->
+      <div style="flex:none;width:400px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Cover image · dialog (renders in place)</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:color-mix(in oklch, var(--background), #000 4%);display:flex;align-items:center;justify-content:center;">
+          <div style="width:100%;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);box-shadow:0 20px 50px -20px rgba(0,0,0,.45);overflow:hidden;">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:15px;font-weight:600;">Cover image</div><span style="color:var(--muted-foreground);cursor:pointer;font-size:18px;line-height:1;">×</span></div>
+            <div style="padding:22px;display:grid;gap:16px;">
+              <div style="border:1.5px dashed color-mix(in oklch, var(--border), var(--foreground) 20%);border-radius:var(--radius);padding:30px;display:grid;gap:10px;justify-items:center;text-align:center;color:var(--muted-foreground);">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 15l5-4 4 3 4-5 5 6"></path><circle cx="8.5" cy="9" r="1.4"></circle></svg>
+                <div style="font-size:13px;">Drag an image here, or browse</div>
+                <div style="font-size:12px;opacity:.8;">PNG or JPG · up to 4 MB</div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="sm" hint-size="auto,34px">Cancel</x-import><x-import component-from-global-scope="EpicUI.Button" size="sm" hint-size="auto,34px">Use image</x-import></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION: CACHE ADMIN ===== -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3a7a63;">Operations</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#1b231f;margin-top:3px;">Cache admin — search, keys, delete</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;max-width:1860px;">
+
+      <!-- cache table -->
+      <div style="flex:none;width:620px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">Keys</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,40,32,.06);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <div style="position:relative;display:flex;align-items:center;width:270px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="position:absolute;left:11px;color:var(--muted-foreground);"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+                <input id="cache-q" placeholder="Search cache keys…" style="width:100%;height:34px;border-radius:9px;border:1px solid color-mix(in oklch,var(--input),var(--foreground) 26%);background:var(--background);padding:0 10px 0 32px;font-size:13px;color:var(--foreground);outline:none;font-family:inherit;box-sizing:border-box;">
+              </div>
+              <span style="font-size:13px;color:var(--muted-foreground);">128 keys · 2.4 MB</span>
+            </div>
+            <div style="display:grid;grid-template-columns:36px 1fr 96px 44px;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-foreground);align-items:center;"><div></div><div>Key</div><div>Size</div><div></div></div>
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 96px 44px;gap:12px;padding:11px 16px;align-items:center;border-bottom:1px solid var(--border);" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:30px;height:30px;border-radius:8px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3 L7 21 M17 3 L15 21 M4 8 H20 M3 16 H19"></path></svg></span></div>
+              <div style="min-width:0;"><div style="font-family:var(--font-mono,ui-monospace,monospace);font-size:13px;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">user:42:profile</div><div style="font-size:11px;color:var(--muted-foreground);">expires in 1h</div></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">1.2 KB</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></x-import></div>
+            </div>
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 96px 44px;gap:12px;padding:11px 16px;align-items:center;border-bottom:1px solid var(--border);" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:30px;height:30px;border-radius:8px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3 L7 21 M17 3 L15 21 M4 8 H20 M3 16 H19"></path></svg></span></div>
+              <div style="min-width:0;"><div style="font-family:var(--font-mono,ui-monospace,monospace);font-size:13px;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">blog:index:page-1</div><div style="font-size:11px;color:var(--muted-foreground);">expires in 12h</div></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">8.4 KB</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></x-import></div>
+            </div>
+            <div class="pine-row" style="display:grid;grid-template-columns:36px 1fr 96px 44px;gap:12px;padding:11px 16px;align-items:center;border-bottom:1px solid var(--border);" style-hover="background:var(--accent);">
+              <div style="display:flex;"><span style="width:30px;height:30px;border-radius:8px;background:var(--muted);color:var(--muted-foreground);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3 L7 21 M17 3 L15 21 M4 8 H20 M3 16 H19"></path></svg></span></div>
+              <div style="min-width:0;"><div style="font-family:var(--font-mono,ui-monospace,monospace);font-size:13px;color:var(--foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">og:image:the-pine-way</div><div style="font-size:11px;color:var(--muted-foreground);">no expiry</div></div>
+              <div style="font-size:13px;color:var(--muted-foreground);">34 KB</div>
+              <div style="display:flex;justify-content:flex-end;"><x-import component-from-global-scope="EpicUI.Button" variant="ghost" size="icon-sm" hint-size="32px,32px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></x-import></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-foreground);">
+              <span>3 of 128 keys</span>
+              <span style="color:var(--destructive);font-weight:500;cursor:pointer;">Flush all</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cache no results -->
+      <div style="flex:none;width:420px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#3a4742;">No results</div>
+        <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden;padding:28px;background:var(--background);display:grid;gap:14px;">
+          <div style="position:relative;display:flex;align-items:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="position:absolute;left:12px;color:var(--muted-foreground);"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            <x-import component-from-global-scope="EpicUI.Input" id="cache-q2" default-value="sessons:" class="pl-9" hint-size="100%,38px"></x-import>
+          </div>
+          <div style="background:var(--card);border:1px dashed var(--border);border-radius:calc(var(--radius) + 4px);padding:32px 22px;display:grid;gap:8px;justify-items:center;text-align:center;">
+            <div style="font-size:15px;font-weight:600;color:var(--foreground);">No keys match “sessons:”</div>
+            <div style="font-size:13px;color:var(--muted-foreground);">Check the spelling, or clear the search to see all keys.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;oklch(60% 0.135 172)&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;zebraRows&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  canvasRef = React.createRef();
+  applyBrand() {
+    const c = this.canvasRef.current;
+    if (!c) return;
+    if (this.props.brandColor) c.style.setProperty('--brand', this.props.brandColor);
+    c.classList.toggle('pine-zebra', !!this.props.zebraRows);
+  }
+  injectStyle() {
+    if (document.getElementById('pine-admin-style')) return;
+    const s = document.createElement('style');
+    s.id = 'pine-admin-style';
+    s.textContent = [
+      'input.border-input,textarea.border-input{border-width:1px!important;border-style:solid!important;border-color:color-mix(in oklch, var(--input), var(--foreground) 26%)!important;}',
+      'button.border-input{border-width:1px!important;border-style:solid!important;border-color:color-mix(in oklch, var(--input), var(--foreground) 36%)!important;}',
+      'input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--input-invalid, var(--destructive))!important;}',
+      'input:focus,textarea:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-glow)!important;}',
+      'button{white-space:nowrap;}',
+      '.pine-zebra .pine-row:nth-of-type(even){background:color-mix(in oklch, var(--card), var(--foreground) 3%);}',
+      '#cache-q,#cache-q2{padding-left:36px!important;}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  componentDidMount() { this.applyBrand(); this.injectStyle(); }
+  componentDidUpdate() { this.applyBrand(); }
+  renderVals() { return { canvasRef: this.canvasRef }; }
+}
+</script>
+</body>
+</html>

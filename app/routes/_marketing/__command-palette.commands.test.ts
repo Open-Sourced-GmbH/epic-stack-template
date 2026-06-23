@@ -14,9 +14,20 @@ test('navigation commands cover Home, every nav section, and Contact as hrefs', 
 
 	expect(navigation.map((c) => c.href)).toEqual([
 		'/',
+		'/blog',
 		...navSections.map((s) => `/#${s.id}`),
 		'/#contact',
 	])
+})
+
+test('a Blog command navigates to the public blog index', () => {
+	const blog = landingCommands({ onTheme: () => {} }).find(
+		(c) => c.id === 'nav-blog',
+	)
+
+	expect(blog?.group).toBe('Navigation')
+	expect(blog?.href).toBe('/blog')
+	expect(blog?.run).toBeUndefined()
 })
 
 test('theme commands are run actions (no href) that report the chosen mode', () => {

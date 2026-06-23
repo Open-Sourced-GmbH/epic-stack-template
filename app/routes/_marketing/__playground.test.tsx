@@ -5,11 +5,15 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { specimens } from '#app/components/styleguide/specimens.tsx'
-import { Playground } from './__playground.tsx'
+import { EXCLUDED_GROUPS, Playground } from './__playground.tsx'
 
 // Reduced motion keeps the carousel static (no autoplay) so navigation in these
 // tests is deterministic.
 beforeEach(() => {
+	// jsdom doesn't implement elementFromPoint; input-otp calls it from a
+	// deferred timer after typing, which otherwise surfaces as an unhandled error.
+	document.elementFromPoint = () => null
+
 	vi.stubGlobal('matchMedia', (query: string) => ({
 		matches: query.includes('reduce'),
 		media: query,
@@ -29,7 +33,7 @@ afterEach(() => {
 test('renders a playground section landmark with a heading', () => {
 	render(<Playground />)
 
-	const region = screen.getByRole('region', { name: /running live/i })
+	const region = screen.getByRole('region', { name: /screenshot/i })
 	expect(region).toHaveAttribute('id', 'playground')
 })
 
@@ -41,9 +45,16 @@ test('sources a tab for every styleguide specimen group (cannot drift)', () => {
 		.getAllByRole('tab')
 		.map((t) => t.textContent)
 
-	const groups = [...new Set(specimens.map((s) => s.group))]
+	const groups = [...new Set(specimens.map((s) => s.group))].filter(
+		(group) => !EXCLUDED_GROUPS.has(group),
+	)
 	for (const group of groups) {
 		expect(tabLabels).toContain(group)
+	}
+
+	// Token-gallery groups are deliberately kept out of the showpiece.
+	for (const group of EXCLUDED_GROUPS) {
+		expect(tabLabels).not.toContain(group)
 	}
 })
 
@@ -62,14 +73,20 @@ test('mounts every styleguide specimen through the playground without error', as
 	}
 })
 
-test('the onboarding slide drives a StatusButton from idle to success', async () => {
+test('the onboarding slide walks register → 2FA → welcome', async () => {
 	const user = userEvent.setup()
 	render(<Playground />)
 
-	// Onboarding is the opening slide; submit drives the StatusButton.
+	// Register is the opening step; submit drives the StatusButton pending.
 	await user.click(screen.getByRole('button', { name: /create account/i }))
-
-	// Pending immediately, then success once the simulated request resolves.
 	expect(screen.getByTitle('loading')).toBeInTheDocument()
-	await screen.findByTitle('success', undefined, { timeout: 2_000 })
+
+	// Once the simulated request resolves, the 2FA step takes over.
+	const otp = await screen.findByLabelText(/two-factor code/i, undefined, {
+		timeout: 2_000,
+	})
+
+	// A complete code advances to the welcome step.
+	await user.type(otp, '248013')
+	await screen.findByText(/you're all set/i, undefined, { timeout: 2_000 })
 })

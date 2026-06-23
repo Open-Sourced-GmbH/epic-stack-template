@@ -59,7 +59,7 @@ export function HowItWorks() {
 			id="how-it-works"
 			ref={ref}
 			aria-labelledby="how-it-works-heading"
-			className="container scroll-mt-20 py-24"
+			className="container scroll-mt-20 py-32"
 		>
 			<div className="mx-auto max-w-2xl text-center">
 				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
@@ -67,48 +67,48 @@ export function HowItWorks() {
 				</p>
 				<h2
 					id="how-it-works-heading"
-					className="mt-3 text-3xl font-semibold tracking-tight text-balance"
+					className="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl"
 				>
 					From first call to shipped, in four steps
 				</h2>
-				<p className="text-muted-foreground mt-4 text-pretty">
+				<p className="text-muted-foreground mt-5 text-lg text-pretty">
 					A simple, predictable process — so you always know where the project
 					stands and what's next.
 				</p>
 			</div>
 
-			<ol role="list" className="hiw mx-auto mt-16 max-w-2xl">
+			<ol role="list" className="hiw mx-auto mt-20 max-w-2xl">
 				{STEPS.map((step, index) => (
 					<li
 						key={step.n}
 						data-reveal
 						style={{ transitionDelay: `${index * 90}ms` }}
-						className="grid grid-cols-[3rem_1fr] gap-5"
+						className="grid grid-cols-[3.5rem_1fr] gap-6 sm:gap-8"
 					>
 						<div className="flex flex-col items-center">
-							<span className="hiw-node bg-brand-soft text-brand border-border grid h-12 w-12 place-items-center rounded-lg border">
-								<Icon name={step.icon} className="h-5 w-5" aria-hidden />
+							<span className="hiw-node bg-brand-soft text-brand border-border grid h-14 w-14 place-items-center rounded-xl border">
+								<Icon name={step.icon} className="h-6 w-6" aria-hidden />
 							</span>
 							{index < STEPS.length - 1 ? (
 								<span
 									aria-hidden
-									className="hiw-line bg-border my-2 w-px flex-1"
+									className="hiw-line bg-border my-3 w-px flex-1"
 								/>
 							) : null}
 						</div>
-						<div className="pb-9 last:pb-0">
-							<div className="mb-2 flex flex-wrap items-baseline gap-3">
+						<div className={index < STEPS.length - 1 ? 'pb-24' : ''}>
+							<div className="mb-3 flex flex-wrap items-baseline gap-3">
 								<span className="text-brand text-xs font-bold tracking-wider">
 									{step.n}
 								</span>
 								<h3 className="text-xl font-semibold tracking-tight">
 									{step.title}
 								</h3>
-								<span className="bg-muted text-muted-foreground ml-auto rounded-full px-2.5 py-1 text-xs whitespace-nowrap">
+								<span className="text-brand bg-brand-soft border-border ml-auto rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide whitespace-nowrap">
 									{step.dur}
 								</span>
 							</div>
-							<p className="text-muted-foreground leading-relaxed text-pretty">
+							<p className="text-muted-foreground text-[15px] leading-relaxed text-pretty">
 								{step.body}
 							</p>
 						</div>

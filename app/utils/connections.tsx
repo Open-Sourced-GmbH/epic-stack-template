@@ -42,6 +42,7 @@ export function ProviderConnectionForm({
 			) : null}
 			<StatusButton
 				type="submit"
+				variant="outline"
 				className="w-full"
 				status={isPending ? 'pending' : 'idle'}
 			>

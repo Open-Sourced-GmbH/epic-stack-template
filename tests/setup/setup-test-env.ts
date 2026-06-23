@@ -26,6 +26,16 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
 	Element.prototype.scrollIntoView = function scrollIntoView() {}
 }
 
+// jsdom has no layout, so `document.elementFromPoint` is undefined; `input-otp`
+// (the OTPField slots) calls it from a deferred focus handler when an OTP input
+// auto-focuses. A `null`-returning stub keeps that async timer from throwing an
+// uncaught exception in OTP component tests — e.g. the restyled verify screen.
+if (typeof document !== 'undefined' && !document.elementFromPoint) {
+	document.elementFromPoint = function elementFromPoint() {
+		return null
+	}
+}
+
 afterEach(() => server.resetHandlers())
 afterEach(() => cleanup())
 

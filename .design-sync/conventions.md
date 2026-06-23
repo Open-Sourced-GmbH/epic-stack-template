@@ -15,6 +15,28 @@ vocabulary the components use, so everything stays on-brand.
   hex for dark mode.
 - **Tooltip** auto-wraps its own `TooltipProvider` — just compose
   `Tooltip > TooltipTrigger + TooltipContent`. Other components are standalone.
+- **CommandPalette ⌘K binding is the consumer's responsibility.** The palette is
+  a controlled overlay (`open` / `onOpenChange`) but registers no global hotkey —
+  wire ⌘K / Ctrl-K where you mount it, so it sits beside your other page
+  shortcuts. Canonical wiring:
+
+  ```tsx
+  const [open, setOpen] = React.useState(false)
+  React.useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setOpen((prev) => !prev)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+  return <CommandPalette commands={commands} open={open} onOpenChange={setOpen} />
+  ```
+
+  For remote command sources, pass `loading` while the fetch is pending so the
+  list shows Skeleton placeholders instead of the empty/no-results state.
 
 ## Styling idiom — semantic utility classes
 

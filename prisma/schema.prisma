@@ -22,33 +22,49 @@ model User {
 
   image       UserImage?
   password    Password?
-  notes       Note[]
+  posts       Post[]
   roles       Role[]
   sessions    Session[]
   connections Connection[]
   passkey     Passkey[]
 }
 
-model Note {
-  id      String @id @default(cuid())
+model Post {
+  id      String  @id @default(cuid())
   title   String
-  content String
+  slug    String  @unique
+  body    String
+  excerpt String?
+
+  // Publication state: null = Draft, set = Published (the publication instant).
+  publishedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  ownerId String
+  // Author *credit*, not ownership: deleting the author blanks the credit
+  // (SetNull) but the Post — canonical content — stands. (Contrast the retired
+  // Note, which cascade-deleted with its owner.)
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  authorId String?
 
-  images NoteImage[]
+  images PostImage[] @relation("PostImages")
+
+  // The cover image is the one PostImage singled out by coverImageId; the rest
+  // stay available for body images later.
+  coverImage   PostImage? @relation("PostCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  coverImageId String?    @unique
+
+  // Canonical, shared taxonomy (Post↔Tag is many-to-many).
+  tags Tag[]
 
   // non-unique foreign key
-  @@index([ownerId])
-  // This helps our order by in the user search a LOT
-  @@index([ownerId, updatedAt])
+  @@index([authorId])
+  // the public feed orders by recency of publication
+  @@index([publishedAt])
 }
 
-model NoteImage {
+model PostImage {
   id        String  @id @default(cuid())
   altText   String?
   objectKey String
@@ -56,11 +72,25 @@ model NoteImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  noteId String
+  post   Post   @relation("PostImages", fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId String
+
+  // Back-reference for the cover relation: a PostImage may be some Post's cover.
+  coverOf Post? @relation("PostCoverImage")
 
   // non-unique foreign key
-  @@index([noteId])
+  @@index([postId])
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
 }
 
 model UserImage {
@@ -99,7 +129,7 @@ model Session {
 model Permission {
   id          String @id @default(cuid())
   action      String // e.g. create, read, update, delete
-  entity      String // e.g. note, user, etc.
+  entity      String // e.g. post, user, etc.
   access      String // e.g. own or any
   description String @default("")
 

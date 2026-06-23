@@ -76,6 +76,32 @@ test('a no-match query shows the empty state with suggested-action chips', async
 	expect(screen.queryByRole('option')).not.toBeInTheDocument()
 })
 
+test('a loading state shows placeholders instead of the empty/no-results state', () => {
+	render(
+		<CommandPalette
+			commands={[]}
+			loading
+			emptyActions={[
+				{ id: 'a', title: 'Create project', group: 'Suggestions', run: () => {} },
+			]}
+		/>,
+	)
+
+	// Loading wins over the empty state: skeleton placeholders, no "No results".
+	expect(screen.getByRole('status', { busy: true })).toBeInTheDocument()
+	expect(screen.queryByText('No results found.')).not.toBeInTheDocument()
+	expect(
+		screen.queryByRole('button', { name: 'Create project' }),
+	).not.toBeInTheDocument()
+})
+
+test('a loading state suppresses matched result options', () => {
+	render(<CommandPalette commands={makeCommands()} loading />)
+
+	expect(screen.getByRole('status', { busy: true })).toBeInTheDocument()
+	expect(screen.queryByRole('option')).not.toBeInTheDocument()
+})
+
 test('pressing ↵ runs the selected action command', async () => {
 	const user = userEvent.setup()
 	const toggleTheme = vi.fn()
