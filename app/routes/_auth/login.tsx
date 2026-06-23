@@ -8,8 +8,10 @@ import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
+import { Alert } from '#app/components/ui/alert.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { Separator } from '#app/components/ui/separator.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { login, requireAnonymous } from '#app/utils/auth.server.ts'
 import {
@@ -98,114 +100,118 @@ export default function LoginPage({ actionData }: Route.ComponentProps) {
 		shouldRevalidate: 'onBlur',
 	})
 
+	// Invalid credentials surface as a form-level error (no field path), so we
+	// raise it in an `Alert` and mark both fields `aria-invalid` to drive the
+	// `--input-invalid` ring — without touching the frozen validation logic.
+	const formErrors = form.errors?.length ? form.errors : null
+	const credentialInvalid = formErrors ? { 'aria-invalid': true as const } : {}
+
 	return (
-		<div className="flex min-h-full flex-col justify-center pt-20 pb-32">
-			<div className="mx-auto w-full max-w-md">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome back!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
-					</p>
-				</div>
-				<Spacer size="xs" />
-
-				<div>
-					<div className="mx-auto w-full max-w-md px-8">
-						<Form method="POST" {...getFormProps(form)}>
-							<HoneypotInputs />
-							<Field
-								labelProps={{ children: 'Username' }}
-								inputProps={{
-									...getInputProps(fields.username, { type: 'text' }),
-									autoFocus: true,
-									className: 'lowercase',
-									autoComplete: 'username',
-								}}
-								errors={fields.username.errors}
-							/>
-
-							<Field
-								labelProps={{ children: 'Password' }}
-								inputProps={{
-									...getInputProps(fields.password, {
-										type: 'password',
-									}),
-									autoComplete: 'current-password',
-								}}
-								errors={fields.password.errors}
-							/>
-
-							<div className="flex justify-between">
-								<CheckboxField
-									labelProps={{
-										htmlFor: fields.remember.id,
-										children: 'Remember me',
-									}}
-									buttonProps={getInputProps(fields.remember, {
-										type: 'checkbox',
-									})}
-									errors={fields.remember.errors}
-								/>
-								<div>
-									<Link
-										to="/forgot-password"
-										className="text-body-xs font-semibold"
-									>
-										Forgot password?
-									</Link>
-								</div>
-							</div>
-
-							<input
-								{...getInputProps(fields.redirectTo, { type: 'hidden' })}
-							/>
-							<ErrorList errors={form.errors} id={form.errorId} />
-
-							<div className="flex items-center justify-between gap-6 pt-3">
-								<StatusButton
-									className="w-full"
-									status={isPending ? 'pending' : (form.status ?? 'idle')}
-									type="submit"
-									disabled={isPending}
-								>
-									Log in
-								</StatusButton>
-							</div>
-						</Form>
-						<hr className="my-4" />
-						<div className="flex flex-col gap-5">
-							<PasskeyLogin
-								redirectTo={redirectTo}
-								remember={fields.remember.value === 'on'}
-							/>
-						</div>
-						<hr className="my-4" />
-						<ul className="flex flex-col gap-5">
-							{providerNames.map((providerName) => (
-								<li key={providerName}>
-									<ProviderConnectionForm
-										type="Login"
-										providerName={providerName}
-										redirectTo={redirectTo}
-									/>
-								</li>
-							))}
-						</ul>
-						<div className="flex items-center justify-center gap-2 pt-6">
-							<span className="text-muted-foreground">New here?</span>
-							<Link
-								to={
-									redirectTo
-										? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
-										: '/signup'
-								}
-							>
-								Create an account
-							</Link>
-						</div>
-					</div>
-				</div>
+		<div className="w-full max-w-[360px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Welcome back
+				</p>
+				<h1 className="text-h4">Sign in to your account</h1>
+				<p className="text-muted-foreground text-body-sm">
+					Enter your details to continue.
+				</p>
 			</div>
+
+			<FormCard className="mt-6 p-6 text-left">
+				<Form method="POST" {...getFormProps(form)}>
+					<HoneypotInputs />
+					{formErrors ? (
+						<Alert tone="error" className="mb-4">
+							<ErrorList errors={formErrors} id={form.errorId} />
+						</Alert>
+					) : null}
+					<Field
+						labelProps={{ children: 'Username' }}
+						inputProps={{
+							...getInputProps(fields.username, { type: 'text' }),
+							autoFocus: true,
+							className: 'lowercase',
+							autoComplete: 'username',
+							...credentialInvalid,
+						}}
+						errors={fields.username.errors}
+					/>
+
+					<Field
+						labelProps={{ children: 'Password' }}
+						inputProps={{
+							...getInputProps(fields.password, {
+								type: 'password',
+							}),
+							autoComplete: 'current-password',
+							...credentialInvalid,
+						}}
+						errors={fields.password.errors}
+					/>
+
+					<div className="flex items-center justify-between">
+						<CheckboxField
+							labelProps={{
+								htmlFor: fields.remember.id,
+								children: 'Remember me',
+							}}
+							buttonProps={getInputProps(fields.remember, {
+								type: 'checkbox',
+							})}
+							errors={fields.remember.errors}
+						/>
+						<Link
+							to="/forgot-password"
+							className="text-brand text-body-xs font-semibold"
+						>
+							Forgot password?
+						</Link>
+					</div>
+
+					<input {...getInputProps(fields.redirectTo, { type: 'hidden' })} />
+
+					<StatusButton
+						className="mt-2 w-full"
+						status={isPending ? 'pending' : (form.status ?? 'idle')}
+						type="submit"
+						disabled={isPending}
+					>
+						Log in
+					</StatusButton>
+				</Form>
+
+				<Separator label="or continue with" className="my-6" />
+
+				<div className="flex flex-col gap-3">
+					<PasskeyLogin
+						redirectTo={redirectTo}
+						remember={fields.remember.value === 'on'}
+					/>
+					{providerNames.map((providerName) => (
+						<ProviderConnectionForm
+							key={providerName}
+							type="Login"
+							providerName={providerName}
+							redirectTo={redirectTo}
+						/>
+					))}
+				</div>
+			</FormCard>
+
+			<p className="text-muted-foreground text-body-sm mt-6 text-center">
+				New here?{' '}
+				<Link
+					to={
+						redirectTo
+							? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
+							: '/signup'
+					}
+					className="text-brand font-semibold"
+				>
+					Create an account
+				</Link>
+			</p>
 		</div>
 	)
 }

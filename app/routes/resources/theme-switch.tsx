@@ -5,6 +5,7 @@ import { data, redirect, useFetcher, useFetchers } from 'react-router'
 import { ServerOnly } from 'remix-utils/server-only'
 import { z } from 'zod'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { Switch } from '#app/components/ui/switch.tsx'
 import { useHints, useOptionalHints } from '#app/utils/client-hints.tsx'
 import {
 	useOptionalRequestInfo,
@@ -98,6 +99,47 @@ export function ThemeSwitch({
 				</button>
 			</div>
 		</fetcher.Form>
+	)
+}
+
+/**
+ * A binary light/dark toggle built on the `Switch` primitive, for the auth
+ * shell (EPT-58). Unlike {@link ThemeSwitch} (which cycles system→light→dark),
+ * this flips between the two resolved appearances and writes the preference
+ * server-side via the same `/resources/theme-switch` action — the html `theme`
+ * class is applied in the root document (no client-only theming, no FOUC).
+ *
+ * It submits with a JS `useFetcher` and deliberately sends **no** `redirectTo`:
+ * a redirect from a single-fetch POST 404s through the splat route, so the
+ * fetcher just commits the cookie and the optimistic mode re-tints in place.
+ */
+export function ThemeToggle() {
+	const fetcher = useFetcher<typeof action>()
+	const theme = useTheme()
+	const isDark = theme === 'dark'
+	return (
+		<div className="flex items-center gap-2">
+			<Icon
+				name="sun"
+				className="text-muted-foreground size-4 shrink-0"
+				aria-hidden
+			/>
+			<Switch
+				checked={isDark}
+				onCheckedChange={(checked) =>
+					void fetcher.submit(
+						{ theme: checked ? 'dark' : 'light' },
+						{ method: 'POST', action: '/resources/theme-switch' },
+					)
+				}
+				aria-label="Toggle dark mode"
+			/>
+			<Icon
+				name="moon"
+				className="text-muted-foreground size-4 shrink-0"
+				aria-hidden
+			/>
+		</div>
 	)
 }
 
