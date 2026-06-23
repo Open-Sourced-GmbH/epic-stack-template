@@ -97,6 +97,7 @@ export { Slider } from '#app/components/ui/slider.tsx'
 export { Spinner } from '#app/components/ui/spinner.tsx'
 export { StatusButton } from '#app/components/ui/status-button.tsx'
 export { Switch } from '#app/components/ui/switch.tsx'
+export { Table } from '#app/components/ui/table.tsx'
 export { TagInput } from '#app/components/ui/tag-input.tsx'
 export { Textarea } from '#app/components/ui/textarea.tsx'
 export {
