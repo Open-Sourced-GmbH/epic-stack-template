@@ -54,6 +54,7 @@ import {
 } from '#app/components/ui/input-otp.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { PageHeader } from '#app/components/ui/page-header.tsx'
 import { Pagination } from '#app/components/ui/pagination.tsx'
 import {
 	Select,
@@ -631,6 +632,29 @@ export const specimens: Specimen[] = [
 					<Separator orientation="vertical" />
 					<span className="text-body-sm text-muted-foreground">Delete</span>
 				</div>
+			</div>
+		),
+	},
+	{
+		name: 'page-header',
+		group: 'Surfaces',
+		subtitle: 'eyebrow + title — with and without actions',
+		viewport: { width: 560, height: 220 },
+		render: () => (
+			<div className="flex w-full max-w-xl flex-col gap-8">
+				{/* With actions — the admin/list header (outline + primary). */}
+				<PageHeader
+					eyebrow="Admin"
+					title="Blog"
+					actions={
+						<>
+							<Button variant="outline">Preview</Button>
+							<Button>New post</Button>
+						</>
+					}
+				/>
+				{/* Title only — the settings/account hub header. */}
+				<PageHeader eyebrow="Account" title="Settings" />
 			</div>
 		),
 	},

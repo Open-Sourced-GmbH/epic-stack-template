@@ -78,6 +78,7 @@ export {
 	InputOTPSlot,
 } from '#app/components/ui/input-otp.tsx'
 export { Label } from '#app/components/ui/label.tsx'
+export { PageHeader } from '#app/components/ui/page-header.tsx'
 export { Pagination } from '#app/components/ui/pagination.tsx'
 export {
 	Select,
