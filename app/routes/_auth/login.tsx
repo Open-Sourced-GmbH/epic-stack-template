@@ -287,6 +287,7 @@ function PasskeyLogin({
 			<StatusButton
 				id="passkey-login-button"
 				aria-describedby="passkey-login-button-error"
+				variant="outline"
 				className="w-full"
 				status={isPending ? 'pending' : error ? 'error' : 'idle'}
 				type="submit"

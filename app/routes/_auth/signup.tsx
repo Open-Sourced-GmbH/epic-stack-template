@@ -1,13 +1,15 @@
 import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { data, redirect, Form, useSearchParams } from 'react-router'
+import { data, redirect, Form, Link, useSearchParams } from 'react-router'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
 import { SignupEmail } from '#app/components/emails/signup-verification.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { TurnstileWidget } from '#app/components/turnstile.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
+import { Separator } from '#app/components/ui/separator.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireAnonymous } from '#app/utils/auth.server.ts'
 import {
@@ -114,14 +116,18 @@ export default function SignupRoute({ actionData }: Route.ComponentProps) {
 	})
 
 	return (
-		<div className="container flex flex-col justify-center pt-20 pb-32">
-			<div className="text-center">
-				<h1 className="text-h1">Let's start your journey!</h1>
-				<p className="text-body-md text-muted-foreground mt-3">
+		<div className="w-full max-w-[360px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Get started
+				</p>
+				<h1 className="text-h4">Let's start your journey!</h1>
+				<p className="text-muted-foreground text-body-sm">
 					Please enter your email.
 				</p>
 			</div>
-			<div className="mx-auto mt-16 max-w-sm min-w-full sm:min-w-[368px]">
+
+			<FormCard className="mt-6 p-6 text-left">
 				<Form method="POST" {...getFormProps(form)}>
 					<HoneypotInputs />
 					<Field
@@ -139,7 +145,7 @@ export default function SignupRoute({ actionData }: Route.ComponentProps) {
 					<TurnstileWidget />
 					<ErrorList errors={form.errors} id={form.errorId} />
 					<StatusButton
-						className="w-full"
+						className="mt-2 w-full"
 						status={isPending ? 'pending' : (form.status ?? 'idle')}
 						type="submit"
 						disabled={isPending}
@@ -147,21 +153,34 @@ export default function SignupRoute({ actionData }: Route.ComponentProps) {
 						Submit
 					</StatusButton>
 				</Form>
-				<ul className="flex flex-col gap-4 py-4">
+
+				<Separator label="or continue with" className="my-6" />
+
+				<div className="flex flex-col gap-3">
 					{providerNames.map((providerName) => (
-						<>
-							<hr />
-							<li key={providerName}>
-								<ProviderConnectionForm
-									type="Signup"
-									providerName={providerName}
-									redirectTo={redirectTo}
-								/>
-							</li>
-						</>
+						<ProviderConnectionForm
+							key={providerName}
+							type="Signup"
+							providerName={providerName}
+							redirectTo={redirectTo}
+						/>
 					))}
-				</ul>
-			</div>
+				</div>
+			</FormCard>
+
+			<p className="text-muted-foreground text-body-sm mt-6 text-center">
+				Already have an account?{' '}
+				<Link
+					to={
+						redirectTo
+							? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+							: '/login'
+					}
+					className="text-brand font-semibold"
+				>
+					Log in
+				</Link>
+			</p>
 		</div>
 	)
 }
