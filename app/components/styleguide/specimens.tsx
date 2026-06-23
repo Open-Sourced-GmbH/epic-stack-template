@@ -66,6 +66,7 @@ import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { Switch } from '#app/components/ui/switch.tsx'
 import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
@@ -701,6 +702,55 @@ export const specimens: Specimen[] = [
 					<p className="text-error-text text-body-2xs">
 						You must accept to continue.
 					</p>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'switch',
+		group: 'Forms',
+		subtitle: 'off / on / disabled / dark-mode toggle (sun · switch · moon)',
+		viewport: { width: 480, height: 240 },
+		render: () => (
+			<div className="flex flex-col gap-4">
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-off" />
+					<Label htmlFor="sg-sw-off">Off</Label>
+				</div>
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-on" defaultChecked />
+					<Label htmlFor="sg-sw-on">On</Label>
+				</div>
+				<div className="flex items-center gap-2">
+					<Switch id="sg-sw-disabled" disabled />
+					<Label htmlFor="sg-sw-disabled">Disabled</Label>
+				</div>
+				{/* Dark-mode toggle composition: sun/moon glyphs flank a labelled
+				    Switch. Icon isn't part of the curated bundle, so the glyphs are
+				    drawn inline (mirroring the app's sun/moon sprite). */}
+				<div className="flex items-center gap-3">
+					<span className="text-muted-foreground" aria-hidden>
+						<svg viewBox="0 0 24 24" fill="none" className="size-4">
+							<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+							<path
+								d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+							/>
+						</svg>
+					</span>
+					<Switch aria-label="Dark mode" defaultChecked />
+					<span className="text-muted-foreground" aria-hidden>
+						<svg viewBox="0 0 24 24" fill="none" className="size-4">
+							<path
+								d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinejoin="round"
+							/>
+						</svg>
+					</span>
 				</div>
 			</div>
 		),
