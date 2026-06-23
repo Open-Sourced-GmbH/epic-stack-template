@@ -196,6 +196,7 @@ const badgeVariants = [
 	'secondary',
 	'destructive',
 	'outline',
+	'brand',
 ] as const
 const alertTones = [
 	{ tone: 'info', title: 'Heads up', body: 'A neutral, informational note.' },
@@ -502,15 +503,25 @@ export const specimens: Specimen[] = [
 	{
 		name: 'badge',
 		group: 'Actions',
-		subtitle: 'default / secondary / destructive / outline',
-		viewport: { width: 480, height: 120 },
+		subtitle: 'variants + tonal brand & status dots (Published / Draft)',
+		viewport: { width: 480, height: 160 },
 		render: () => (
-			<div className="flex flex-wrap items-center gap-2">
-				{badgeVariants.map((variant) => (
-					<Badge key={variant} variant={variant}>
-						{variant}
+			<div className="flex flex-col gap-3">
+				<div className="flex flex-wrap items-center gap-2">
+					{badgeVariants.map((variant) => (
+						<Badge key={variant} variant={variant}>
+							{variant}
+						</Badge>
+					))}
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Badge variant="brand" dot>
+						Published
 					</Badge>
-				))}
+					<Badge variant="secondary" dot>
+						Draft
+					</Badge>
+				</div>
 			</div>
 		),
 	},

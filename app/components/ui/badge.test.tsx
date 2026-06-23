@@ -37,6 +37,35 @@ test('applies the outline variant with a hairline border', () => {
 	expect(screen.getByText('Outline')).toHaveClass('border-border', 'text-foreground')
 })
 
+test('applies the tonal brand variant', () => {
+	render(<Badge variant="brand">Published</Badge>)
+
+	expect(screen.getByText('Published')).toHaveClass('bg-brand-soft', 'text-brand')
+})
+
+test('renders a leading status dot that tracks the text color when dot is set', () => {
+	render(
+		<Badge variant="brand" dot>
+			Published
+		</Badge>,
+	)
+
+	const badge = screen.getByText('Published')
+	const dot = badge.querySelector('[data-slot="badge-dot"]')
+	expect(dot).not.toBeNull()
+	expect(dot).toHaveClass('bg-current', 'rounded-full')
+	// hidden from the accessibility tree — the label text carries the meaning
+	expect(dot).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('renders no status dot by default', () => {
+	render(<Badge variant="brand">Published</Badge>)
+
+	expect(
+		screen.getByText('Published').querySelector('[data-slot="badge-dot"]'),
+	).toBeNull()
+})
+
 test('merges a custom className onto the root', () => {
 	render(<Badge className="uppercase">Custom</Badge>)
 
