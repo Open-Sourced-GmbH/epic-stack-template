@@ -3,10 +3,8 @@ import { AppShell } from '#app/components/app-shell.tsx'
 
 // Auth is a transient pre-login pass-through (ADR-062/067), so it rides the
 // universal AppShell navbar in its `minimal` variant — logo + theme toggle
-// only, no product links, no identity, no accent picker. The generic root.tsx
-// chrome stays suppressed via `hideChrome` until EPT-78 retires that seam.
-// (This supersedes the bare-card-with-no-navbar shape of ADR-066 for auth.)
-export const handle = { hideChrome: true }
+// only, no product links, no identity, no accent picker. (This supersedes the
+// bare-card-with-no-navbar shape of ADR-066 for auth.)
 
 /**
  * The pine logo lockup: a `rounded-xl bg-brand` tile carrying the pine glyph in

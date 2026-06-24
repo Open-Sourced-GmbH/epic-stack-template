@@ -1,35 +1,29 @@
 import { OpenImgContextProvider } from 'openimg/react'
 import {
 	data,
-	Link,
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
 	useLoaderData,
-	useMatches,
 } from 'react-router'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { type Route } from './+types/root.ts'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
+import { AppShellBoundary } from './components/app-shell.tsx'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
-import { Logo } from './components/logo.tsx'
 import { Matomo } from './components/matomo.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { useToast } from './components/toaster.tsx'
-import { Button } from './components/ui/button.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
-import { UserDropdown } from './components/user-dropdown.tsx'
 import {
-	AccentSwitch,
 	useOptimisticAccent,
 	useOptimisticButtonCursor,
 } from './routes/resources/accent.tsx'
 import {
-	ThemeSwitch,
 	useOptionalTheme,
 	useTheme,
 } from './routes/resources/theme-switch.tsx'
@@ -47,7 +41,6 @@ import { useNonce } from './utils/nonce-provider.ts'
 import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
-import { useOptionalUser } from './utils/user.ts'
 
 export const links: Route.LinksFunction = () => {
 	return [
@@ -225,55 +218,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	const data = useLoaderData<typeof loader>()
-	const user = useOptionalUser()
 	const theme = useTheme()
-	const matches = useMatches()
-	// Routes can opt out of the generic app chrome via `handle.hideChrome` (e.g.
-	// the marketing landing, which ships its own branded header/footer — EPT-11).
-	const hideChrome = matches.some(
-		(m) => (m.handle as { hideChrome?: boolean } | undefined)?.hideChrome,
-	)
 	useToast(data.toast)
 
+	// root.tsx no longer renders any generic chrome (ADR-068, EPT-78): every
+	// surface owns its frame explicitly — non-marketing sections via `AppShell`,
+	// the marketing surfaces via their own branded layout. root just supplies the
+	// document shell, the image optimizer context, and the toaster/progress chrome.
 	return (
 		<OpenImgContextProvider
 			optimizerEndpoint="/resources/images"
 			getSrc={getImgSrc}
 		>
-			<div className="flex min-h-screen flex-col justify-between">
-				{hideChrome ? null : (
-					<header className="container py-6">
-						<nav className="flex items-center justify-between gap-4 md:gap-8">
-							<Logo />
-							<div className="flex items-center gap-10">
-								{user ? (
-									<UserDropdown />
-								) : (
-									<Button asChild variant="default" size="lg">
-										<Link to="/login">Log In</Link>
-									</Button>
-								)}
-							</div>
-						</nav>
-					</header>
-				)}
-
-				<div className="flex flex-1 flex-col">
-					<Outlet />
-				</div>
-
-				{hideChrome ? null : (
-					<div className="container flex items-center justify-between pb-5">
-						<Logo />
-						<div className="flex items-center gap-4">
-							<AccentSwitch
-								userPreference={data.requestInfo.userPrefs.accent ?? undefined}
-							/>
-							<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-						</div>
-					</div>
-				)}
-			</div>
+			<Outlet />
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</OpenImgContextProvider>
@@ -291,6 +248,13 @@ function AppWithProviders() {
 
 export default AppWithProviders
 
-// this is a last resort error boundary. There's not much useful information we
-// can offer at this level.
-export const ErrorBoundary = GeneralErrorBoundary
+// The last-resort error boundary for anything not caught by a section or the
+// `/` splat. It renders inside the unified `AppShell` (`full`) so even an
+// unexpected error has the universal navbar to escape from (ADR-068, EPT-78).
+export function ErrorBoundary() {
+	return (
+		<AppShellBoundary>
+			<GeneralErrorBoundary />
+		</AppShellBoundary>
+	)
+}

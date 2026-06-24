@@ -6,10 +6,7 @@ import { Sidebar, type SidebarGroup } from '#app/components/ui/sidebar.tsx'
 
 // The admin section rides the unified AppShell chrome (ADR-068): the universal
 // top navbar (which owns the wordmark, the role-gated Admin link, and the
-// accent + theme controls) plus the shared section `Sidebar`. The generic
-// root.tsx chrome is suppressed here until the root-cleanup slice (EPT-78)
-// retires the `hideChrome` seam wholesale.
-export const handle = { hideChrome: true }
+// accent + theme controls) plus the shared section `Sidebar`.
 
 /**
  * The page-header content a routed admin surface feeds into the shell. The shell

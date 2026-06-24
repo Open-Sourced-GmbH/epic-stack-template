@@ -12,18 +12,16 @@ import { type Route } from './+types/_layout.tsx'
 
 // The account section rides the unified AppShell chrome (ADR-068): the universal
 // top navbar (which owns the wordmark + the accent + theme controls) plus the
-// shared section `Sidebar`. The generic root.tsx chrome is suppressed here until
-// the root-cleanup slice (EPT-78) retires the `hideChrome` seam wholesale.
+// shared section `Sidebar`.
 //
 // `BreadcrumbHandle` lives on for the account sub-routes that still type their
 // `handle` against it; the breadcrumb *trail* is gone — the sidebar replaces it.
 export const BreadcrumbHandle = z.object({ breadcrumb: z.any() })
 export type BreadcrumbHandle = z.infer<typeof BreadcrumbHandle>
 
-export const handle: BreadcrumbHandle & SEOHandle & { hideChrome: true } = {
+export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="file-text">Edit Profile</Icon>,
 	getSitemapEntries: () => null,
-	hideChrome: true,
 }
 
 /**

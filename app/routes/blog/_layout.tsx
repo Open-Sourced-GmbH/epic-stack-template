@@ -1,11 +1,6 @@
 import { Outlet } from 'react-router'
 import { AppShell } from '#app/components/app-shell.tsx'
 
-// The blog is the first surface on the unified AppShell chrome (ADR-068), so the
-// generic app chrome in root.tsx is suppressed for every blog route. The
-// `hideChrome` seam is retired wholesale in the root-cleanup slice (EPT-78).
-export const handle = { hideChrome: true }
-
 /**
  * Shared layout for the public blog. Every `/blog` route — the index, an
  * article (`/blog/$slug`), and a tag archive (`/blog/tags/$tagSlug`) — nests

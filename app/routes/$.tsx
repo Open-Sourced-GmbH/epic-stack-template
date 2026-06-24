@@ -6,6 +6,7 @@
 // message for them than the Remix and/or browser default.
 
 import { Link, useLocation } from 'react-router'
+import { AppShellBoundary } from '#app/components/app-shell.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 
@@ -25,23 +26,27 @@ export default function NotFound() {
 
 export function ErrorBoundary() {
 	const location = useLocation()
+	// The splat is the canonical dead end, so its 404 renders inside the unified
+	// AppShell navbar (ADR-068, EPT-78) — somewhere to go from a missing page.
 	return (
-		<GeneralErrorBoundary
-			statusHandlers={{
-				404: () => (
-					<div className="flex flex-col gap-6">
-						<div className="flex flex-col gap-3">
-							<h1>We can't find this page:</h1>
-							<pre className="text-body-lg break-all whitespace-pre-wrap">
-								{location.pathname}
-							</pre>
+		<AppShellBoundary>
+			<GeneralErrorBoundary
+				statusHandlers={{
+					404: () => (
+						<div className="flex flex-col gap-6">
+							<div className="flex flex-col gap-3">
+								<h1>We can't find this page:</h1>
+								<pre className="text-body-lg break-all whitespace-pre-wrap">
+									{location.pathname}
+								</pre>
+							</div>
+							<Link to="/" className="text-body-md underline">
+								<Icon name="arrow-left">Back to home</Icon>
+							</Link>
 						</div>
-						<Link to="/" className="text-body-md underline">
-							<Icon name="arrow-left">Back to home</Icon>
-						</Link>
-					</div>
-				),
-			}}
-		/>
+					),
+				}}
+			/>
+		</AppShellBoundary>
 	)
 }

@@ -16,10 +16,10 @@ import { UserDropdown } from './user-dropdown.tsx'
 /**
  * The shared chrome frame for every non-marketing surface (ADR-068): a universal
  * top navbar, an optional section sidebar slot, and the content column. Each
- * section layout wraps its outlet with this instead of leaning on `root.tsx`'s
- * generic chrome (which it suppresses via `handle.hideChrome` during the
- * migration). The navbar variant drives what the chrome shows — `full` is the
- * whole-product bar; `minimal` is the auth pass-through (wired in a later slice).
+ * section layout wraps its outlet with this; `root.tsx` no longer renders any
+ * generic chrome (ADR-068), so every surface owns its frame explicitly. The
+ * navbar variant drives what the chrome shows — `full` is the whole-product
+ * bar; `minimal` is the auth pass-through.
  *
  * The sidebar slot is unused on single-page surfaces like the public blog; the
  * shared `Sidebar` that fills it for account/admin lands in a later slice.
@@ -45,6 +45,24 @@ export function AppShell({
 				<div className="flex flex-1 flex-col">{children}</div>
 			)}
 		</div>
+	)
+}
+
+/**
+ * Frames a full-page error/404 boundary in the universal navbar (`full`) so a
+ * dead end still carries chrome to escape from (ADR-068). It falls back to the
+ * bare children when the root loader itself failed — without its request info
+ * the navbar's theme/accent switches can't render, and that genuine last resort
+ * shouldn't crash the boundary. Section surfaces already nest their boundaries
+ * inside their own `AppShell`; this is for the unframed dead ends (root + the
+ * `/` splat 404).
+ */
+export function AppShellBoundary({ children }: { children: React.ReactNode }) {
+	const requestInfo = useOptionalRequestInfo()
+	return requestInfo ? (
+		<AppShell variant="full">{children}</AppShell>
+	) : (
+		<>{children}</>
 	)
 }
 

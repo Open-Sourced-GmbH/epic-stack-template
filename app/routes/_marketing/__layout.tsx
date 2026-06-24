@@ -13,8 +13,8 @@ import { ThemeCustomizer } from './__theme-customizer.tsx'
  * marketing surface — the landing and each `/blog` route — renders inside the
  * same chrome from one source, without duplicating the request-info wiring.
  *
- * Consumers set `handle = { hideChrome: true }` so root.tsx suppresses the
- * generic app chrome (this layout ships its own branded header/footer).
+ * This layout ships its own branded header/footer; root.tsx no longer renders
+ * any generic chrome (ADR-068), so there is nothing to suppress.
  */
 export function MarketingLayout({ children }: { children: React.ReactNode }) {
 	const requestInfo = useOptionalRequestInfo()

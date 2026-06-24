@@ -24,10 +24,6 @@ export const meta: Route.MetaFunction = () => [
 	{ property: 'og:type', content: 'website' },
 ]
 
-// The landing ships its own branded header/footer, so the generic app chrome in
-// root.tsx is suppressed here (read via this handle, not a hardcoded route id).
-export const handle = { hideChrome: true }
-
 /**
  * Placeholder for a content section that ships in a later slice. Renders the
  * section landmark + heading so anchor links and scrollspy targets resolve and
