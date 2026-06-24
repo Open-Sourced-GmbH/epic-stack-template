@@ -57,4 +57,4 @@ node_modules
 /.claude/agents
 /.claude/commands
 /.claude/hooks
-/.ralph.config.ts
+/ralph.config.ts
