@@ -92,6 +92,15 @@ export {
 	SelectValue,
 } from '#app/components/ui/select.tsx'
 export { Separator } from '#app/components/ui/separator.tsx'
+export {
+	Sheet,
+	SheetClose,
+	SheetContent,
+	SheetDescription,
+	SheetOverlay,
+	SheetTitle,
+	SheetTrigger,
+} from '#app/components/ui/sheet.tsx'
 export { Skeleton } from '#app/components/ui/skeleton.tsx'
 export { Slider } from '#app/components/ui/slider.tsx'
 export { Spinner } from '#app/components/ui/spinner.tsx'
