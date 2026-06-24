@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-test('the in-shell theme toggle flips dark mode and persists across a navigation', async ({
+test('the navbar theme toggle flips dark mode and persists across a navigation', async ({
 	page,
 	navigate,
 }) => {
@@ -11,9 +11,15 @@ test('the in-shell theme toggle flips dark mode and persists across a navigation
 	const html = page.locator('html')
 	await expect(html).not.toHaveClass(/dark/)
 
-	// Flip to dark via the shell's binary Switch toggle (posts to
-	// /resources/theme-switch, no redirectTo — a JS fetcher).
-	await page.getByRole('switch', { name: /toggle dark mode/i }).click()
+	// The minimal navbar owns the theme control: a single cycling ThemeSwitch
+	// button (system→light→dark), the only button in the Primary nav. It posts
+	// to /resources/theme-switch with no redirectTo (a JS fetcher). From the
+	// default (system, resolving light) two clicks lands on dark.
+	const themeToggle = page
+		.getByRole('navigation', { name: 'Primary' })
+		.getByRole('button')
+	await themeToggle.click()
+	await themeToggle.click()
 	await expect(html).toHaveClass(/dark/)
 
 	// The class flip is optimistic; wait for the `en_theme` cookie to commit so

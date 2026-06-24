@@ -39,10 +39,10 @@ export function AppShell({
 			{sidebar ? (
 				<div className="flex flex-1">
 					{sidebar}
-					<div className="min-w-0 flex-1">{children}</div>
+					<div className="flex min-w-0 flex-1 flex-col">{children}</div>
 				</div>
 			) : (
-				<div className="flex-1">{children}</div>
+				<div className="flex flex-1 flex-col">{children}</div>
 			)}
 		</div>
 	)

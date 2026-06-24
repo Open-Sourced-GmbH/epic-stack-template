@@ -1,9 +1,11 @@
 import { Outlet } from 'react-router'
-import { ThemeToggle } from '#app/routes/resources/theme-switch.tsx'
+import { AppShell } from '#app/components/app-shell.tsx'
 
-// The auth surfaces ship their own branded shell (centered card, brand glow,
-// in-shell theme toggle), so the generic app chrome from root.tsx — and the
-// marketing header/footer + accent customizer — are suppressed here (ADR-066).
+// Auth is a transient pre-login pass-through (ADR-062/067), so it rides the
+// universal AppShell navbar in its `minimal` variant — logo + theme toggle
+// only, no product links, no identity, no accent picker. The generic root.tsx
+// chrome stays suppressed via `hideChrome` until EPT-78 retires that seam.
+// (This supersedes the bare-card-with-no-navbar shape of ADR-066 for auth.)
 export const handle = { hideChrome: true }
 
 /**
@@ -34,31 +36,30 @@ function AuthBrand() {
 
 /**
  * Shared auth-shell layout for every `_auth/` route (login, signup, onboarding,
- * the password/verify tail). Resolved design (B): a `bg-background` viewport
- * with one faint top brand-glow radial (the slice's lone decorative flourish —
- * static, so there is no motion to reduce), a centered single column carrying
- * the pine logo lockup, the routed surface (`<Outlet />`), and an in-shell
- * binary dark-mode toggle (server-applied per ADR-005). No marketing chrome,
- * no accent customizer (ADR-066).
+ * the password/verify tail). The {@link AppShell} `minimal` navbar owns the
+ * chrome (logo + theme toggle); the content area keeps the resolved design (B):
+ * one faint top brand-glow radial (the slice's lone decorative flourish —
+ * static, so there is no motion to reduce) and a centered single column
+ * carrying the pine logo lockup over the routed surface (`<Outlet />`). No
+ * marketing chrome, no accent customizer.
  */
 export default function AuthLayout() {
 	return (
-		<div className="bg-background relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-12">
-			<div
-				aria-hidden
-				className="pointer-events-none absolute inset-x-0 top-0 h-72"
-				style={{
-					background:
-						'radial-gradient(60% 100% at 50% 0%, var(--brand-glow), transparent 70%)',
-				}}
-			/>
-			<div className="absolute top-4 right-4 z-20">
-				<ThemeToggle />
+		<AppShell variant="minimal">
+			<div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-12">
+				<div
+					aria-hidden
+					className="pointer-events-none absolute inset-x-0 top-0 h-72"
+					style={{
+						background:
+							'radial-gradient(60% 100% at 50% 0%, var(--brand-glow), transparent 70%)',
+					}}
+				/>
+				<div className="relative z-10 flex w-full flex-col items-center gap-8">
+					<AuthBrand />
+					<Outlet />
+				</div>
 			</div>
-			<div className="relative z-10 flex w-full flex-col items-center gap-8">
-				<AuthBrand />
-				<Outlet />
-			</div>
-		</div>
+		</AppShell>
 	)
 }
