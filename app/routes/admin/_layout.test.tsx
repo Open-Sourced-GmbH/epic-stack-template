@@ -1,15 +1,16 @@
 /**
  * @vitest-environment jsdom
  */
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { createRoutesStub } from 'react-router'
 import { expect, test } from 'vitest'
 import AdminLayout, { type AdminHeader } from './_layout.tsx'
 
 /**
  * Render the admin shell with a stub root that supplies the `requestInfo` the
- * in-shell theme toggle reads, plus two child surfaces (Blog / Cache) so the
- * rail's active state and the handle-fed `PageHeader` can be exercised.
+ * AppShell navbar (theme + accent controls) reads, plus two child surfaces
+ * (Blog / Cache) so the sidebar's active state and the handle-fed `PageHeader`
+ * can be exercised.
  */
 function renderAdmin(
 	initialPath = '/admin/blog',
@@ -49,43 +50,55 @@ function renderAdmin(
 	render(<Stub initialEntries={[initialPath]} />)
 }
 
-test('renders the Pine Admin lockup and a Blog / Cache nav rail around the outlet', async () => {
+/** The shared section `Sidebar` exposes its nav under the "Admin" label. */
+function adminSidebar() {
+	return within(screen.getByRole('navigation', { name: 'Admin' }))
+}
+
+test('renders a Manage sidebar with Blog / Cache around the outlet', async () => {
 	renderAdmin('/admin/blog')
 
 	expect(await screen.findByText('blog body')).toBeInTheDocument()
-	expect(screen.getByText('Pine Admin')).toBeInTheDocument()
-	expect(screen.getByRole('link', { name: /blog/i })).toHaveAttribute(
+	const sidebar = adminSidebar()
+	expect(sidebar.getByText('Manage')).toBeInTheDocument()
+	expect(sidebar.getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/admin/blog',
 	)
-	expect(screen.getByRole('link', { name: /cache/i })).toHaveAttribute(
+	expect(sidebar.getByRole('link', { name: 'Cache' })).toHaveAttribute(
 		'href',
 		'/admin/cache',
 	)
+})
+
+test('the bespoke rail lockup is gone — the navbar owns the wordmark', async () => {
+	renderAdmin('/admin/blog')
+
+	await screen.findByText('blog body')
+	expect(screen.queryByText('Pine Admin')).toBeNull()
 })
 
 test('marks the active section with aria-current', async () => {
 	renderAdmin('/admin/cache')
 
 	await screen.findByText('cache body')
-	expect(screen.getByRole('link', { name: /cache/i })).toHaveAttribute(
+	const sidebar = adminSidebar()
+	expect(sidebar.getByRole('link', { name: 'Cache' })).toHaveAttribute(
 		'aria-current',
 		'page',
 	)
-	expect(screen.getByRole('link', { name: /blog/i })).not.toHaveAttribute(
+	expect(sidebar.getByRole('link', { name: 'Blog' })).not.toHaveAttribute(
 		'aria-current',
 	)
 })
 
-test('exposes a binary dark-mode toggle but never the accent customizer (ADR-066)', async () => {
+test('collapses to a hamburger drawer trigger on mobile', async () => {
 	renderAdmin('/admin/blog')
 
 	await screen.findByText('blog body')
 	expect(
-		screen.getByRole('switch', { name: /toggle dark mode/i }),
+		screen.getByRole('button', { name: /open admin menu/i }),
 	).toBeInTheDocument()
-	// The accent customizer is a hue slider — it must not be mounted here.
-	expect(screen.queryByRole('slider')).toBeNull()
 })
 
 test('renders the branded PageHeader when a routed surface feeds one', async () => {
@@ -95,7 +108,6 @@ test('renders the branded PageHeader when a routed surface feeds one', async () 
 
 	const heading = await screen.findByRole('heading', { name: 'Posts', level: 1 })
 	expect(heading).toBeInTheDocument()
-	expect(screen.getByText('Admin')).toBeInTheDocument()
 })
 
 test('omits the PageHeader when no surface feeds one', async () => {
