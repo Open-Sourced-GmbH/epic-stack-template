@@ -1,22 +1,71 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { Link, Outlet, useMatches } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 import { z } from 'zod'
-import { Spacer } from '#app/components/spacer.tsx'
+import { AppShell } from '#app/components/app-shell.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
+import { Sidebar, type SidebarGroup } from '#app/components/ui/sidebar.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/_layout.tsx'
 
+// The account section rides the unified AppShell chrome (ADR-068): the universal
+// top navbar (which owns the wordmark + the accent + theme controls) plus the
+// shared section `Sidebar`. The generic root.tsx chrome is suppressed here until
+// the root-cleanup slice (EPT-78) retires the `hideChrome` seam wholesale.
+//
+// `BreadcrumbHandle` lives on for the account sub-routes that still type their
+// `handle` against it; the breadcrumb *trail* is gone — the sidebar replaces it.
 export const BreadcrumbHandle = z.object({ breadcrumb: z.any() })
 export type BreadcrumbHandle = z.infer<typeof BreadcrumbHandle>
 
-export const handle: BreadcrumbHandle & SEOHandle = {
+export const handle: BreadcrumbHandle & SEOHandle & { hideChrome: true } = {
 	breadcrumb: <Icon name="file-text">Edit Profile</Icon>,
 	getSitemapEntries: () => null,
+	hideChrome: true,
 }
+
+/**
+ * The account sidebar config: an **Account** group (the General landing) and a
+ * **Security** group linking the standalone security sub-routes. The shared
+ * {@link Sidebar} renders this as a desktop rail and a mobile drawer,
+ * highlighting the active section from the current pathname. `Password` points
+ * at `/settings/profile/password`, which itself redirects to `…/password/create`
+ * for accounts that have no password yet.
+ */
+const accountGroups: SidebarGroup[] = [
+	{
+		label: 'Account',
+		items: [{ to: '/settings/profile', label: 'General', icon: 'avatar' }],
+	},
+	{
+		label: 'Security',
+		items: [
+			{
+				to: '/settings/profile/change-email',
+				label: 'Email',
+				icon: 'envelope-closed',
+			},
+			{
+				to: '/settings/profile/password',
+				label: 'Password',
+				icon: 'dots-horizontal',
+			},
+			{
+				to: '/settings/profile/two-factor',
+				label: 'Two-Factor',
+				icon: 'lock-closed',
+			},
+			{
+				to: '/settings/profile/connections',
+				label: 'Connections',
+				icon: 'link-2',
+			},
+			{ to: '/settings/profile/passkeys', label: 'Passkeys', icon: 'passkey' },
+		],
+	},
+]
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const userId = await requireUserId(request)
@@ -28,50 +77,29 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return {}
 }
 
-const BreadcrumbHandleMatch = z.object({
-	handle: BreadcrumbHandle,
-})
-
+/**
+ * Shared layout for every `settings/profile/` route. The unified AppShell
+ * (`full` navbar + the account `Sidebar`) frames the routed surface; the lone
+ * `PageHeader` and the `<main>` landmark live here so the General landing and
+ * each security sub-page share one consistent header. The old breadcrumb trail
+ * is gone — the sidebar's active-section highlight tells you where you are.
+ */
 export default function EditUserProfile() {
-	const matches = useMatches()
-	const breadcrumbs = matches
-		.map((m) => {
-			const result = BreadcrumbHandleMatch.safeParse(m)
-			if (!result.success || !result.data.handle.breadcrumb) return null
-			return (
-				<Link key={m.id} to={m.pathname} className="flex items-center">
-					{result.data.handle.breadcrumb}
-				</Link>
-			)
-		})
-		.filter(Boolean)
+	const location = useLocation()
 
 	return (
-		<div className="m-auto mt-16 mb-24 max-w-3xl">
-			<div className="container">
-				<ul className="flex gap-3">
-					<li>
-						<Link className="text-muted-foreground" to="/settings/profile">
-							Profile
-						</Link>
-					</li>
-					{breadcrumbs.map((breadcrumb, i, arr) => (
-						<li
-							key={i}
-							className={cn('flex items-center gap-3', {
-								'text-muted-foreground': i < arr.length - 1,
-								'text-brand': i === arr.length - 1,
-							})}
-						>
-							<Icon name="arrow-right" size="sm">
-								{breadcrumb}
-							</Icon>
-						</li>
-					))}
-				</ul>
-			</div>
-			<Spacer size="xs" />
-			<main className="bg-muted mx-auto px-6 py-8 md:container md:rounded-3xl">
+		<AppShell
+			variant="full"
+			sidebar={
+				<Sidebar
+					groups={accountGroups}
+					pathname={location.pathname}
+					label="Account"
+					linkComponent={Link}
+				/>
+			}
+		>
+			<main className="container max-w-(--shell-max) py-10">
 				<PageHeader
 					eyebrow="Account"
 					title="Settings"
@@ -80,6 +108,6 @@ export default function EditUserProfile() {
 				/>
 				<Outlet />
 			</main>
-		</div>
+		</AppShell>
 	)
 }

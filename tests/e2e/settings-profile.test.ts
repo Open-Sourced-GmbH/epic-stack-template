@@ -27,7 +27,7 @@ test('Users can update their password', async ({ page, navigate, login }) => {
 	const user = await login({ password: oldPassword })
 	await navigate('/settings/profile')
 
-	await page.getByRole('link', { name: /change password/i }).click()
+	await page.getByRole('link', { name: 'Password', exact: true }).click()
 
 	await page
 		.getByRole('textbox', { name: /^current password/i })
@@ -99,7 +99,7 @@ test('Users can change their email address', async ({
 	const newEmailAddress = faker.internet.email().toLowerCase()
 	expect(preUpdateUser.email).not.toEqual(newEmailAddress)
 	await navigate('/settings/profile')
-	await page.getByRole('link', { name: /change email/i }).click()
+	await page.getByRole('link', { name: 'Email', exact: true }).click()
 	await page.getByRole('textbox', { name: /new email/i }).fill(newEmailAddress)
 	await page.getByRole('button', { name: /send confirmation/i }).click()
 	await expect(page.getByText(/check your email/i)).toBeVisible()

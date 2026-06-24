@@ -22,7 +22,6 @@ import { prisma } from '#app/utils/db.server.ts'
 import { getUserImgSrc, useDoubleCheck } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { twoFAVerificationType } from '#app/utils/two-factor.ts'
 import { updateUserPreferences } from '#app/utils/user-preferences.server.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { type Route } from './+types/index.ts'
@@ -48,7 +47,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			id: true,
 			name: true,
 			username: true,
-			email: true,
 			allowProductEmails: true,
 			image: {
 				select: { objectKey: true },
@@ -65,20 +63,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 	})
 
-	const twoFactorVerification = await prisma.verification.findUnique({
-		select: { id: true },
-		where: { target_type: { type: twoFAVerificationType, target: userId } },
-	})
-
-	const password = await prisma.password.findUnique({
-		select: { userId: true },
-		where: { userId },
-	})
-
 	return {
 		user,
-		hasPassword: Boolean(password),
-		isTwoFactorEnabled: Boolean(twoFactorVerification),
 		allowProductEmails: user.allowProductEmails,
 	}
 }
@@ -192,29 +178,11 @@ export default function EditUserProfile({ loaderData }: Route.ComponentProps) {
 				</div>
 			</FormCard>
 
-			<FormCard title="Account & security">
+			<FormCard
+				title="Your data"
+				description="Export a copy of everything tied to your account."
+			>
 				<ul className="flex flex-col">
-					<AccountLinkRow to="change-email" icon="envelope-closed">
-						Change email from {loaderData.user.email}
-					</AccountLinkRow>
-					<AccountLinkRow
-						to="two-factor"
-						icon={loaderData.isTwoFactorEnabled ? 'lock-closed' : 'lock-open-1'}
-					>
-						{loaderData.isTwoFactorEnabled ? '2FA is enabled' : 'Enable 2FA'}
-					</AccountLinkRow>
-					<AccountLinkRow
-						to={loaderData.hasPassword ? 'password' : 'password/create'}
-						icon="dots-horizontal"
-					>
-						{loaderData.hasPassword ? 'Change Password' : 'Create a Password'}
-					</AccountLinkRow>
-					<AccountLinkRow to="connections" icon="link-2">
-						Manage connections
-					</AccountLinkRow>
-					<AccountLinkRow to="passkeys" icon="passkey">
-						Manage passkeys
-					</AccountLinkRow>
 					<AccountLinkRow
 						to="/resources/download-user-data"
 						icon="download"

@@ -14,13 +14,10 @@ function makeLoaderData(overrides: Partial<LoaderData> = {}): LoaderData {
 			id: 'u1',
 			name: 'Ada Lovelace',
 			username: 'ada',
-			email: 'ada@example.com',
 			allowProductEmails: true,
 			image: null,
 			_count: { sessions: 1 },
 		},
-		hasPassword: true,
-		isTwoFactorEnabled: false,
 		allowProductEmails: true,
 		...overrides,
 	}
@@ -51,4 +48,18 @@ test('the product-email switch is unchecked when the user has opted out', async 
 
 	const toggle = await screen.findByRole('switch', { name: /product emails/i })
 	expect(toggle).not.toBeChecked()
+})
+
+test('the security linkrows moved to the sidebar — only Download stays on General', async () => {
+	renderProfile(makeLoaderData())
+
+	// The Download-your-data row stays on the General landing.
+	expect(
+		await screen.findByRole('link', { name: /download your data/i }),
+	).toBeInTheDocument()
+	// The security shortcuts now live in the sidebar, not the index body.
+	expect(screen.queryByRole('link', { name: /change email/i })).toBeNull()
+	expect(screen.queryByRole('link', { name: /connections/i })).toBeNull()
+	expect(screen.queryByRole('link', { name: /passkeys/i })).toBeNull()
+	expect(screen.queryByRole('link', { name: /password/i })).toBeNull()
 })
