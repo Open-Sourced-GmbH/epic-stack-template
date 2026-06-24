@@ -67,7 +67,23 @@ function renderBlog(initialEntries: string[], withChrome = false) {
 	}
 	const Stub = createRoutesStub([
 		withChrome
-			? { path: '/blog', Component: BlogLayout, children: [indexRoute] }
+			? // The AppShell navbar mounts the cookie-backed accent + theme switches,
+				// which read `requestInfo` from the root loader, so the chrome path
+				// needs a stub `root` route supplying it (mirrors the admin shell test).
+				{
+					id: 'root',
+					path: '/',
+					loader: () => ({
+						requestInfo: {
+							hints: { theme: 'light', timeZone: 'UTC' },
+							userPrefs: { theme: 'light' },
+						},
+					}),
+					HydrateFallback: () => null,
+					children: [
+						{ path: 'blog', Component: BlogLayout, children: [indexRoute] },
+					],
+				}
 			: {
 					path: '/blog',
 					Component: BlogIndex,
@@ -143,11 +159,15 @@ test('page 2 hides the hero and shows the pager', async () => {
 	expect(screen.queryByText('Post 7')).toBeNull()
 })
 
-test('renders inside the shared marketing chrome', async () => {
+test('renders inside the unified AppShell navbar (full variant)', async () => {
 	renderBlog(['/blog'], true)
 
-	expect(
-		await screen.findByRole('navigation', { name: 'Primary' }),
-	).toBeInTheDocument()
-	expect(screen.getByRole('contentinfo')).toBeInTheDocument()
+	const nav = await screen.findByRole('navigation', { name: 'Primary' })
+	expect(nav).toBeInTheDocument()
+	// Full variant, logged out: the Blog product link and a Log In button.
+	expect(within(nav).getByRole('link', { name: 'Blog' })).toHaveAttribute(
+		'href',
+		'/blog',
+	)
+	expect(screen.getByRole('link', { name: 'Log In' })).toBeInTheDocument()
 })

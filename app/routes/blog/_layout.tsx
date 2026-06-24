@@ -1,20 +1,22 @@
 import { Outlet } from 'react-router'
-import { MarketingLayout } from '#app/routes/_marketing/__layout.tsx'
+import { AppShell } from '#app/components/app-shell.tsx'
 
-// The blog ships the branded marketing chrome (header/footer/theme customizer),
-// so the generic app chrome in root.tsx is suppressed for every blog route.
+// The blog is the first surface on the unified AppShell chrome (ADR-068), so the
+// generic app chrome in root.tsx is suppressed for every blog route. The
+// `hideChrome` seam is retired wholesale in the root-cleanup slice (EPT-78).
 export const handle = { hideChrome: true }
 
 /**
  * Shared layout for the public blog. Every `/blog` route — the index, an
  * article (`/blog/$slug`), and a tag archive (`/blog/tags/$tagSlug`) — nests
- * here and inherits the marketing chrome via {@link MarketingLayout}. The styled
- * feed/article/tag surfaces land in later slices; this just owns the chrome.
+ * here and renders inside the universal {@link AppShell} navbar (`full`
+ * variant, no sidebar — full-width content). The styled feed/article/tag
+ * surfaces own their own `<main>`; this just owns the chrome.
  */
 export default function BlogLayout() {
 	return (
-		<MarketingLayout>
+		<AppShell variant="full">
 			<Outlet />
-		</MarketingLayout>
+		</AppShell>
 	)
 }
