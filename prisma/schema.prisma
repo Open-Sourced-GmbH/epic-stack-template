@@ -20,6 +20,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Product-email opt-in. Consulted at the send site via the userPreferences
+  // check-point helper; defaults on so existing accounts stay subscribed.
+  allowProductEmails Boolean @default(true)
+
   image       UserImage?
   password    Password?
   posts       Post[]
