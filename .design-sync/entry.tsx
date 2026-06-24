@@ -101,6 +101,7 @@ export {
 	SheetTitle,
 	SheetTrigger,
 } from '#app/components/ui/sheet.tsx'
+export { Sidebar } from '#app/components/ui/sidebar.tsx'
 export { Skeleton } from '#app/components/ui/skeleton.tsx'
 export { Slider } from '#app/components/ui/slider.tsx'
 export { Spinner } from '#app/components/ui/spinner.tsx'

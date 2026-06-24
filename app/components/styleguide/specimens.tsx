@@ -73,6 +73,7 @@ import {
 	SheetOverlay,
 	SheetTitle,
 } from '#app/components/ui/sheet.tsx'
+import { Sidebar } from '#app/components/ui/sidebar.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
@@ -1367,6 +1368,52 @@ export const specimens: Specimen[] = [
 						</div>
 					</SheetContent>
 				</Sheet>
+			</div>
+		),
+	},
+
+	{
+		name: 'sidebar',
+		group: 'Surfaces',
+		subtitle: 'config-driven section rail — grouped items, active highlight',
+		viewport: { width: 280, height: 360 },
+		// The desktop rail (md+); below the breakpoint it collapses to a
+		// hamburger that opens the same groups in a Sheet drawer. Active item
+		// (and its group label) is driven by the pure resolver fed a pathname.
+		render: () => (
+			<div className="flex h-80 overflow-hidden rounded-lg">
+				<Sidebar
+					label="Account"
+					pathname="/settings/profile/password"
+					groups={[
+						{
+							label: 'Account',
+							items: [
+								{ to: '/settings/profile', label: 'General', icon: 'avatar' },
+							],
+						},
+						{
+							label: 'Security',
+							items: [
+								{
+									to: '/settings/profile/password',
+									label: 'Password',
+									icon: 'lock-closed',
+								},
+								{
+									to: '/settings/profile/two-factor',
+									label: 'Two-Factor',
+									icon: 'lock-open-1',
+								},
+								{
+									to: '/settings/profile/connections',
+									label: 'Connections',
+									icon: 'link-2',
+								},
+							],
+						},
+					]}
+				/>
 			</div>
 		),
 	},
