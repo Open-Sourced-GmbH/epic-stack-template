@@ -59,3 +59,14 @@ export async function getSessionCookieFor(userId: string) {
 	})
 	return getSessionCookieHeader(session)
 }
+
+/**
+ * The HTTP status off a guard rejection. `requireUserWith…` throws a 403 as a
+ * bare `Response` or a `data()` wrapper depending on the path, so read the status
+ * from whichever shape it is.
+ */
+export function statusOf(thrown: unknown) {
+	return thrown instanceof Response
+		? thrown.status
+		: (thrown as { init?: ResponseInit }).init?.status
+}

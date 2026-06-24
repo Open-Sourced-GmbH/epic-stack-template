@@ -182,6 +182,54 @@ test('omits the Pagination footer on a single page', async () => {
 	expect(screen.queryByRole('navigation', { name: /pagination/i })).toBeNull()
 })
 
+test('selecting rows reveals the bulk-action bar with a count and both ops', async () => {
+	const user = userEvent.setup()
+	renderAdminBlog({
+		posts: [
+			makeAdminPost({ id: 'a', title: 'Alpha', slug: 'alpha' }),
+			makeAdminPost({ id: 'b', title: 'Beta', slug: 'beta' }),
+		],
+		total: 2,
+		publishedCount: 2,
+		page: 1,
+		pageCount: 1,
+	})
+
+	// No selection → no bar.
+	await screen.findByRole('link', { name: 'Alpha' })
+	expect(screen.queryByText(/selected/i)).toBeNull()
+
+	// Checking one row brings up the bar with the live count + both bulk ops.
+	await user.click(screen.getByRole('checkbox', { name: /select alpha/i }))
+	expect(screen.getByText(/1 selected/i)).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /unpublish/i })).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+
+	// Select-all flips the count to the whole page.
+	await user.click(screen.getByRole('checkbox', { name: /select all rows/i }))
+	expect(screen.getByText(/2 selected/i)).toBeInTheDocument()
+})
+
+test('the Delete bulk action double-checks before it can submit', async () => {
+	const user = userEvent.setup()
+	renderAdminBlog({
+		posts: [makeAdminPost({ id: 'a', title: 'Alpha', slug: 'alpha' })],
+		total: 1,
+		publishedCount: 1,
+		page: 1,
+		pageCount: 1,
+	})
+
+	await user.click(
+		await screen.findByRole('checkbox', { name: /select alpha/i }),
+	)
+	// First click arms the confirm; it does not fire the destructive op yet.
+	await user.click(screen.getByRole('button', { name: /^delete$/i }))
+	expect(
+		screen.getByRole('button', { name: /confirm delete/i }),
+	).toBeInTheDocument()
+})
+
 test('with no posts it shows the empty state and a New post link', async () => {
 	renderAdminBlog({
 		posts: [],

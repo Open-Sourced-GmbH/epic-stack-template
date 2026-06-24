@@ -5,6 +5,7 @@ import {
 	getSessionCookieFor,
 	makeAdmin,
 	makeReader,
+	statusOf,
 } from '#tests/post-admin-utils.ts'
 import { BASE_URL } from '#tests/utils.ts'
 import { action } from './post-editor.server.tsx'
@@ -336,12 +337,8 @@ test('the editor refuses a non-admin (reader)', async () => {
 	})
 
 	// The guard throws a 403 — as a Response or a data() wrapper depending on the
-	// version; read the status from whichever shape it is.
+	// version; `statusOf` reads the status from whichever shape it is.
 	const thrown = await callAction(request).catch((error: unknown) => error)
-	const status =
-		thrown instanceof Response
-			? thrown.status
-			: (thrown as { init?: ResponseInit }).init?.status
-	expect(status).toBe(403)
+	expect(statusOf(thrown)).toBe(403)
 	expect(await prisma.post.count({ where: { title: 'Sneaky' } })).toBe(0)
 })

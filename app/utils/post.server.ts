@@ -196,6 +196,35 @@ export async function getAllPostsForAdmin({
 	}
 }
 
+/** A bulk operation the admin list applies to a set of posts at once. */
+export type BulkPostOp = 'unpublish' | 'delete'
+
+/**
+ * Apply a bulk `op` to the posts named by `ids`, returning how many rows it
+ * touched (for the confirmation toast). `unpublish` clears `publishedAt` for the
+ * set — the same Published→Draft transition the editor's single-post unpublish
+ * makes — and `delete` removes the set outright (a Published post is fair game,
+ * matching the publish-lifecycle rule). An empty `ids` is a no-op. This is the
+ * data layer only; the `post` permission is enforced by the calling action.
+ */
+export async function bulkPostAction(
+	op: BulkPostOp,
+	ids: string[],
+): Promise<number> {
+	if (ids.length === 0) return 0
+	if (op === 'delete') {
+		const { count } = await prisma.post.deleteMany({
+			where: { id: { in: ids } },
+		})
+		return count
+	}
+	const { count } = await prisma.post.updateMany({
+		where: { id: { in: ids } },
+		data: { publishedAt: null },
+	})
+	return count
+}
+
 /**
  * The shape the single-article surface (`/blog/$slug`) reads: everything the
  * feed card needs plus the full Markdown `body` and the author's RBAC role (for

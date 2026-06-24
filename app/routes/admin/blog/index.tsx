@@ -1,5 +1,7 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { Link } from 'react-router'
+import { useEffect } from 'react'
+import { data, Link, useFetcher } from 'react-router'
 import {
 	Avatar,
 	AvatarFallback,
@@ -10,11 +12,22 @@ import { Button } from '#app/components/ui/button.tsx'
 import { DropdownMenuItem } from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Pagination } from '#app/components/ui/pagination.tsx'
+import { useRowSelection } from '#app/components/ui/row-selection.ts'
 import { Table, type TableColumn } from '#app/components/ui/table.tsx'
 import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
-import { cn, getPostImgSrc, getUserImgSrc } from '#app/utils/misc.tsx'
+import {
+	cn,
+	getPostImgSrc,
+	getUserImgSrc,
+	useDoubleCheck,
+} from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
-import { getAllPostsForAdmin, type AdminPost } from '#app/utils/post.server.ts'
+import {
+	bulkPostAction,
+	getAllPostsForAdmin,
+	type AdminPost,
+} from '#app/utils/post.server.ts'
+import { createToastHeaders } from '#app/utils/toast.server.ts'
 import {
 	COVER_GRADIENTS,
 	coverArt,
@@ -52,6 +65,47 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// the loader just forwards the parsed value — matching the public feeds.
 	const page = Number(new URL(request.url).searchParams.get('page'))
 	return getAllPostsForAdmin({ page })
+}
+
+/**
+ * The bulk-action write-path for the list's selection bar. The selected post ids
+ * ride as repeated `id` fields and the op as `op`. It is the security boundary:
+ * `unpublish` re-checks `update:post:any` and `delete` re-checks
+ * `delete:post:any` — the same per-row guards the editor uses, so a non-admin is
+ * rejected here regardless of what the client rendered. Returns a success toast
+ * (no navigation) so the list revalidates in place and the bar can clear.
+ */
+export async function action({ request }: Route.ActionArgs) {
+	const formData = await request.formData()
+	const op = formData.get('op')
+	invariantResponse(
+		op === 'unpublish' || op === 'delete',
+		'Unknown bulk op',
+		{ status: 400 },
+	)
+
+	// Map the op to the matching `post` permission before touching any data, so an
+	// unauthorized request never reaches the mutation.
+	await requireUserWithPermission(
+		request,
+		op === 'delete' ? 'delete:post:any' : 'update:post:any',
+	)
+
+	const ids = formData.getAll('id').map(String).filter(Boolean)
+	const count = await bulkPostAction(op, ids)
+
+	const noun = count === 1 ? 'post' : 'posts'
+	const toast = {
+		delete: { title: 'Posts deleted', description: `Deleted ${count} ${noun}.` },
+		unpublish: {
+			title: 'Posts unpublished',
+			description: `Unpublished ${count} ${noun}.`,
+		},
+	}[op]
+	return data(
+		{ status: 'success' } as const,
+		{ headers: await createToastHeaders({ type: 'success', ...toast }) },
+	)
 }
 
 /** The row thumb — the cover image when set, else the post's deterministic art. */
@@ -175,6 +229,71 @@ function rowActions(post: AdminPost) {
 	)
 }
 
+/** The slice of {@link useRowSelection} the bulk-action bar drives. */
+type BarSelection = Pick<
+	ReturnType<typeof useRowSelection>,
+	'count' | 'selected' | 'clear'
+>
+
+/**
+ * The selection toolbar shown above the Table once a row is checked: the count
+ * plus bulk Unpublish / Delete. It submits the selected ids + op to this route's
+ * `action` via a fetcher (no navigation), then clears the selection on success.
+ * Delete is destructive, so it uses the double-check confirm pattern.
+ */
+function BulkActionBar({ selection }: { selection: BarSelection }) {
+	const fetcher = useFetcher<typeof action>()
+	const deleteCheck = useDoubleCheck()
+	const { count, selected, clear } = selection
+	const ids = [...selected]
+	const busy = fetcher.state !== 'idle'
+
+	// Drop the selection once a bulk op lands, so the bar collapses and the
+	// freshly revalidated list shows through.
+	useEffect(() => {
+		if (fetcher.state === 'idle' && fetcher.data?.status === 'success') {
+			clear()
+		}
+	}, [fetcher.state, fetcher.data, clear])
+
+	if (count === 0) return null
+
+	return (
+		<div className="bg-card border-border mb-4 flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3">
+			<span className="text-body-sm font-medium" aria-live="polite">
+				{count} selected
+			</span>
+			<fetcher.Form method="post" className="ml-auto flex items-center gap-2">
+				{ids.map((id) => (
+					<input key={id} type="hidden" name="id" value={id} />
+				))}
+				<Button
+					type="submit"
+					name="op"
+					value="unpublish"
+					variant="outline"
+					size="sm"
+					disabled={busy}
+				>
+					Unpublish
+				</Button>
+				<Button
+					variant="destructive"
+					size="sm"
+					disabled={busy}
+					{...deleteCheck.getButtonProps({
+						type: 'submit',
+						name: 'op',
+						value: 'delete',
+					})}
+				>
+					{deleteCheck.doubleCheck ? 'Confirm delete' : 'Delete'}
+				</Button>
+			</fetcher.Form>
+		</div>
+	)
+}
+
 export function HydrateFallback() {
 	return (
 		<main className="container max-w-(--shell-max) py-8">
@@ -202,6 +321,9 @@ export function HydrateFallback() {
  */
 export default function AdminBlogIndex({ loaderData }: Route.ComponentProps) {
 	const { posts, total, publishedCount, page, pageCount } = loaderData
+	// Selection lives here (not in the Table) so the bulk-action bar can read it
+	// too; it's keyed on the current page's ids and prunes itself across pages.
+	const selection = useRowSelection(posts.map((post) => post.id))
 
 	return (
 		<main className="container max-w-(--shell-max) py-8">
@@ -209,12 +331,16 @@ export default function AdminBlogIndex({ loaderData }: Route.ComponentProps) {
 				{total} total · {publishedCount} published
 			</p>
 
+			<BulkActionBar selection={selection} />
+
 			<Table
 				aria-label="Posts"
 				columns={columns}
 				data={posts}
 				getRowId={(post) => post.id}
 				columnTemplate={columnTemplate}
+				selection={selection}
+				getRowLabel={(post) => titleOf(post) || 'untitled draft'}
 				rowActions={rowActions}
 				getRowActionsLabel={(post) =>
 					`Actions for ${titleOf(post) || 'untitled draft'}`
