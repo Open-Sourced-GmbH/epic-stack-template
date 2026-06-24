@@ -2,7 +2,10 @@
 
 Date: 2026-06-24
 
-Status: accepted
+Status: accepted (amended by [068](068-unified-appshell-navbar-and-section-sidebars.md) —
+chrome ownership moves from `root.tsx` into a shared `AppShell`; the content decisions
+below — one wordmark, avatar gateway, `/users` removed, accent whole-product-except-auth,
+marketing keeps its own header — stand)
 
 ## Context
 

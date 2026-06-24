@@ -2,7 +2,11 @@
 
 Date: 2026-06-23
 
-Status: accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md) — the admin shell now exposes the accent preset picker; auth stays toggle-only and neither mounts the marketing customizer dock)
+Status: superseded by [068](068-unified-appshell-navbar-and-section-sidebars.md) — the
+chrome-light, no-top-navbar shells are replaced by a universal `AppShell` navbar +
+section sidebars. (Previously amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md):
+the admin shell exposed the accent preset picker; auth stayed toggle-only and neither
+mounted the marketing customizer dock.)
 
 ## Context
 

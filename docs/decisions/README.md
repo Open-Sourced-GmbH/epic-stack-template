@@ -77,5 +77,6 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Accepted                          |
 | 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Accepted                          |
 | 065 | [Per-Entity Access Scoping](065-per-entity-access-scoping.md)            | Accepted (amends [059](059-seed-derives-permission-matrix-from-registry.md)) |
-| 066 | [Auth & Admin Shell Chrome Boundary](066-auth-and-admin-shell-chrome-boundary.md) | Accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md)) |
-| 067 | [Unified App Chrome + Whole-Product Accent Showcase](067-unified-app-chrome-and-whole-product-accent-showcase.md) | Accepted (amends [062](062-brand-accent-token-and-customizer.md), [066](066-auth-and-admin-shell-chrome-boundary.md)) |
+| 066 | [Auth & Admin Shell Chrome Boundary](066-auth-and-admin-shell-chrome-boundary.md) | Superseded by [068](068-unified-appshell-navbar-and-section-sidebars.md) |
+| 067 | [Unified App Chrome + Whole-Product Accent Showcase](067-unified-app-chrome-and-whole-product-accent-showcase.md) | Accepted (amends [062](062-brand-accent-token-and-customizer.md), [066](066-auth-and-admin-shell-chrome-boundary.md); amended by [068](068-unified-appshell-navbar-and-section-sidebars.md)) |
+| 068 | [Unified AppShell: Universal Top Navbar + Section Sidebars](068-unified-appshell-navbar-and-section-sidebars.md) | Accepted (supersedes [066](066-auth-and-admin-shell-chrome-boundary.md); amends [067](067-unified-app-chrome-and-whole-product-accent-showcase.md)) |
