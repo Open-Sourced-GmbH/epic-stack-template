@@ -8,7 +8,7 @@ import {
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { useEffect, useState } from 'react'
-import { Form, useFetcher, useNavigation } from 'react-router'
+import { Form, Link, useFetcher, useNavigation } from 'react-router'
 import { z } from 'zod'
 import {
 	ErrorList,
@@ -19,13 +19,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '#app/components/ui/alert.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '#app/components/ui/card.tsx'
-import {
 	Dialog,
 	DialogClose,
 	DialogContent,
@@ -34,9 +27,11 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '#app/components/ui/dialog.tsx'
+import { FormCard } from '#app/components/ui/form-card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { Label } from '#app/components/ui/label.tsx'
+import { PageHeader } from '#app/components/ui/page-header.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { cn, getPostImgSrc, useDebounce, useIsPending } from '#app/utils/misc.tsx'
@@ -133,148 +128,172 @@ export function PostEditor({
 	}
 
 	return (
-		<main className="container mx-auto max-w-5xl py-10">
-			<Card>
-				<CardHeader>
-					<CardTitle>{post ? 'Edit post' : 'New post'}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{form.status === 'error' ? (
-						<Alert tone="error" className="mb-6">
-							<AlertTitle>This post can’t be saved yet</AlertTitle>
-							<AlertDescription>
-								Fix the highlighted fields below and try again.
-							</AlertDescription>
-						</Alert>
-					) : null}
-					<Form
-						method="POST"
-						encType="multipart/form-data"
-						{...getFormProps(form)}
-					>
-						{/* Lets "enter" submit the form rather than a stray button. */}
-						<button type="submit" name="intent" value="save" className="hidden" />
-						{post ? (
-							<input type="hidden" name="id" value={post.id} />
-						) : null}
+		<main className="container max-w-(--shell-max) py-8">
+			{/* Breadcrumb back to the managed list (the shell owns the nav rail). It's
+			    page-level navigation, so it sits outside the form. */}
+			<Link
+				to="/admin/blog"
+				className="text-muted-foreground hover:text-foreground focus-cosy mb-4 inline-flex items-center gap-1 rounded-sm text-body-sm font-medium"
+			>
+				<Icon name="arrow-left" className="size-4" />
+				Posts
+			</Link>
 
-						<Field
-							labelProps={{ children: 'Title' }}
-							inputProps={{
-								autoFocus: true,
-								...getInputProps(fields.title, { type: 'text' }),
-								onChange: (event) => {
-									if (!slugEdited) {
-										slug.change(slugify(event.currentTarget.value))
-									}
-								},
-							}}
-							errors={fields.title.errors}
-						/>
-						{isPublished ? (
-							// A live URL is a promise we keep: the slug is frozen once
-							// published. Shown disabled, but a hidden field still submits it so
-							// a Save round-trips the unchanged slug (the action also enforces
-							// the lock server-side).
-							<div className="mb-4">
-								<Label htmlFor="post-slug-locked">Slug</Label>
+			<Form method="POST" encType="multipart/form-data" {...getFormProps(form)}>
+				{/* The shell's PageHeader idiom, carrying the editor's action row. The
+				    Save / Publish controls live here but submit this form by id, so an
+				    "enter" in any field still saves. */}
+				<PageHeader
+					eyebrow="Admin"
+					title={post ? 'Edit post' : 'New post'}
+					headingLevel={1}
+					className="mb-6"
+					actions={
+						<>
+							<StatusButton
+								form={form.id}
+								type="submit"
+								name="intent"
+								value="save"
+								variant={post ? 'outline' : 'default'}
+								disabled={isPending}
+								status={statusFor('save')}
+								onClick={() => setLastIntent('save')}
+							>
+								{post ? 'Save changes' : 'Create draft'}
+							</StatusButton>
+
+							{post && !isPublished ? (
+								<StatusButton
+									form={form.id}
+									type="submit"
+									name="intent"
+									value="publish"
+									disabled={isPending}
+									status={statusFor('publish')}
+									onClick={() => setLastIntent('publish')}
+								>
+									<Icon name="arrow-right">Publish</Icon>
+								</StatusButton>
+							) : null}
+
+							{post && isPublished ? (
+								<UnpublishButton
+									formId={form.id}
+									disabled={isPending}
+									status={statusFor('unpublish')}
+									onConfirm={() => setLastIntent('unpublish')}
+								/>
+							) : null}
+						</>
+					}
+				/>
+
+				{form.status === 'error' ? (
+					<Alert tone="error" className="mb-6">
+						<AlertTitle>This post can’t be saved yet</AlertTitle>
+						<AlertDescription>
+							Fix the highlighted fields below and try again.
+						</AlertDescription>
+					</Alert>
+				) : null}
+
+				{/* Lets "enter" submit the form rather than a stray button. */}
+				<button type="submit" name="intent" value="save" className="hidden" />
+				{post ? <input type="hidden" name="id" value={post.id} /> : null}
+
+				<FormCard title="Details">
+					<Field
+						labelProps={{ children: 'Title' }}
+						inputProps={{
+							autoFocus: true,
+							...getInputProps(fields.title, { type: 'text' }),
+							onChange: (event) => {
+								if (!slugEdited) {
+									slug.change(slugify(event.currentTarget.value))
+								}
+							},
+						}}
+						errors={fields.title.errors}
+					/>
+					{isPublished ? (
+						// A live URL is a promise we keep: the slug is frozen once
+						// published. Shown disabled, but a hidden field still submits it so
+						// a Save round-trips the unchanged slug (the action also enforces
+						// the lock server-side).
+						<div className="mb-4">
+							<Label htmlFor="post-slug-locked">Slug</Label>
+							<div className="relative">
 								<Input
 									id="post-slug-locked"
 									value={post?.slug ?? ''}
 									disabled
 									readOnly
+									className="pr-9"
 								/>
-								<input
-									type="hidden"
-									name={fields.slug.name}
-									value={post?.slug ?? ''}
+								<Icon
+									name="lock-closed"
+									aria-hidden
+									className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
 								/>
-								<p className="text-muted-foreground px-4 pt-1 text-body-xs">
-									Locked — changing a live URL breaks inbound links.
-								</p>
 							</div>
-						) : (
-							<Field
-								labelProps={{ children: 'Slug' }}
-								inputProps={{
-									name: fields.slug.name,
-									id: fields.slug.id,
-									value: slug.value ?? '',
-									onChange: (event) => {
-										setSlugEdited(true)
-										slug.change(event.currentTarget.value)
-									},
-									onFocus: () => slug.focus(),
-									onBlur: () => slug.blur(),
-								}}
-								errors={fields.slug.errors}
+							<input
+								type="hidden"
+								name={fields.slug.name}
+								value={post?.slug ?? ''}
 							/>
-						)}
-						<Field
-							labelProps={{ children: 'Excerpt' }}
-							inputProps={{
-								...getInputProps(fields.excerpt, { type: 'text' }),
-							}}
-							errors={fields.excerpt.errors}
-						/>
-						<CoverField cover={post?.coverImage} />
-						<div className="mb-4 flex flex-col gap-1.5">
-							<Label htmlFor={fields.tags.id}>Tags</Label>
-							<TagInput
-								id={fields.tags.id}
-								name={fields.tags.name}
-								aria-label="Tags"
-								defaultValue={post?.tags ?? []}
-								suggestions={suggestions}
-							/>
-							<ErrorList id={fields.tags.errorId} errors={fields.tags.errors} />
+							<p className="text-muted-foreground px-4 pt-1 text-body-xs">
+								Locked — changing a live URL breaks inbound links.
+							</p>
 						</div>
-						<BodyEditor
-							textareaProps={{ ...getTextareaProps(fields.body), rows: 16 }}
-							errors={fields.body.errors}
-							initialBody={post?.body ?? ''}
+					) : (
+						<Field
+							labelProps={{ children: 'Slug' }}
+							inputProps={{
+								name: fields.slug.name,
+								id: fields.slug.id,
+								value: slug.value ?? '',
+								onChange: (event) => {
+									setSlugEdited(true)
+									slug.change(event.currentTarget.value)
+								},
+								onFocus: () => slug.focus(),
+								onBlur: () => slug.blur(),
+							}}
+							errors={fields.slug.errors}
 						/>
-						<ErrorList id={form.errorId} errors={form.errors} />
-					</Form>
-				</CardContent>
-				<CardFooter className="flex flex-wrap gap-3">
-					<StatusButton
-						form={form.id}
-						type="submit"
-						name="intent"
-						value="save"
-						variant={post && !isPublished ? 'secondary' : 'default'}
-						disabled={isPending}
-						status={statusFor('save')}
-						onClick={() => setLastIntent('save')}
-					>
-						{post ? 'Save changes' : 'Create draft'}
-					</StatusButton>
-
-					{post && !isPublished ? (
-						<StatusButton
-							form={form.id}
-							type="submit"
-							name="intent"
-							value="publish"
-							disabled={isPending}
-							status={statusFor('publish')}
-							onClick={() => setLastIntent('publish')}
-						>
-							<Icon name="arrow-right">Publish</Icon>
-						</StatusButton>
-					) : null}
-
-					{post && isPublished ? (
-						<UnpublishButton
-							formId={form.id}
-							disabled={isPending}
-							status={statusFor('unpublish')}
-							onConfirm={() => setLastIntent('unpublish')}
+					)}
+					<Field
+						labelProps={{ children: 'Excerpt' }}
+						inputProps={{
+							...getInputProps(fields.excerpt, { type: 'text' }),
+						}}
+						errors={fields.excerpt.errors}
+					/>
+					<CoverField cover={post?.coverImage} />
+					<div className="flex flex-col gap-1.5">
+						<Label htmlFor={fields.tags.id}>Tags</Label>
+						<TagInput
+							id={fields.tags.id}
+							name={fields.tags.name}
+							aria-label="Tags"
+							defaultValue={post?.tags ?? []}
+							suggestions={suggestions}
 						/>
-					) : null}
-				</CardFooter>
-			</Card>
+						<ErrorList id={fields.tags.errorId} errors={fields.tags.errors} />
+					</div>
+				</FormCard>
+
+				<FormCard title="Content" className="mt-6">
+					<BodyEditor
+						textareaProps={{ ...getTextareaProps(fields.body), rows: 16 }}
+						errors={fields.body.errors}
+						initialBody={post?.body ?? ''}
+					/>
+				</FormCard>
+
+				<ErrorList id={form.errorId} errors={form.errors} />
+			</Form>
 		</main>
 	)
 }
