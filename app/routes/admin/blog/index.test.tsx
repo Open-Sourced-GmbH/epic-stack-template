@@ -50,6 +50,8 @@ test('lists drafts and published posts with status badges, author line and count
 		],
 		total: 2,
 		publishedCount: 1,
+		page: 1,
+		pageCount: 1,
 	})
 
 	// Header counts reflect the full list (Drafts included) and the live subset.
@@ -70,12 +72,23 @@ test('lists drafts and published posts with status badges, author line and count
 
 test('an untitled draft shows the italic placeholder, not an empty title', async () => {
 	renderAdminBlog({
-		posts: [makeAdminPost({ id: 'd', title: '   ', slug: 'untitled', publishedAt: null })],
+		posts: [
+			makeAdminPost({
+				id: 'd',
+				title: '   ',
+				slug: 'untitled',
+				publishedAt: null,
+			}),
+		],
 		total: 1,
 		publishedCount: 0,
+		page: 1,
+		pageCount: 1,
 	})
 
-	const placeholder = await screen.findByRole('link', { name: /untitled draft/i })
+	const placeholder = await screen.findByRole('link', {
+		name: /untitled draft/i,
+	})
 	expect(placeholder).toHaveAttribute('href', '/admin/blog/d/edit')
 	expect(placeholder).toHaveClass('italic')
 })
@@ -83,12 +96,18 @@ test('an untitled draft shows the italic placeholder, not an empty title', async
 test('the kebab is a labelled native trigger that opens its actions menu', async () => {
 	const user = userEvent.setup()
 	renderAdminBlog({
-		posts: [makeAdminPost({ id: 'pub', title: 'Shipped Post', slug: 'shipped' })],
+		posts: [
+			makeAdminPost({ id: 'pub', title: 'Shipped Post', slug: 'shipped' }),
+		],
 		total: 1,
 		publishedCount: 1,
+		page: 1,
+		pageCount: 1,
 	})
 
-	const kebab = await screen.findByRole('button', { name: /actions for shipped post/i })
+	const kebab = await screen.findByRole('button', {
+		name: /actions for shipped post/i,
+	})
 	// A native <button> trigger (Button is not forwardRef), not an asChild Button.
 	expect(kebab.tagName).toBe('BUTTON')
 
@@ -103,20 +122,74 @@ test('the kebab is a labelled native trigger that opens its actions menu', async
 test('a draft kebab omits "View live" (no public URL yet)', async () => {
 	const user = userEvent.setup()
 	renderAdminBlog({
-		posts: [makeAdminPost({ id: 'd', title: 'Draft Post', slug: 'draft', publishedAt: null })],
+		posts: [
+			makeAdminPost({
+				id: 'd',
+				title: 'Draft Post',
+				slug: 'draft',
+				publishedAt: null,
+			}),
+		],
 		total: 1,
 		publishedCount: 0,
+		page: 1,
+		pageCount: 1,
 	})
 
-	await user.click(await screen.findByRole('button', { name: /actions for draft post/i }))
+	await user.click(
+		await screen.findByRole('button', { name: /actions for draft post/i }),
+	)
 
 	const menu = await screen.findByRole('menu')
-	expect(within(menu).queryByRole('menuitem', { name: /view live/i })).toBeNull()
-	expect(within(menu).getByRole('menuitem', { name: /edit/i })).toBeInTheDocument()
+	expect(
+		within(menu).queryByRole('menuitem', { name: /view live/i }),
+	).toBeNull()
+	expect(
+		within(menu).getByRole('menuitem', { name: /edit/i }),
+	).toBeInTheDocument()
+})
+
+test('renders a Pagination footer linking to the next page when there is more than one', async () => {
+	renderAdminBlog({
+		posts: [
+			makeAdminPost({ id: 'pub', title: 'Shipped Post', slug: 'shipped' }),
+		],
+		total: 24,
+		publishedCount: 12,
+		page: 1,
+		pageCount: 3,
+	})
+
+	const pager = await screen.findByRole('navigation', { name: /pagination/i })
+	expect(within(pager).getByRole('link', { name: '2' })).toHaveAttribute(
+		'href',
+		'/admin/blog?page=2',
+	)
+})
+
+test('omits the Pagination footer on a single page', async () => {
+	renderAdminBlog({
+		posts: [
+			makeAdminPost({ id: 'pub', title: 'Shipped Post', slug: 'shipped' }),
+		],
+		total: 1,
+		publishedCount: 1,
+		page: 1,
+		pageCount: 1,
+	})
+
+	await screen.findByRole('link', { name: 'Shipped Post' })
+	expect(screen.queryByRole('navigation', { name: /pagination/i })).toBeNull()
 })
 
 test('with no posts it shows the empty state and a New post link', async () => {
-	renderAdminBlog({ posts: [], total: 0, publishedCount: 0 })
+	renderAdminBlog({
+		posts: [],
+		total: 0,
+		publishedCount: 0,
+		page: 1,
+		pageCount: 1,
+	})
 
 	expect(await screen.findByText(/no posts yet/i)).toBeInTheDocument()
 	// Both the always-present header action and the empty-state CTA point to the

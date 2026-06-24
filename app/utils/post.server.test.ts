@@ -277,6 +277,34 @@ test('getAllPostsForAdmin floats the most recently edited post to the top', asyn
 	expect(posts[0]?.title).toBe('First (edited)')
 })
 
+// The admin list paginates like the public feed: one page of rows, but the
+// `total`/`publishedCount` header counts always reflect the *whole* table, not
+// just the page in hand.
+test('getAllPostsForAdmin paginates while keeping whole-table counts', async () => {
+	for (let i = 0; i < 5; i++) {
+		await makePost({
+			title: `Post ${i}`,
+			publishedAt: i < 2 ? new Date() : null,
+		})
+	}
+
+	const first = await getAllPostsForAdmin({ page: 1, perPage: 2 })
+	expect(first.posts).toHaveLength(2)
+	expect(first.page).toBe(1)
+	expect(first.pageCount).toBe(3)
+	// Counts span the full table, not the page.
+	expect(first.total).toBe(5)
+	expect(first.publishedCount).toBe(2)
+
+	const last = await getAllPostsForAdmin({ page: 3, perPage: 2 })
+	expect(last.posts).toHaveLength(1)
+	expect(last.page).toBe(3)
+	// Pages don't overlap.
+	const firstIds = first.posts.map((p) => p.id)
+	const lastIds = last.posts.map((p) => p.id)
+	expect(firstIds.some((id) => lastIds.includes(id))).toBe(false)
+})
+
 test('deriveDescription prefers the excerpt, else the first body paragraph', async () => {
 	expect(
 		deriveDescription({ excerpt: '  A hand-written dek.  ', body: 'Body.' }),

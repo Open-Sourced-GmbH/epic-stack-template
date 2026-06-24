@@ -6,16 +6,12 @@ import {
 	AvatarImage,
 } from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
-import { Button, buttonVariants } from '#app/components/ui/button.tsx'
-import { Card } from '#app/components/ui/card.tsx'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '#app/components/ui/dropdown-menu.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { DropdownMenuItem } from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { Skeleton } from '#app/components/ui/skeleton.tsx'
+import { Pagination } from '#app/components/ui/pagination.tsx'
+import { Table, type TableColumn } from '#app/components/ui/table.tsx'
+import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
 import { cn, getPostImgSrc, getUserImgSrc } from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import { getAllPostsForAdmin, type AdminPost } from '#app/utils/post.server.ts'
@@ -27,9 +23,23 @@ import {
 } from '../../blog/__feed.tsx'
 import { type Route } from './+types/index.ts'
 
-export const handle: SEOHandle = {
+/** The header New post button — fed into the admin shell's `PageHeader`. */
+function NewPostButton() {
+	return (
+		<Button asChild>
+			<Link to="/admin/blog/new">
+				<Icon name="plus">New post</Icon>
+			</Link>
+		</Button>
+	)
+}
+
+export const handle: SEOHandle & { adminHeader: AdminHeader } = {
 	// Admin surfaces are never indexed.
 	getSitemapEntries: () => null,
+	// The admin shell owns the lone PageHeader; this surface feeds it the title
+	// and the New post action (the eyebrow defaults to "Admin").
+	adminHeader: { title: 'Posts', actions: <NewPostButton /> },
 }
 
 export const meta: Route.MetaFunction = () => [{ title: 'Posts — Admin' }]
@@ -38,7 +48,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// Admin-only: reading the full list (Drafts included) requires `read:post:any`,
 	// the permission only the authoring role holds.
 	await requireUserWithPermission(request, 'read:post:any')
-	return getAllPostsForAdmin()
+	// The read module owns clamping (a junk/NaN `?page=` resolves to page 1), so
+	// the loader just forwards the parsed value — matching the public feeds.
+	const page = Number(new URL(request.url).searchParams.get('page'))
+	return getAllPostsForAdmin({ page })
 }
 
 /** The row thumb — the cover image when set, else the post's deterministic art. */
@@ -48,14 +61,14 @@ function Thumb({ post }: { post: AdminPost }) {
 			<img
 				src={getPostImgSrc(post.coverImage.objectKey)}
 				alt={post.coverImage.altText ?? ''}
-				className="size-11 rounded-md object-cover"
+				className="size-11 shrink-0 rounded-md object-cover"
 			/>
 		)
 	}
 	return (
 		<div
 			aria-hidden="true"
-			className="flex size-11 items-center justify-center rounded-md"
+			className="flex size-11 shrink-0 items-center justify-center rounded-md"
 			style={{ background: COVER_GRADIENTS[coverArt(post.slug)] }}
 		>
 			<Icon name="file-text" className="size-4 text-white/70" />
@@ -63,227 +76,166 @@ function Thumb({ post }: { post: AdminPost }) {
 	)
 }
 
-/** Title cell — the post title (or an untitled placeholder) + an author line. */
-function TitleCell({ post }: { post: AdminPost }) {
+/** A post's trimmed title — the empty string for a whitespace-only draft. */
+function titleOf(post: AdminPost) {
+	return post.title.trim()
+}
+
+/** The "Post" cell — thumb + click-to-edit title link + author / slug line. */
+function PostCell({ post }: { post: AdminPost }) {
 	const name = post.author?.name ?? post.author?.username ?? 'Unknown'
-	const title = post.title.trim()
+	const title = titleOf(post)
 	return (
-		<div className="flex min-w-0 flex-col gap-1">
-			<Link
-				to={`/admin/blog/${post.id}/edit`}
-				className={cn(
-					'focus-cosy truncate rounded-sm after:absolute after:inset-0',
-					title ? 'font-medium' : 'text-muted-foreground italic',
-				)}
-			>
-				{title || 'Untitled draft'}
-			</Link>
-			<span className="text-muted-foreground flex items-center gap-1.5 text-body-xs">
-				<Avatar className="size-5">
-					{post.author?.image ? (
-						<AvatarImage
-							src={getUserImgSrc(post.author.image.objectKey)}
-							alt=""
-						/>
-					) : null}
-					<AvatarFallback className="bg-accent text-accent-foreground text-[0.6rem]">
-						{initials(name)}
-					</AvatarFallback>
-				</Avatar>
-				{name}
-				<span className="text-muted-foreground/80 font-mono">/{post.slug}</span>
-			</span>
-		</div>
-	)
-}
-
-/** Per-row overflow actions — a native kebab trigger (Button is not forwardRef). */
-function RowActions({ post }: { post: AdminPost }) {
-	const isPublished = Boolean(post.publishedAt)
-	return (
-		// `relative z-10` lifts the cell above the title link's row overlay so its
-		// controls click through to themselves, not the edit link; the explicit
-		// stopPropagation keeps that contract obvious.
-		<div
-			className="relative z-10 flex items-center justify-end gap-1"
-			onClick={(event) => event.stopPropagation()}
-		>
-			<Button asChild variant="ghost" size="sm">
-				<Link to={`/admin/blog/${post.id}/edit`}>Edit</Link>
-			</Button>
-			<DropdownMenu>
-				<DropdownMenuTrigger
-					aria-label={`Actions for ${post.title.trim() || 'untitled draft'}`}
-					className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
+		<div className="flex min-w-0 items-center gap-3">
+			<Thumb post={post} />
+			<div className="flex min-w-0 flex-col gap-1">
+				<Link
+					to={`/admin/blog/${post.id}/edit`}
+					className={cn(
+						'focus-cosy truncate rounded-sm',
+						title ? 'font-medium' : 'text-muted-foreground italic',
+					)}
 				>
-					<Icon name="dots-horizontal" className="size-4" />
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					<DropdownMenuItem asChild>
-						<Link to={`/admin/blog/${post.id}/edit`}>
-							<Icon name="pencil-1" className="mr-2 size-4" />
-							Edit
-						</Link>
-					</DropdownMenuItem>
-					{isPublished ? (
-						<DropdownMenuItem asChild>
-							<Link to={`/blog/${post.slug}`}>
-								<Icon name="link-2" className="mr-2 size-4" />
-								View live
-							</Link>
-						</DropdownMenuItem>
-					) : null}
-				</DropdownMenuContent>
-			</DropdownMenu>
-		</div>
-	)
-}
-
-function PostRow({ post }: { post: AdminPost }) {
-	const updated = new Date(post.updatedAt)
-	return (
-		<tr className="hover:bg-accent/60 relative border-t transition-colors">
-			<td className="w-px py-3 pr-3 pl-4">
-				<Thumb post={post} />
-			</td>
-			<td className="py-3 pr-3">
-				<TitleCell post={post} />
-			</td>
-			<td className="px-3 py-3">
-				{post.publishedAt ? (
-					<Badge>Published</Badge>
-				) : (
-					<Badge variant="outline">Draft</Badge>
-				)}
-			</td>
-			<td className="text-muted-foreground px-3 py-3 text-body-sm whitespace-nowrap">
-				<time dateTime={updated.toISOString()}>{formatDate(updated)}</time>
-			</td>
-			<td className="py-3 pr-4 pl-3">
-				<RowActions post={post} />
-			</td>
-		</tr>
-	)
-}
-
-/** Centred empty state shown when no posts exist yet. */
-function EmptyPosts() {
-	return (
-		<div className="flex flex-col items-center gap-4 py-20 text-center">
-			<div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
-				<Icon name="pencil-2" className="size-6" />
-			</div>
-			<div className="space-y-1">
-				<h2 className="text-h5">No posts yet</h2>
-				<p className="text-muted-foreground max-w-md text-pretty">
-					Drafts and published posts will show up here. Start writing to fill
-					this list.
-				</p>
-			</div>
-			<Button asChild>
-				<Link to="/admin/blog/new">
-					<Icon name="plus">New post</Icon>
+					{title || 'Untitled draft'}
 				</Link>
-			</Button>
+				<span className="text-muted-foreground text-body-xs flex items-center gap-1.5">
+					<Avatar className="size-5">
+						{post.author?.image ? (
+							<AvatarImage
+								src={getUserImgSrc(post.author.image.objectKey)}
+								alt=""
+							/>
+						) : null}
+						<AvatarFallback className="bg-accent text-accent-foreground text-[0.6rem]">
+							{initials(name)}
+						</AvatarFallback>
+					</Avatar>
+					{name}
+					<span className="text-muted-foreground/80 font-mono">
+						/{post.slug}
+					</span>
+				</span>
+			</div>
 		</div>
 	)
 }
 
-function PostTable({ posts }: { posts: AdminPost[] }) {
+/** Tonal status pill — brand wash for live posts, a quiet outline for Drafts. */
+function StatusBadge({ post }: { post: AdminPost }) {
+	const live = Boolean(post.publishedAt)
 	return (
-		<Card className="overflow-hidden py-0">
-			<table className="w-full text-left">
-				<thead className="sr-only">
-					<tr>
-						<th scope="col">Thumbnail</th>
-						<th scope="col">Title</th>
-						<th scope="col">Status</th>
-						<th scope="col">Updated</th>
-						<th scope="col">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{posts.map((post) => (
-						<PostRow key={post.id} post={post} />
-					))}
-				</tbody>
-			</table>
-		</Card>
+		<Badge variant={live ? 'brand' : 'outline'} dot>
+			{live ? 'Published' : 'Draft'}
+		</Badge>
 	)
 }
 
-/** Loading placeholder — a card of skeleton rows mirroring the real table. */
-function PostListSkeleton() {
+const columns: Array<TableColumn<AdminPost>> = [
+	{ key: 'post', header: 'Post', cell: (post) => <PostCell post={post} /> },
+	{
+		key: 'status',
+		header: 'Status',
+		cell: (post) => <StatusBadge post={post} />,
+	},
+	{
+		key: 'updated',
+		header: 'Updated',
+		headerClassName: 'text-right',
+		className:
+			'text-muted-foreground text-body-sm text-right whitespace-nowrap',
+		cell: (post) => {
+			const updated = new Date(post.updatedAt)
+			return <time dateTime={updated.toISOString()}>{formatDate(updated)}</time>
+		},
+	},
+]
+
+/** `grid-template-columns` for the data cells: Post flexes, the rest hug. */
+const columnTemplate = 'minmax(0,1fr) max-content max-content'
+
+/** Per-row overflow menu — Edit, plus View live for a published post. */
+function rowActions(post: AdminPost) {
 	return (
-		<Card data-slot="post-list-skeleton" className="overflow-hidden py-0">
-			<div className="divide-border divide-y">
-				{Array.from({ length: 6 }, (_, i) => (
-					<div key={i} className="flex items-center gap-3 px-4 py-3">
-						<Skeleton className="size-11 rounded-md" />
-						<div className="flex flex-1 flex-col gap-2">
-							<Skeleton className="h-4 w-1/3" />
-							<Skeleton className="h-3 w-1/4" />
-						</div>
-						<Skeleton className="h-5 w-16 rounded-full" />
-					</div>
-				))}
-			</div>
-		</Card>
+		<>
+			<DropdownMenuItem asChild>
+				<Link to={`/admin/blog/${post.id}/edit`}>
+					<Icon name="pencil-1" className="mr-2 size-4" />
+					Edit
+				</Link>
+			</DropdownMenuItem>
+			{post.publishedAt ? (
+				<DropdownMenuItem asChild>
+					<Link to={`/blog/${post.slug}`}>
+						<Icon name="link-2" className="mr-2 size-4" />
+						View live
+					</Link>
+				</DropdownMenuItem>
+			) : null}
+		</>
 	)
 }
 
 export function HydrateFallback() {
 	return (
-		<main className="container max-w-(--shell-max) py-10">
-			<PostListSkeleton />
+		<main className="container max-w-(--shell-max) py-8">
+			<Table
+				aria-label="Posts"
+				columns={columns}
+				data={[]}
+				getRowId={(post) => post.id}
+				columnTemplate={columnTemplate}
+				rowActions={rowActions}
+				loading
+				loadingRows={6}
+			/>
 		</main>
 	)
 }
 
 /**
  * The admin post list (`/admin/blog`): every post (Drafts + Published) in one
- * managed table. Reuses `getAllPostsForAdmin` (the one Draft-returning read) and
- * is admin-only at the loader. Rows are click-to-edit via a title-link overlay;
- * the actions cell sits above it so its controls stay independently operable.
- * Publish/unpublish + delete kebab actions land with the publish lifecycle
- * (EPT-49); this slice ships the list, navigation kebab, and states.
+ * managed `Table` inside the admin shell (the shell owns the PageHeader, fed via
+ * `handle.adminHeader`). Reuses `getAllPostsForAdmin` (the one Draft-returning
+ * read) and is admin-only at the loader. Rows are click-to-edit via the title
+ * link; the Table's per-row kebab carries Edit / View live. A `Pagination`
+ * footer walks the pages once there is more than one.
  */
 export default function AdminBlogIndex({ loaderData }: Route.ComponentProps) {
-	const { posts, total, publishedCount } = loaderData
+	const { posts, total, publishedCount, page, pageCount } = loaderData
 
 	return (
-		<>
-			{/* Admin bar — a faint brand strip marking the authoring surface. Uses
-			    the shared `--brand-soft` wash rather than a one-off color-mix. */}
-			<div className="bg-brand-soft border-b">
-				<div className="container max-w-(--shell-max) py-2">
-					<span className="text-brand text-body-xs font-semibold tracking-wide uppercase">
-						Admin · Blog
-					</span>
-				</div>
-			</div>
+		<main className="container max-w-(--shell-max) py-8">
+			<p className="text-muted-foreground text-body-sm mb-4">
+				{total} total · {publishedCount} published
+			</p>
 
-			<main className="container max-w-(--shell-max) py-10">
-				<header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-					<div>
-						<h1 className="text-h3 tracking-tight">Posts</h1>
-						<p className="text-muted-foreground mt-1 text-body-sm">
-							{total} total · {publishedCount} published
-						</p>
-					</div>
-					<Button asChild>
-						<Link to="/admin/blog/new">
-							<Icon name="plus">New post</Icon>
-						</Link>
-					</Button>
-				</header>
-
-				{posts.length === 0 ? (
-					<EmptyPosts />
-				) : (
-					<PostTable posts={posts} />
-				)}
-			</main>
-		</>
+			<Table
+				aria-label="Posts"
+				columns={columns}
+				data={posts}
+				getRowId={(post) => post.id}
+				columnTemplate={columnTemplate}
+				rowActions={rowActions}
+				getRowActionsLabel={(post) =>
+					`Actions for ${titleOf(post) || 'untitled draft'}`
+				}
+				emptyState={{
+					icon: <Icon name="pencil-2" className="size-6" />,
+					title: 'No posts yet',
+					description:
+						'Drafts and published posts will show up here. Start writing to fill this list.',
+					action: <NewPostButton />,
+				}}
+				footer={
+					pageCount > 1 ? (
+						<Pagination
+							page={page}
+							pageCount={pageCount}
+							getPageHref={(p) => `/admin/blog?page=${p}`}
+						/>
+					) : undefined
+				}
+			/>
+		</main>
 	)
 }

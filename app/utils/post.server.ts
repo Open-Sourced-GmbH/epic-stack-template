@@ -49,7 +49,10 @@ export type PostFeed = {
  */
 async function paginatePosts(
 	where: Prisma.PostWhereInput,
-	{ page = 1, perPage = POSTS_PER_PAGE }: { page?: number; perPage?: number } = {},
+	{
+		page = 1,
+		perPage = POSTS_PER_PAGE,
+	}: { page?: number; perPage?: number } = {},
 ): Promise<PostFeed> {
 	const currentPage = Math.max(1, Math.floor(page) || 1)
 
@@ -141,7 +144,9 @@ const adminPostSelect = {
 	},
 } satisfies Prisma.PostSelect
 
-export type AdminPost = Prisma.PostGetPayload<{ select: typeof adminPostSelect }>
+export type AdminPost = Prisma.PostGetPayload<{
+	select: typeof adminPostSelect
+}>
 
 export type AdminPostList = {
 	posts: AdminPost[]
@@ -149,24 +154,46 @@ export type AdminPostList = {
 	total: number
 	/** How many of those are live — drives the "M published" header count. */
 	publishedCount: number
+	/** The current 1-based page (clamped to ≥ 1). */
+	page: number
+	/** Total number of pages (always ≥ 1) — drives the `Pagination` footer. */
+	pageCount: number
 }
+
+/** Page size for the admin post list (`/admin/blog`). */
+export const ADMIN_POSTS_PER_PAGE = 10
 
 /**
  * The admin post list: **every** post (Drafts + Published), newest-edited first
- * so work-in-progress floats to the top, plus the total/published counts the
- * header shows. This is the deliberate inverse of {@link getPublishedPosts} —
- * the one read that *does* return Drafts — so it is admin-only at the route.
+ * so work-in-progress floats to the top — one page at a time, plus the
+ * total/published counts the header shows. This is the deliberate inverse of
+ * {@link getPublishedPosts} — the one read that *does* return Drafts — so it is
+ * admin-only at the route. The `total`/`publishedCount` counts span the **whole**
+ * table (real `count`s), not the page in hand, so the header stays honest while
+ * the `Pagination` footer walks the rows.
  */
-export async function getAllPostsForAdmin(): Promise<AdminPostList> {
-	// The list is unpaginated — it fetches every post — so both counts derive
-	// from the rows already in hand; a separate `count` query would be wasted I/O.
-	// (Add `take`/`skip` later → switch these to real `count`s.)
-	const posts = await prisma.post.findMany({
-		orderBy: { updatedAt: 'desc' },
-		select: adminPostSelect,
-	})
-	const publishedCount = posts.reduce((n, p) => n + (p.publishedAt ? 1 : 0), 0)
-	return { posts, total: posts.length, publishedCount }
+export async function getAllPostsForAdmin({
+	page = 1,
+	perPage = ADMIN_POSTS_PER_PAGE,
+}: { page?: number; perPage?: number } = {}): Promise<AdminPostList> {
+	const currentPage = Math.max(1, Math.floor(page) || 1)
+	const [total, publishedCount, posts] = await Promise.all([
+		prisma.post.count(),
+		prisma.post.count({ where: { publishedAt: { not: null } } }),
+		prisma.post.findMany({
+			orderBy: { updatedAt: 'desc' },
+			skip: (currentPage - 1) * perPage,
+			take: perPage,
+			select: adminPostSelect,
+		}),
+	])
+	return {
+		posts,
+		total,
+		publishedCount,
+		page: currentPage,
+		pageCount: Math.max(1, Math.ceil(total / perPage)),
+	}
 }
 
 /**
@@ -269,7 +296,9 @@ export function deriveDescription({
 		body
 			.split(/\n\s*\n/)
 			.map((block) => block.trim())
-			.find((block) => block && !block.startsWith('#') && !block.startsWith('```')) ?? ''
+			.find(
+				(block) => block && !block.startsWith('#') && !block.startsWith('```'),
+			) ?? ''
 	const oneLine = paragraph.replace(/\s+/g, ' ')
 	return oneLine.length > 200 ? `${oneLine.slice(0, 197).trimEnd()}…` : oneLine
 }
