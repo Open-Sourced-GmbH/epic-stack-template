@@ -159,7 +159,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	)
 
 	return redirectWithToast(
-		safeRedirect(redirectTo),
+		safeRedirect(redirectTo, '/settings/profile'),
 		{ title: 'Welcome', description: 'Thanks for signing up!' },
 		{ headers },
 	)

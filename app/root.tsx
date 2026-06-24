@@ -15,9 +15,9 @@ import { type Route } from './+types/root.ts'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { Logo } from './components/logo.tsx'
 import { Matomo } from './components/matomo.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
-import { SearchBar } from './components/search-bar.tsx'
 import { useToast } from './components/toaster.tsx'
 import { Button } from './components/ui/button.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
@@ -228,13 +228,11 @@ function App() {
 	const user = useOptionalUser()
 	const theme = useTheme()
 	const matches = useMatches()
-	const isOnSearchPage = matches.find((m) => m.id === 'routes/users/index')
 	// Routes can opt out of the generic app chrome via `handle.hideChrome` (e.g.
 	// the marketing landing, which ships its own branded header/footer — EPT-11).
 	const hideChrome = matches.some(
 		(m) => (m.handle as { hideChrome?: boolean } | undefined)?.hideChrome,
 	)
-	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
 	useToast(data.toast)
 
 	return (
@@ -245,11 +243,8 @@ function App() {
 			<div className="flex min-h-screen flex-col justify-between">
 				{hideChrome ? null : (
 					<header className="container py-6">
-						<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
+						<nav className="flex items-center justify-between gap-4 md:gap-8">
 							<Logo />
-							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
-								{searchBar}
-							</div>
 							<div className="flex items-center gap-10">
 								{user ? (
 									<UserDropdown />
@@ -259,7 +254,6 @@ function App() {
 									</Button>
 								)}
 							</div>
-							<div className="block w-full sm:hidden">{searchBar}</div>
 						</nav>
 					</header>
 				)}
@@ -283,19 +277,6 @@ function App() {
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</OpenImgContextProvider>
-	)
-}
-
-function Logo() {
-	return (
-		<Link to="/" className="group grid leading-snug">
-			<span className="font-light transition group-hover:-translate-x-1">
-				epic
-			</span>
-			<span className="font-bold transition group-hover:translate-x-1">
-				notes
-			</span>
-		</Link>
 	)
 }
 

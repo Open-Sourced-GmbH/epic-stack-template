@@ -2,7 +2,7 @@
 
 Date: 2026-06-23
 
-Status: accepted
+Status: accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md) — the admin shell now exposes the accent preset picker; auth stays toggle-only and neither mounts the marketing customizer dock)
 
 ## Context
 

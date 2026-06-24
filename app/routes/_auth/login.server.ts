@@ -66,5 +66,5 @@ export async function handleVerification({
 		await verifySessionStorage.destroySession(verifySession),
 	)
 
-	return redirect(safeRedirect(redirectTo), { headers })
+	return redirect(safeRedirect(redirectTo, '/settings/profile'), { headers })
 }

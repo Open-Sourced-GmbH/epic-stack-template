@@ -73,8 +73,9 @@ New ADRs start from [`000-template.md`](000-template.md).
 | 059 | [Seed Derives Permission Matrix from Registry](059-seed-derives-permission-matrix-from-registry.md) | Accepted                          |
 | 060 | [New-Session Finalization in Util](060-new-session-finalization-in-util.md) | Accepted                          |
 | 061 | [Ownership→Permission Rule & Note Read-Shape](061-ownership-permission-rule-and-note-select.md) | Accepted                          |
-| 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted                          |
+| 062 | [Brand Accent Token + Runtime Accent Customizer](062-brand-accent-token-and-customizer.md) | Accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md)) |
 | 063 | [Markdown Rendering Pipeline for Posts](063-markdown-rendering-pipeline-for-posts.md) | Accepted                          |
 | 064 | [Long-Form Prose Typography Ramp](064-long-form-prose-typography-ramp.md) | Accepted                          |
 | 065 | [Per-Entity Access Scoping](065-per-entity-access-scoping.md)            | Accepted (amends [059](059-seed-derives-permission-matrix-from-registry.md)) |
-| 066 | [Auth & Admin Shell Chrome Boundary](066-auth-and-admin-shell-chrome-boundary.md) | Accepted                          |
+| 066 | [Auth & Admin Shell Chrome Boundary](066-auth-and-admin-shell-chrome-boundary.md) | Accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md)) |
+| 067 | [Unified App Chrome + Whole-Product Accent Showcase](067-unified-app-chrome-and-whole-product-accent-showcase.md) | Accepted (amends [062](062-brand-accent-token-and-customizer.md), [066](066-auth-and-admin-shell-chrome-boundary.md)) |

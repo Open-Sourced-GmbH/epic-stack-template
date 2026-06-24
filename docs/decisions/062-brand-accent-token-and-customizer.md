@@ -2,7 +2,7 @@
 
 Date: 2026-06-18
 
-Status: accepted
+Status: accepted (amended by [067](067-unified-app-chrome-and-whole-product-accent-showcase.md) — the accent *picker* is now whole-product; the customizer *dock* + hue slider stay marketing-only)
 
 ## Context
 

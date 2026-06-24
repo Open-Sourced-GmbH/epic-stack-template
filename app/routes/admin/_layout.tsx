@@ -2,14 +2,17 @@ import { type ReactNode } from 'react'
 import { Link, Outlet, useLocation, useMatches } from 'react-router'
 import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
+import { AccentSwitch } from '#app/routes/resources/accent.tsx'
 import { ThemeToggle } from '#app/routes/resources/theme-switch.tsx'
 import { cn } from '#app/utils/misc.tsx'
+import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 
 // The admin surfaces ship their own standalone shell (left nav rail + branded
-// PageHeader + an in-shell theme toggle), so the generic app chrome from
-// root.tsx — including the footer's accent customizer — is suppressed here. The
-// shell is purpose-built, not a fork of `_marketing/__app-frame`, and never
-// mounts the accent customizer dock (ADR-066).
+// PageHeader), so the generic app chrome from root.tsx is suppressed here. The
+// shell is purpose-built, not a fork of `_marketing/__app-frame`. It exposes the
+// accent preset picker + binary theme toggle (the whole-product accent showcase,
+// ADR-067 superseding ADR-062/066) — but never the marketing `ThemeCustomizer`
+// dock (hue slider + cursor), which stays marketing-only.
 export const handle = { hideChrome: true }
 
 /**
@@ -71,6 +74,7 @@ function isActiveSection(pathname: string, to: string) {
 export default function AdminLayout() {
 	const location = useLocation()
 	const matches = useMatches()
+	const requestInfo = useOptionalRequestInfo()
 	// Deepest surface wins, so a nested route can override its parent's header.
 	const adminHeader = [...matches]
 		.reverse()
@@ -107,8 +111,15 @@ export default function AdminLayout() {
 						)
 					})}
 				</nav>
-				<div className="flex items-center justify-center border-t px-3 py-4 md:justify-start md:px-4">
+				<div className="flex flex-col items-center gap-3 border-t px-3 py-4 md:items-start md:px-4">
 					<ThemeToggle />
+					{/* Accent preset picker — the whole-product accent showcase reaches
+					    the backend too (ADR-067). Hidden on the collapsed mobile rail. */}
+					<div className="hidden md:block">
+						<AccentSwitch
+							userPreference={requestInfo?.userPrefs.accent ?? undefined}
+						/>
+					</div>
 				</div>
 			</aside>
 			<div className="flex min-w-0 flex-1 flex-col">

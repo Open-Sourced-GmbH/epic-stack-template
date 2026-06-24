@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { Logo } from '#app/components/logo.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { cn } from '#app/utils/misc.tsx'
 
@@ -22,12 +22,17 @@ export const navSections = [
  * renders server-side, so SSR and reduced-JS clients still get a usable header.
  *
  * `themeSwitch` is a slot so the shell can pass the real cookie-backed
- * `ThemeSwitch` while tests render a lightweight stand-in.
+ * `ThemeSwitch` while tests render a lightweight stand-in. `userMenu` is the
+ * logged-in affordance (the shared avatar dropdown) — anonymous visitors see only
+ * the CTA, while the owner gets the avatar *beside* it so the page demos
+ * identically to a client's view, plus a way back into the backend.
  */
 export function MarketingHeader({
 	themeSwitch,
+	userMenu,
 }: {
 	themeSwitch?: React.ReactNode
+	userMenu?: React.ReactNode
 }) {
 	const [scrolled, setScrolled] = useState(false)
 	const [activeId, setActiveId] = useState<string | null>(null)
@@ -69,18 +74,7 @@ export function MarketingHeader({
 				aria-label="Primary"
 				className="container flex h-16 items-center justify-between gap-8"
 			>
-				<Link
-					to="/"
-					className="group grid leading-snug"
-					aria-label="Open Sourced home"
-				>
-					<span className="font-light transition group-hover:-translate-x-1">
-						open
-					</span>
-					<span className="font-bold transition group-hover:translate-x-1">
-						sourced
-					</span>
-				</Link>
+				<Logo />
 
 				<ul className="hidden items-center gap-8 md:flex">
 					{navSections.map((section) => {
@@ -109,6 +103,7 @@ export function MarketingHeader({
 					<Button asChild size="sm">
 						<a href="#contact">Start a project</a>
 					</Button>
+					{userMenu}
 				</div>
 			</nav>
 		</header>

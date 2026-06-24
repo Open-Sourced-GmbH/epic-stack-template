@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Logo } from '#app/components/logo.tsx'
 
 type FooterLink =
 	| { label: string; href: string }
@@ -52,10 +53,7 @@ export function MarketingFooter() {
 		<footer className="border-border bg-background border-t">
 			<div className="container grid grid-cols-2 gap-8 py-12 sm:grid-cols-4">
 				<div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
-					<Link to="/" className="grid w-fit leading-snug">
-						<span className="font-light">open</span>
-						<span className="text-brand font-bold">sourced</span>
-					</Link>
+					<Logo />
 					<p className="text-muted-foreground text-sm text-pretty">
 						Product engineering studio — design and ship production web apps.
 					</p>
