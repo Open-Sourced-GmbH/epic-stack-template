@@ -21,7 +21,7 @@ test('landing renders its key sections', async ({ page, navigate }) => {
 		/software that feels/i,
 	)
 	await expect(
-		page.getByRole('heading', { name: /the design system, running live/i }),
+		page.getByRole('heading', { name: /this isn't a screenshot/i }),
 	).toBeVisible()
 	await expect(
 		page.getByRole('heading', { name: /everything is a keystroke away/i }),
@@ -47,13 +47,37 @@ test('landing does not scroll horizontally on a narrow viewport', async ({
 	expect(overflows).toBe(false)
 })
 
-test('header nav anchors jump to their section', async ({ page, navigate }) => {
+test('landing renders inside the unified AppShell navbar', async ({
+	page,
+	navigate,
+}) => {
 	await navigate('/')
 
-	await page
-		.getByRole('navigation', { name: 'Primary' })
+	// The landing now shares the universal AppShell top navbar (marketing variant)
+	// with the blog: the Primary nav carries the Über + Blog product links, and —
+	// logged out — the guest CTA (→ signup) rather than the `full` Log In button.
+	const nav = page.getByRole('navigation', { name: 'Primary' })
+	await expect(nav).toBeVisible()
+	await expect(nav.getByRole('link', { name: 'Über' })).toBeVisible()
+	await expect(nav.getByRole('link', { name: 'Blog' })).toBeVisible()
+	await expect(page.getByRole('link', { name: /los geht's/i })).toBeVisible()
+})
+
+test('footer sitemap anchors jump to their section', async ({
+	page,
+	navigate,
+}) => {
+	await navigate('/')
+
+	// The in-page section nav moved out of the (retired) bespoke header into the
+	// footer sitemap; its anchors still jump to the matching section.
+	const workLink = page
+		.getByRole('navigation', { name: 'Studio' })
 		.getByRole('link', { name: 'Work' })
-		.click()
+	// The footer sits far down a long page; settle the smooth-scroll before the
+	// click so the anchor (not a mid-animation hit) registers the fragment nav.
+	await workLink.scrollIntoViewIfNeeded()
+	await workLink.click()
 
 	await expect(page).toHaveURL(/#work$/)
 })
@@ -127,35 +151,25 @@ test('theme command flips light↔dark and persists across reload', async ({
 	await expect(html).toHaveClass(/dark/)
 })
 
-test('theme customizer dock re-themes and persists without a redirect 404', async ({
+test('navbar accent swatch re-themes and persists without a redirect 404', async ({
 	page,
 	navigate,
 }) => {
 	await navigate('/')
 
-	// Open the floating dock (it starts minimized as a FAB).
-	await page.getByRole('button', { name: 'Customize theme' }).click()
-	const dock = page.getByRole('region', { name: 'Theme customizer' })
-	await expect(dock).toBeVisible()
-
-	// eslint-disable-next-line playwright/no-raw-locators
-	const html = page.locator('html')
-
-	// Flip the theme via the dock's Theme segment (posts to /resources/theme-switch).
-	await dock
-		.getByRole('group', { name: 'Theme' })
-		.getByRole('button', { name: 'Dark' })
-		.click()
-	await expect(html).toHaveClass(/dark/)
-
-	// Pick an accent swatch (posts to /resources/accent). These submissions are
-	// fetcher-only and must NOT redirect: a redirect here returns a single-fetch
-	// 202 to the index `.data` URL that 404s through the splat route. We assert
-	// the page stays put (no error boundary) and the cookie commits.
-	await dock.getByRole('button', { name: 'Iris' }).click()
-	await expect(
-		page.getByText(/can't find this page/i),
-	).toHaveCount(0)
+	// Pick an accent preset swatch in the navbar (posts to /resources/accent via a
+	// JS fetcher). The bespoke customizer dock is retired — the navbar's
+	// AccentSwitch now owns accent selection. The submission is fetcher-only and
+	// must NOT redirect: a redirect from a single-fetch POST returns a 202 to the
+	// index `.data` URL that 404s through the splat route. We assert the page
+	// stays put (no error boundary), the swatch reads as active, and the cookie
+	// commits.
+	await page.getByRole('button', { name: 'Iris' }).click()
+	await expect(page.getByText(/can't find this page/i)).toHaveCount(0)
+	await expect(page.getByRole('button', { name: 'Iris' })).toHaveAttribute(
+		'aria-pressed',
+		'true',
+	)
 
 	await expect
 		.poll(async () => {
@@ -164,13 +178,10 @@ test('theme customizer dock re-themes and persists without a redirect 404', asyn
 		})
 		.toBeTruthy()
 
-	// A fresh server round-trip re-applies both preferences from their cookies.
+	// A fresh server round-trip re-applies the accent from its cookie.
 	await navigate('/')
-	await expect(html).toHaveClass(/dark/)
-	await page.getByRole('button', { name: 'Customize theme' }).click()
-	await expect(
-		page
-			.getByRole('region', { name: 'Theme customizer' })
-			.getByRole('button', { name: 'Iris' }),
-	).toHaveAttribute('aria-pressed', 'true')
+	await expect(page.getByRole('button', { name: 'Iris' })).toHaveAttribute(
+		'aria-pressed',
+		'true',
+	)
 })

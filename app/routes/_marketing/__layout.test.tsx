@@ -3,47 +3,67 @@
  */
 import { render, screen } from '@testing-library/react'
 import { createRoutesStub } from 'react-router'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { MarketingLayout } from './__layout.tsx'
 
-beforeEach(() => {
-	// The theme customizer reads matchMedia on mount; default to reduced motion.
-	vi.stubGlobal('matchMedia', (query: string) => ({
-		matches: query.includes('reduce'),
-		media: query,
-		onchange: null,
-		addEventListener: vi.fn(),
-		removeEventListener: vi.fn(),
-		addListener: vi.fn(),
-		removeListener: vi.fn(),
-		dispatchEvent: vi.fn(),
-	}))
-})
-
-afterEach(() => {
-	vi.unstubAllGlobals()
-})
-
+/**
+ * Render the marketing layout inside a stub `root` route whose loader supplies
+ * the `requestInfo` the navbar's accent/theme switches read (they throw without
+ * it). The layout now wraps its children in the universal AppShell navbar
+ * (`marketing` variant), so the chrome assertions mirror the public blog's.
+ */
 function renderLayout(children: React.ReactNode) {
 	const Stub = createRoutesStub([
-		{ path: '/', Component: () => <MarketingLayout>{children}</MarketingLayout> },
+		{
+			id: 'root',
+			path: '/',
+			loader: () => ({
+				requestInfo: {
+					hints: { theme: 'light', timeZone: 'UTC' },
+					userPrefs: { theme: 'light' },
+				},
+			}),
+			HydrateFallback: () => null,
+			children: [
+				{
+					index: true,
+					Component: () => <MarketingLayout>{children}</MarketingLayout>,
+				},
+			],
+		},
 	])
 	render(<Stub initialEntries={['/']} />)
 }
 
-test('renders the shared chrome: header, footer, and theme switcher', () => {
+test('renders the unified AppShell navbar: Über + Blog links and the guest CTA', async () => {
 	renderLayout(<p>child content</p>)
 
-	expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument()
-	expect(screen.getByRole('contentinfo')).toBeInTheDocument()
-	expect(
-		screen.getByRole('button', { name: /customize theme/i }),
-	).toBeInTheDocument()
+	const nav = await screen.findByRole('navigation', { name: 'Primary' })
+	expect(nav).toBeInTheDocument()
+	expect(screen.getByRole('link', { name: 'Über' })).toHaveAttribute(
+		'href',
+		'/about',
+	)
+	expect(screen.getByRole('link', { name: 'Blog' })).toHaveAttribute(
+		'href',
+		'/blog',
+	)
+	// Logged-out guest CTA → signup (the marketing variant), not a Log In button.
+	expect(screen.getByRole('link', { name: /los geht's/i })).toHaveAttribute(
+		'href',
+		'/signup',
+	)
 })
 
-test('renders its children inside the main landmark', () => {
+test('preserves the branded footer as a contentinfo landmark', async () => {
 	renderLayout(<p>child content</p>)
 
-	const main = screen.getByRole('main')
+	expect(await screen.findByRole('contentinfo')).toBeInTheDocument()
+})
+
+test('renders its children inside the main landmark', async () => {
+	renderLayout(<p>child content</p>)
+
+	const main = await screen.findByRole('main')
 	expect(main).toContainElement(screen.getByText('child content'))
 })

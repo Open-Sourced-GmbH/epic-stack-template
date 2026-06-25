@@ -8,7 +8,7 @@
 
 import { type Command } from '#app/components/ui/command.matcher.ts'
 import { type Theme } from '#app/utils/theme.server.ts'
-import { navSections } from './__header.tsx'
+import { navSections } from './__sections.ts'
 import { type IconName } from '@/icon-name'
 
 /** The theme *preference* a command can set — the resolved `Theme` plus `system`. */

@@ -276,7 +276,7 @@ export function Playground() {
 				<p className="text-muted-foreground mt-4 text-pretty">
 					Flip through real, working components — an onboarding flow, forms,
 					menus and actions. Every field and button is live and accessible.
-					Recolor the whole page from the dock.
+					Recolor the whole page from the navbar.
 				</p>
 			</div>
 

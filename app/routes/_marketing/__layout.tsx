@@ -1,38 +1,27 @@
-import { UserDropdown } from '#app/components/user-dropdown.tsx'
-import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
-import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
-import { useOptionalUser } from '#app/utils/user.ts'
+import { AppShell } from '#app/components/app-shell.tsx'
 import { MarketingFooter } from './__footer.tsx'
-import { MarketingHeader } from './__header.tsx'
-import { ThemeCustomizer } from './__theme-customizer.tsx'
 
 /**
- * Shared marketing chrome: the sticky translucent header (with the cookie-backed
- * theme customizer in its slot), a `flex-1` main, and the branded footer, laid
- * out as a full-height column. Extracted from the landing so every public
- * marketing surface — the landing and each `/blog` route — renders inside the
- * same chrome from one source, without duplicating the request-info wiring.
+ * Shared marketing chrome. The landing now renders inside the universal
+ * {@link AppShell} navbar (`marketing` variant — Über/Blog links, accent picker,
+ * theme toggle, guest CTA / owner avatar), identical to the public blog. The
+ * bespoke sticky header and its theme-customizer dock are retired (EPT-80); the
+ * navbar owns the accent + theme controls, so there is no per-surface chrome to
+ * reconcile any more.
  *
- * This layout ships its own branded header/footer; root.tsx no longer renders
- * any generic chrome (ADR-068), so there is nothing to suppress.
+ * The branded footer survives as landing page content (legal/resource links the
+ * navbar doesn't carry), rendered as a sibling of the `<main>` landmark inside
+ * the shell's content column.
+ *
+ * Unlike `blog/_layout.tsx` (multi-route, so each route owns its `<main>`), the
+ * marketing surface is the single landing page — so the `<main>` landmark lives
+ * here, once, alongside the footer.
  */
 export function MarketingLayout({ children }: { children: React.ReactNode }) {
-	const requestInfo = useOptionalRequestInfo()
-	const user = useOptionalUser()
 	return (
-		<div className="bg-background text-foreground flex min-h-screen flex-col">
-			<MarketingHeader
-				themeSwitch={
-					<ThemeCustomizer
-						accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
-						cursor={requestInfo?.userPrefs.cursor ?? 'default'}
-						theme={requestInfo?.userPrefs.theme ?? null}
-					/>
-				}
-				userMenu={user ? <UserDropdown /> : null}
-			/>
+		<AppShell variant="marketing">
 			<main className="flex-1">{children}</main>
 			<MarketingFooter />
-		</div>
+		</AppShell>
 	)
 }

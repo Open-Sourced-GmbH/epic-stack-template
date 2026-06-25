@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { landingCommands, type ThemeMode } from './__command-palette.commands.ts'
-import { navSections } from './__header.tsx'
+import { navSections } from './__sections.ts'
 
 test('navigation commands cover Home, every nav section, and Contact as hrefs', () => {
 	const commands = landingCommands({ onTheme: () => {} })
