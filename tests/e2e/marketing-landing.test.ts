@@ -28,6 +28,25 @@ test('landing renders its key sections', async ({ page, navigate }) => {
 	).toBeVisible()
 })
 
+test('landing does not scroll horizontally on a narrow viewport', async ({
+	page,
+	navigate,
+}) => {
+	// A grid/flex child holding the wide "code is the product" code block defaults
+	// to min-width:auto, so without min-w-0 the long source lines blow the cell —
+	// and the whole page — wider than the viewport. Assert the document never
+	// overflows sideways at a phone width.
+	await page.setViewportSize({ width: 375, height: 812 })
+	await navigate('/')
+
+	const overflows = await page.evaluate(
+		() =>
+			document.documentElement.scrollWidth >
+			document.documentElement.clientWidth,
+	)
+	expect(overflows).toBe(false)
+})
+
 test('header nav anchors jump to their section', async ({ page, navigate }) => {
 	await navigate('/')
 

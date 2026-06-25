@@ -243,7 +243,7 @@ export function CodeSample() {
 			</div>
 
 			<div className="mx-auto mt-16 grid max-w-5xl items-center gap-8 min-[900px]:grid-cols-2">
-				<div data-reveal>
+				<div data-reveal className="min-w-0">
 					<CodeBlock filename="honeypot.tsx" lines={SOURCE} />
 				</div>
 				<div data-reveal style={{ transitionDelay: '120ms' }}>
