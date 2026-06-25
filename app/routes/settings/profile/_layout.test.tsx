@@ -115,11 +115,12 @@ test('General lights up only on the index, never under a Security child', async 
 	)
 })
 
-test('collapses to a hamburger drawer trigger on mobile', async () => {
+test('collapses to the navbar hamburger drawer on mobile', async () => {
 	renderAccount('/settings/profile')
 
 	await screen.findByText('general body')
-	expect(
-		screen.getByRole('button', { name: /open account menu/i }),
-	).toBeInTheDocument()
+	// The navbar owns the single mobile menu (the „Menü" hamburger); the section
+	// nav rides inside its drawer, so there is no separate sidebar trigger.
+	expect(screen.getByRole('button', { name: 'Menü' })).toBeInTheDocument()
+	expect(screen.queryByRole('button', { name: /open account menu/i })).toBeNull()
 })

@@ -92,13 +92,14 @@ test('marks the active section with aria-current', async () => {
 	)
 })
 
-test('collapses to a hamburger drawer trigger on mobile', async () => {
+test('collapses to the navbar hamburger drawer on mobile', async () => {
 	renderAdmin('/admin/blog')
 
 	await screen.findByText('blog body')
-	expect(
-		screen.getByRole('button', { name: /open admin menu/i }),
-	).toBeInTheDocument()
+	// The navbar owns the single mobile menu (the „Menü" hamburger); the section
+	// nav rides inside its drawer, so there is no separate sidebar trigger.
+	expect(screen.getByRole('button', { name: 'Menü' })).toBeInTheDocument()
+	expect(screen.queryByRole('button', { name: /open admin menu/i })).toBeNull()
 })
 
 test('renders the branded PageHeader when a routed surface feeds one', async () => {

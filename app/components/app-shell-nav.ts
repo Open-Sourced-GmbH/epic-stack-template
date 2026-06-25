@@ -114,3 +114,17 @@ export function resolveNavbar({
 export function isSectionActive(pathname: string, link: ProductLink) {
 	return pathname === link.match || pathname.startsWith(`${link.match}/`)
 }
+
+/**
+ * The guest call-to-action link for an identity slot, or `null` when the slot
+ * isn't a guest CTA (the avatar dropdown / none). One source for the button the
+ * navbar right-cluster and the mobile drawer both render: `cta` (marketing) →
+ * the „Los geht's" signup nudge, `login` (full) → the Log In link.
+ */
+export function accountCtaLink(
+	account: NavbarAccount,
+): { to: string; label: string } | null {
+	if (account === 'cta') return { to: '/signup', label: "Los geht's" }
+	if (account === 'login') return { to: '/login', label: 'Log In' }
+	return null
+}

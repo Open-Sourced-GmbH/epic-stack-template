@@ -5,12 +5,16 @@ import { cn } from '#app/utils/misc.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import {
+	accountCtaLink,
 	isSectionActive,
 	resolveNavbar,
 	type NavbarVariant,
+	type NavbarVisibility,
 } from './app-shell-nav.ts'
 import { Logo } from './logo.tsx'
+import { NavbarDrawer } from './navbar-drawer.tsx'
 import { Button } from './ui/button.tsx'
+import { SidebarRail, type SidebarGroup } from './ui/sidebar.tsx'
 import { UserDropdown } from './user-dropdown.tsx'
 
 /**
@@ -22,24 +26,41 @@ import { UserDropdown } from './user-dropdown.tsx'
  * bar (account/admin), `marketing` is the public bar (landing/blog), and
  * `minimal` is the auth pass-through.
  *
- * The sidebar slot is unused on single-page surfaces like the public blog; the
- * shared `Sidebar` that fills it for account/admin lands in a later slice.
+ * On account/admin the section nav is supplied as `sidebarGroups` config (not a
+ * pre-rendered node): the shell renders the desktop rail from it via the shared
+ * `SidebarNav`, and the navbar's mobile drawer renders the **same** groups — so
+ * the rail and the drawer can never drift, and there is exactly one mobile menu
+ * (the navbar hamburger). Single-page surfaces like the public blog pass none.
  */
 export function AppShell({
 	variant = 'full',
-	sidebar,
+	sidebarGroups,
+	sidebarLabel = 'Section',
 	children,
 }: {
 	variant?: NavbarVariant
-	sidebar?: React.ReactNode
+	/** Section nav groups for the account/admin rail + the navbar drawer. */
+	sidebarGroups?: SidebarGroup[]
+	/** Accessible label for the section nav (e.g. "Account", "Admin"). */
+	sidebarLabel?: string
 	children: React.ReactNode
 }) {
+	const location = useLocation()
 	return (
 		<div className="bg-background text-foreground flex min-h-screen flex-col">
-			<AppNavbar variant={variant} />
-			{sidebar ? (
+			<AppNavbar
+				variant={variant}
+				sidebarGroups={sidebarGroups}
+				sidebarLabel={sidebarLabel}
+			/>
+			{sidebarGroups ? (
 				<div className="flex flex-1">
-					{sidebar}
+					<SidebarRail
+						groups={sidebarGroups}
+						label={sidebarLabel}
+						pathname={location.pathname}
+						linkComponent={Link}
+					/>
 					<div className="flex min-w-0 flex-1 flex-col">{children}</div>
 				</div>
 			) : (
@@ -76,14 +97,23 @@ export function AppShellBoundary({ children }: { children: React.ReactNode }) {
  * existing cookie-backed switches (ADR-005), and the identity reuses the shared
  * `UserDropdown` — none of it is re-implemented here.
  */
-function AppNavbar({ variant }: { variant: NavbarVariant }) {
+function AppNavbar({
+	variant,
+	sidebarGroups,
+	sidebarLabel,
+}: {
+	variant: NavbarVariant
+	sidebarGroups?: SidebarGroup[]
+	sidebarLabel?: string
+}) {
 	const user = useOptionalUser()
 	const requestInfo = useOptionalRequestInfo()
 	const location = useLocation()
-	const nav = resolveNavbar({
+	const nav: NavbarVisibility = resolveNavbar({
 		variant,
 		isLoggedIn: Boolean(user),
 	})
+	const ctaLink = accountCtaLink(nav.account)
 
 	return (
 		<header
@@ -98,6 +128,15 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 				className="container flex h-15 items-center justify-between gap-6"
 			>
 				<div className="flex items-center gap-6">
+					{/* The mobile menu — a hamburger below `md` on marketing/full only;
+					    `minimal` (auth) has no links or section nav, so no drawer. */}
+					{variant !== 'minimal' ? (
+						<NavbarDrawer
+							nav={nav}
+							sidebarGroups={sidebarGroups}
+							sidebarLabel={sidebarLabel}
+						/>
+					) : null}
 					<Logo hideWordmarkOnMobile={variant !== 'minimal'} />
 					{nav.productLinks.length > 0 ? (
 						<ul className="hidden items-center gap-6 md:flex">
@@ -126,20 +165,19 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 
 				<div className="flex items-center gap-2.5">
 					{nav.showAccentPicker ? (
-						<AccentSwitch
-							userPreference={requestInfo?.userPrefs.accent ?? undefined}
-						/>
+						// Desktop-only: below `md` the accent cycle lives in the drawer's
+						// appearance strip, so the bar stays uncluttered on mobile.
+						<div className="hidden md:flex">
+							<AccentSwitch
+								userPreference={requestInfo?.userPrefs.accent ?? undefined}
+							/>
+						</div>
 					) : null}
 					<ThemeSwitch userPreference={requestInfo?.userPrefs.theme ?? null} />
 					{nav.account === 'avatar' ? <UserDropdown /> : null}
-					{nav.account === 'login' ? (
+					{ctaLink ? (
 						<Button asChild variant="default">
-							<Link to="/login">Log In</Link>
-						</Button>
-					) : null}
-					{nav.account === 'cta' ? (
-						<Button asChild variant="default">
-							<Link to="/signup">Los geht&apos;s</Link>
+							<Link to={ctaLink.to}>{ctaLink.label}</Link>
 						</Button>
 					) : null}
 				</div>

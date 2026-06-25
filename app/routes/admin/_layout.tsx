@@ -1,12 +1,12 @@
 import { type ReactNode } from 'react'
-import { Link, Outlet, useLocation, useMatches } from 'react-router'
+import { Outlet, useMatches } from 'react-router'
 import { AppShell } from '#app/components/app-shell.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
-import { Sidebar, type SidebarGroup } from '#app/components/ui/sidebar.tsx'
+import { type SidebarGroup } from '#app/components/ui/sidebar.tsx'
 
 // The admin section rides the unified AppShell chrome (ADR-068): the universal
 // top navbar (which owns the wordmark, the role-gated Admin link, and the
-// accent + theme controls) plus the shared section `Sidebar`.
+// accent + theme controls) plus the shared section sidebar.
 
 /**
  * The page-header content a routed admin surface feeds into the shell. The shell
@@ -25,7 +25,7 @@ type AdminHeaderHandle = { adminHeader?: AdminHeader }
 
 /**
  * The admin sidebar config: a single **Manage** group linking the admin
- * surfaces. The shared {@link Sidebar} renders this as a desktop rail and a
+ * surfaces. {@link AppShell} renders it as a desktop rail and inside the navbar's
  * mobile drawer, highlighting the active section from the current pathname.
  */
 const adminGroups: SidebarGroup[] = [
@@ -46,7 +46,6 @@ const adminGroups: SidebarGroup[] = [
  * unchanged — this pathless layout just nests the existing routes.
  */
 export default function AdminLayout() {
-	const location = useLocation()
 	const matches = useMatches()
 	// Deepest surface wins, so a nested route can override its parent's header.
 	const adminHeader = [...matches]
@@ -55,17 +54,7 @@ export default function AdminLayout() {
 		.find(Boolean)
 
 	return (
-		<AppShell
-			variant="full"
-			sidebar={
-				<Sidebar
-					groups={adminGroups}
-					pathname={location.pathname}
-					label="Admin"
-					linkComponent={Link}
-				/>
-			}
-		>
+		<AppShell variant="full" sidebarGroups={adminGroups} sidebarLabel="Admin">
 			{adminHeader ? (
 				<div className="container max-w-(--shell-max) pt-10">
 					<PageHeader

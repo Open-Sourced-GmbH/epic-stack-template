@@ -1,18 +1,18 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { Link, Outlet, useLocation } from 'react-router'
+import { Outlet } from 'react-router'
 import { z } from 'zod'
 import { AppShell } from '#app/components/app-shell.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
-import { Sidebar, type SidebarGroup } from '#app/components/ui/sidebar.tsx'
+import { type SidebarGroup } from '#app/components/ui/sidebar.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/_layout.tsx'
 
 // The account section rides the unified AppShell chrome (ADR-068): the universal
 // top navbar (which owns the wordmark + the accent + theme controls) plus the
-// shared section `Sidebar`.
+// shared section sidebar.
 //
 // `BreadcrumbHandle` lives on for the account sub-routes that still type their
 // `handle` against it; the breadcrumb *trail* is gone — the sidebar replaces it.
@@ -26,8 +26,8 @@ export const handle: BreadcrumbHandle & SEOHandle = {
 
 /**
  * The account sidebar config: an **Account** group (the General landing) and a
- * **Security** group linking the standalone security sub-routes. The shared
- * {@link Sidebar} renders this as a desktop rail and a mobile drawer,
+ * **Security** group linking the standalone security sub-routes. {@link AppShell}
+ * renders it as a desktop rail and inside the navbar's mobile drawer,
  * highlighting the active section from the current pathname. `Password` points
  * at `/settings/profile/password`, which itself redirects to `…/password/create`
  * for accounts that have no password yet.
@@ -83,19 +83,11 @@ export async function loader({ request }: Route.LoaderArgs) {
  * is gone — the sidebar's active-section highlight tells you where you are.
  */
 export default function EditUserProfile() {
-	const location = useLocation()
-
 	return (
 		<AppShell
 			variant="full"
-			sidebar={
-				<Sidebar
-					groups={accountGroups}
-					pathname={location.pathname}
-					label="Account"
-					linkComponent={Link}
-				/>
-			}
+			sidebarGroups={accountGroups}
+			sidebarLabel="Account"
 		>
 			<main className="container max-w-(--shell-max) py-10">
 				<PageHeader

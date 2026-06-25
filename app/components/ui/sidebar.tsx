@@ -78,18 +78,26 @@ export function activeItemTo(
 	return active
 }
 
-const itemBase =
+/**
+ * The token recipe for a navigation item, shared so the desktop rail, the
+ * sidebar drawer, and the navbar's own mobile drawer all render the active /
+ * idle treatment identically (the navbar drawer reuses these for its product
+ * links, sitting right above a {@link SidebarNav}).
+ */
+export const itemBase =
 	'flex items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium transition-colors'
-const itemActive = 'bg-brand text-primary-foreground'
-const itemIdle =
+export const itemActive = 'bg-brand text-primary-foreground'
+export const itemIdle =
 	'text-muted-foreground hover:bg-background hover:text-foreground'
 
 /**
  * The grouped item list shared by the desktop rail and the mobile drawer, so
  * the two always render identical groups/labels. `onNavigate` lets the drawer
- * close itself when an item is chosen.
+ * close itself when an item is chosen. Exported so the universal navbar's own
+ * mobile drawer (the {@link AppShell} hamburger) renders the section groups with
+ * this exact renderer — the rail and both drawers can never drift.
  */
-function SidebarNav({
+export function SidebarNav({
 	groups,
 	label,
 	pathname,
@@ -141,8 +149,12 @@ function SidebarNav({
 	)
 }
 
-/** The inline hamburger glyph — the sprite has no menu icon (cf. PineAdminMark). */
-function MenuGlyph() {
+/**
+ * The inline hamburger glyph — the sprite has no menu icon. Exported so the
+ * navbar's own mobile drawer ({@link AppShell}) shows the identical trigger
+ * glyph rather than a second hand-rolled copy.
+ */
+export function MenuGlyph() {
 	return (
 		<svg viewBox="0 0 24 24" className="size-5" aria-hidden focusable="false">
 			<path
@@ -152,6 +164,43 @@ function MenuGlyph() {
 				strokeLinecap="round"
 			/>
 		</svg>
+	)
+}
+
+/**
+ * The desktop rail half on its own: the faint `bg-brand-soft` aside (hidden
+ * below `md`) wrapping a {@link SidebarNav}. Single source for the rail chrome
+ * so the composed {@link Sidebar} and the `AppShell` (which renders the rail
+ * directly, letting the navbar own the one mobile drawer) can never drift on
+ * width / wash / border.
+ */
+export function SidebarRail({
+	groups,
+	pathname,
+	label = 'Section',
+	linkComponent = AnchorLink,
+	className,
+}: {
+	groups: SidebarGroup[]
+	pathname: string
+	label?: string
+	linkComponent?: SidebarLinkComponent
+	className?: string
+}) {
+	return (
+		<aside
+			className={cn(
+				'bg-brand-soft hidden w-60 shrink-0 flex-col border-r px-2 py-4 md:flex',
+				className,
+			)}
+		>
+			<SidebarNav
+				groups={groups}
+				label={label}
+				pathname={pathname}
+				linkComponent={linkComponent}
+			/>
+		</aside>
 	)
 }
 
@@ -189,19 +238,13 @@ export function Sidebar({
 	const [open, setOpen] = React.useState(false)
 	return (
 		<>
-			<aside
-				className={cn(
-					'bg-brand-soft hidden w-60 shrink-0 flex-col border-r px-2 py-4 md:flex',
-					className,
-				)}
-			>
-				<SidebarNav
-					groups={groups}
-					label={label}
-					pathname={pathname}
-					linkComponent={linkComponent}
-				/>
-			</aside>
+			<SidebarRail
+				groups={groups}
+				label={label}
+				pathname={pathname}
+				linkComponent={linkComponent}
+				className={className}
+			/>
 
 			<div className="md:hidden">
 				<Sheet open={open} onOpenChange={setOpen}>
