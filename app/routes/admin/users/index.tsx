@@ -1,20 +1,30 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { Form, useSubmit } from 'react-router'
+import { useEffect } from 'react'
+import { Form, data, useFetcher, useSubmit } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Field } from '#app/components/forms.tsx'
 import { Alert, AlertDescription, AlertTitle } from '#app/components/ui/alert.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Pagination } from '#app/components/ui/pagination.tsx'
+import { useRowSelection } from '#app/components/ui/row-selection.ts'
 import { Table, type TableColumn } from '#app/components/ui/table.tsx'
 import { UserAvatar } from '#app/components/user-avatar.tsx'
 import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
-import { useDebounce } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/db.server.ts'
+import { useDebounce, useDoubleCheck } from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
+import { createToastHeaders } from '#app/utils/toast.server.ts'
 import {
+	bulkUserAction,
 	getUsersForAdmin,
 	type AdminUser,
+	type BulkUserOp,
+	type BulkUserResult,
 } from '#app/utils/user-admin.server.ts'
+import { type PermissionString } from '#app/utils/user.ts'
 import { formatDate } from '../../blog/__feed.tsx'
 import { type Route } from './+types/index.ts'
 
@@ -38,6 +48,86 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const page = Number(url.searchParams.get('page'))
 	const search = url.searchParams.get('search') ?? ''
 	return getUsersForAdmin({ page, search })
+}
+
+/**
+ * The per-op metadata for the bulk bar, in one place so adding an op is a single
+ * edit: the `:any`-scoped `user` permission it re-checks at the boundary, the
+ * toast `title`, and the past-tense `verb` the toast description leads with.
+ */
+const BULK_OPS = {
+	deactivate: {
+		permission: 'update:user:any',
+		title: 'Users deactivated',
+		verb: 'Deactivated',
+	},
+	'force-logout': {
+		permission: 'update:user:any',
+		title: 'Users signed out',
+		verb: 'Signed out',
+	},
+	delete: {
+		permission: 'delete:user:any',
+		title: 'Users deleted',
+		verb: 'Deleted',
+	},
+} as const satisfies Record<
+	BulkUserOp,
+	{ permission: PermissionString; title: string; verb: string }
+>
+
+function isBulkOp(value: unknown): value is BulkUserOp {
+	return typeof value === 'string' && Object.hasOwn(BULK_OPS, value)
+}
+
+/**
+ * Reduce a {@link BulkUserResult} to a single toast. The lead clause reports how
+ * many rows applied; a floor-blocked or self-skipped remainder is appended as a
+ * plain-language explanation so the admin sees exactly why the batch wasn't whole.
+ */
+function bulkResultToast(result: BulkUserResult) {
+	const { op, succeeded, blocked, skipped } = result
+	const noun = (n: number) => (n === 1 ? 'user' : 'users')
+	let description = `${BULK_OPS[op].verb} ${succeeded} ${noun(succeeded)}.`
+	if (blocked > 0) {
+		description += ` ${blocked} left unchanged to keep at least one administrator.`
+	}
+	if (skipped > 0) {
+		description += ` Skipped your own account.`
+	}
+	return { type: 'success' as const, title: BULK_OPS[op].title, description }
+}
+
+/**
+ * The bulk-action write-path for the list's selection bar (EPT-95). The selected
+ * user ids ride as repeated `userId` fields and the op as `op`. It is the security
+ * boundary: each op re-checks the matching `user` permission (delete needs
+ * `delete:user:any`, the rest `update:user:any`) before any data is touched, so a
+ * non-manager is rejected here regardless of what the client rendered. The
+ * admin-floor invariant and the self-guards (ADR-069) are enforced per user inside
+ * `bulkUserAction`, and each affected user is audited (ADR-070). Returns a toast
+ * (no navigation) so the list revalidates in place and the bar can clear.
+ */
+export async function action({ request }: Route.ActionArgs) {
+	const formData = await request.formData()
+	const op = formData.get('op')
+	invariantResponse(isBulkOp(op), 'Unknown bulk op', { status: 400 })
+
+	// Map the op to its `user` permission before touching any data, so an
+	// unauthorized request never reaches the mutation.
+	const adminId = await requireUserWithPermission(request, BULK_OPS[op].permission)
+	const actor = await prisma.user.findUniqueOrThrow({
+		where: { id: adminId },
+		select: { id: true, email: true, username: true, name: true },
+	})
+
+	const userIds = formData.getAll('userId').map(String).filter(Boolean)
+	const result = await bulkUserAction({ op, userIds, actor })
+
+	return data(
+		{ status: 'success' } as const,
+		{ headers: await createToastHeaders(bulkResultToast(result)) },
+	)
 }
 
 /** A user's display name — their name, falling back to the username. */
@@ -119,6 +209,93 @@ const columns: Array<TableColumn<AdminUser>> = [
 /** `grid-template-columns`: User flexes widest, Roles flexes, the rest hug. */
 const columnTemplate = 'minmax(0,1.5fr) minmax(0,1fr) max-content max-content'
 
+/** The slice of {@link useRowSelection} the bulk-action bar drives. */
+type BarSelection = Pick<
+	ReturnType<typeof useRowSelection>,
+	'count' | 'selected' | 'clear'
+>
+
+/**
+ * The selection toolbar shown above the Table once a row is checked: the count
+ * plus bulk Deactivate / Force log out / Delete and a Clear. It submits the
+ * selected ids + op to this route's `action` via a fetcher (no navigation), then
+ * clears the selection once the op lands. Delete is destructive, so it takes the
+ * double-check confirm. Each op enforces the admin-floor invariant and the
+ * self-guards per user server-side, so a protected row is reported in the toast
+ * rather than blocked here.
+ */
+function BulkActionBar({ selection }: { selection: BarSelection }) {
+	const fetcher = useFetcher<typeof action>()
+	const deleteCheck = useDoubleCheck()
+	const { count, selected, clear } = selection
+	const ids = [...selected]
+	const busy = fetcher.state !== 'idle'
+
+	// Drop the selection once a bulk op lands, so the bar collapses and the freshly
+	// revalidated list shows through.
+	useEffect(() => {
+		if (fetcher.state === 'idle' && fetcher.data?.status === 'success') {
+			clear()
+		}
+	}, [fetcher.state, fetcher.data, clear])
+
+	if (count === 0) return null
+
+	return (
+		<div className="bg-card border-border mb-4 flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3">
+			<span className="text-body-sm font-medium" aria-live="polite">
+				{count} selected
+			</span>
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				onClick={clear}
+				disabled={busy}
+			>
+				Clear
+			</Button>
+			<fetcher.Form method="post" className="ml-auto flex items-center gap-2">
+				{ids.map((id) => (
+					<input key={id} type="hidden" name="userId" value={id} />
+				))}
+				<Button
+					type="submit"
+					name="op"
+					value={'deactivate' satisfies BulkUserOp}
+					variant="outline"
+					size="sm"
+					disabled={busy}
+				>
+					Deactivate
+				</Button>
+				<Button
+					type="submit"
+					name="op"
+					value={'force-logout' satisfies BulkUserOp}
+					variant="outline"
+					size="sm"
+					disabled={busy}
+				>
+					Force log out
+				</Button>
+				<Button
+					variant="destructive"
+					size="sm"
+					disabled={busy}
+					{...deleteCheck.getButtonProps({
+						type: 'submit',
+						name: 'op',
+						value: 'delete' satisfies BulkUserOp,
+					})}
+				>
+					{deleteCheck.doubleCheck ? 'Confirm delete' : 'Delete'}
+				</Button>
+			</fetcher.Form>
+		</div>
+	)
+}
+
 export function HydrateFallback() {
 	return (
 		<main className="container max-w-(--shell-max) py-8">
@@ -148,6 +325,9 @@ export function HydrateFallback() {
 export default function AdminUsersIndex({ loaderData }: Route.ComponentProps) {
 	const { users, total, page, pageCount, search } = loaderData
 	const submit = useSubmit()
+	// Selection lives here (not in the Table) so the bulk-action bar can read it
+	// too; it's keyed on the current page's ids and prunes itself across pages.
+	const selection = useRowSelection(users.map((user) => user.id))
 
 	// Auto-submit the GET filter as the admin types (debounced), so the URL stays
 	// the source of truth and the list is shareable — mirroring the cache admin.
@@ -188,12 +368,16 @@ export default function AdminUsersIndex({ loaderData }: Route.ComponentProps) {
 				{total} {total === 1 ? 'user' : 'users'}
 			</p>
 
+			<BulkActionBar selection={selection} />
+
 			<Table
 				aria-label="Users"
 				columns={columns}
 				data={users}
 				getRowId={(user) => user.id}
 				columnTemplate={columnTemplate}
+				selection={selection}
+				getRowLabel={(user) => displayName(user)}
 				emptyState={{
 					icon: <Icon name="avatar" className="size-6" />,
 					title: search ? 'No matching users' : 'No users yet',

@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createRoutesStub } from 'react-router'
 import { expect, test } from 'vitest'
 import {
@@ -124,4 +125,46 @@ test('omits the Pagination footer on a single page', async () => {
 	expect(
 		screen.queryByRole('navigation', { name: /pagination/i }),
 	).toBeNull()
+})
+
+test('offers a tri-state select-all and per-row selection checkboxes', async () => {
+	renderAdminUsers(
+		listData({
+			users: [
+				makeAdminUser({ id: 'a', name: 'Ada Lovelace' }),
+				makeAdminUser({ id: 'g', name: 'Grace Hopper', email: 'grace@x.com' }),
+			],
+			total: 2,
+		}),
+	)
+
+	// The header carries the select-all; each row carries its own labelled checkbox.
+	expect(
+		await screen.findByRole('checkbox', { name: /select all rows/i }),
+	).toBeInTheDocument()
+	expect(
+		screen.getByRole('checkbox', { name: /select ada lovelace/i }),
+	).toBeInTheDocument()
+})
+
+test('selecting a row reveals the bulk bar with the three offboarding actions', async () => {
+	const user = userEvent.setup()
+	renderAdminUsers(
+		listData({
+			users: [makeAdminUser({ id: 'a', name: 'Ada Lovelace' })],
+		}),
+	)
+
+	// The bar is hidden until something is selected.
+	expect(screen.queryByText(/1 selected/i)).toBeNull()
+
+	await user.click(
+		await screen.findByRole('checkbox', { name: /select ada lovelace/i }),
+	)
+
+	expect(await screen.findByText(/1 selected/i)).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /deactivate/i })).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /force log out/i })).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+	expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument()
 })

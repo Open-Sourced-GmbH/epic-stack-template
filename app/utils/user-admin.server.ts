@@ -442,6 +442,78 @@ export async function sendUserPasswordReset({
 	return { status: response.status }
 }
 
+/** A destructive bulk operation the user list applies to a selected set at once. */
+export type BulkUserOp = 'deactivate' | 'force-logout' | 'delete'
+
+/**
+ * The outcome of a {@link bulkUserAction}: every selected user is tallied into
+ * exactly one bucket. `succeeded` applied cleanly, `blocked` was refused by the
+ * admin-floor invariant (would strand the last capable admin), `skipped` was a
+ * self-targeting destructive action the self-guards refuse. The route maps this
+ * to a single explanatory toast.
+ */
+export type BulkUserResult = {
+	op: BulkUserOp
+	succeeded: number
+	blocked: number
+	skipped: number
+}
+
+/**
+ * Apply a destructive `op` to each user in `userIds` (EPT-95) by replaying the
+ * single-user data-layer operation per row — so the **admin-floor invariant** and
+ * the self-action guards (ADR-069) hold across the whole batch, and every affected
+ * user still gets its own Audit Event (ADR-070). Applying one row at a time means
+ * the floor is re-checked against the running, post-each-change world: a batch that
+ * would remove the last capable admin is partially applied (the rows that keep the
+ * floor land; the one that would breach it is counted `blocked`) and **never** drops
+ * below one. A self-targeting `deactivate`/`delete` is counted `skipped` while the
+ * rest of the batch proceeds. `force-logout` has no floor or self guard, so every
+ * row succeeds. Returns the per-bucket tally for the caller's toast.
+ */
+export async function bulkUserAction({
+	op,
+	userIds,
+	actor,
+}: {
+	op: BulkUserOp
+	userIds: string[]
+	actor: AuditActor
+}): Promise<BulkUserResult> {
+	const result: BulkUserResult = { op, succeeded: 0, blocked: 0, skipped: 0 }
+
+	// Sequential, not parallel: each op's floor assert must see the effect of the
+	// previous one, so a batch can never race two reads past the floor at once.
+	for (const userId of userIds) {
+		try {
+			if (op === 'deactivate') {
+				await setUserDeactivated({ userId, deactivated: true, actor })
+			} else if (op === 'force-logout') {
+				await revokeUserSessions({ userId, actor })
+			} else {
+				await deleteUser({ userId, actor })
+			}
+			result.succeeded++
+		} catch (error) {
+			// The floor invariant and the self-guards are the expected per-row
+			// rejections — bucket them and keep going so one protected row never aborts
+			// the rest of the batch. Anything else is a real fault: rethrow.
+			if (error instanceof AdminFloorError) {
+				result.blocked++
+			} else if (
+				error instanceof SelfDeactivationError ||
+				error instanceof SelfDeletionError
+			) {
+				result.skipped++
+			} else {
+				throw error
+			}
+		}
+	}
+
+	return result
+}
+
 /**
  * Set a user's roles to exactly `roleNames` (the first user mutation, EPT-88).
  * Names resolve to **existing** roles only — a name with no matching `Role` row is

@@ -8,6 +8,7 @@ import {
 	AdminFloorError,
 	SelfDeactivationError,
 	SelfDeletionError,
+	bulkUserAction,
 	deleteUser,
 	getUsersForAdmin,
 	revokeUserSessions,
@@ -464,6 +465,111 @@ test('deletion is allowed while another capable admin remains', async () => {
 			where: { id: first.id },
 			select: { id: true },
 		}),
+	).toBeNull()
+})
+
+test('bulkUserAction force-logs-out every selected user, counting the successes', async () => {
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const a = await makeReader()
+	const b = await makeReader()
+	await createSessionFor(a.id)
+	await createSessionFor(b.id)
+
+	const result = await bulkUserAction({
+		op: 'force-logout',
+		userIds: [a.id, b.id],
+		actor,
+	})
+
+	expect(result).toMatchObject({ op: 'force-logout', succeeded: 2, blocked: 0, skipped: 0 })
+	expect(await sessionCountFor(a.id)).toBe(0)
+	expect(await sessionCountFor(b.id)).toBe(0)
+})
+
+test('bulkUserAction deactivates every selected user and audits each one', async () => {
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const a = await makeReader()
+	const b = await makeReader()
+
+	const result = await bulkUserAction({
+		op: 'deactivate',
+		userIds: [a.id, b.id],
+		actor,
+	})
+
+	expect(result).toMatchObject({ op: 'deactivate', succeeded: 2 })
+	expect(await deactivatedAtOf(a.id)).toBeInstanceOf(Date)
+	expect(await deactivatedAtOf(b.id)).toBeInstanceOf(Date)
+	// One audit event per affected user.
+	const { events } = await getAuditEvents()
+	const deactivated = events.filter((e) => e.event === 'user.deactivated')
+	expect(deactivated.map((e) => e.targetId).sort()).toEqual([a.id, b.id].sort())
+})
+
+test('bulkUserAction deletes every selected user, keeping the floor and counting', async () => {
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const a = await makeReader()
+	const b = await makeReader()
+
+	const result = await bulkUserAction({
+		op: 'delete',
+		userIds: [a.id, b.id],
+		actor,
+	})
+
+	expect(result).toMatchObject({ op: 'delete', succeeded: 2, blocked: 0, skipped: 0 })
+	expect(
+		await prisma.user.count({ where: { id: { in: [a.id, b.id] } } }),
+	).toBe(0)
+})
+
+test('bulkUserAction holds the admin floor across the batch (partial apply, never below one)', async () => {
+	// Two capable admins; a non-admin actor deletes BOTH in one batch. The first
+	// delete leaves one capable admin (floor holds), the second would strand the
+	// system — so it is blocked, never silently dropping below one.
+	const first = await makeAdmin()
+	const second = await makeAdmin()
+	const other = await makeReader()
+	const actor = await actorFor(other)
+
+	const result = await bulkUserAction({
+		op: 'delete',
+		userIds: [first.id, second.id],
+		actor,
+	})
+
+	expect(result).toMatchObject({ op: 'delete', succeeded: 1, blocked: 1, skipped: 0 })
+	// Exactly one of the two admins survives — the floor never breached.
+	expect(
+		await prisma.user.count({ where: { id: { in: [first.id, second.id] } } }),
+	).toBe(1)
+})
+
+test('bulkUserAction skips a self-targeting destructive action, applying the rest', async () => {
+	// The acting admin selects themselves plus another user for deletion. Another
+	// capable admin exists so the floor is not the blocker — the self-guard skips
+	// the admin's own row while the other delete still lands.
+	const admin = await makeAdmin()
+	await makeAdmin() // keeps the floor so only the self-guard is in play
+	const actor = await actorFor(admin)
+	const other = await makeReader()
+
+	const result = await bulkUserAction({
+		op: 'delete',
+		userIds: [admin.id, other.id],
+		actor,
+	})
+
+	expect(result).toMatchObject({ op: 'delete', succeeded: 1, blocked: 0, skipped: 1 })
+	// The admin survived their own batch; the other user is gone.
+	expect(
+		await prisma.user.findUnique({ where: { id: admin.id }, select: { id: true } }),
+	).not.toBeNull()
+	expect(
+		await prisma.user.findUnique({ where: { id: other.id }, select: { id: true } }),
 	).toBeNull()
 })
 
