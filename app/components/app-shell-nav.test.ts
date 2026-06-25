@@ -3,8 +3,11 @@ import { isSectionActive, resolveNavbar } from './app-shell-nav.ts'
 
 // The navbar's visibility is a pure function of auth state, role, and variant —
 // table-driven so every cell of the matrix is pinned (ADR-068 §navbar).
-const sectionsOf = (variant: 'full' | 'minimal', isLoggedIn: boolean, isAdmin: boolean) =>
-	resolveNavbar({ variant, isLoggedIn, isAdmin }).productLinks.map((l) => l.section)
+const sectionsOf = (
+	variant: 'full' | 'minimal' | 'marketing',
+	isLoggedIn: boolean,
+	isAdmin: boolean,
+) => resolveNavbar({ variant, isLoggedIn, isAdmin }).productLinks.map((l) => l.section)
 
 test('full + logged-out: Blog only, a Log In button, accent picker present', () => {
 	const nav = resolveNavbar({ variant: 'full', isLoggedIn: false, isAdmin: false })
@@ -25,6 +28,31 @@ test('full + logged-in admin: Blog + Admin + avatar', () => {
 	expect(nav.productLinks.map((l) => l.section)).toEqual(['blog', 'admin'])
 	expect(nav.account).toBe('avatar')
 	expect(nav.showAccentPicker).toBe(true)
+})
+
+test('marketing + logged-out: Über + Blog links, a guest CTA, accent picker present', () => {
+	const nav = resolveNavbar({
+		variant: 'marketing',
+		isLoggedIn: false,
+		isAdmin: false,
+	})
+	expect(nav.productLinks.map((l) => l.section)).toEqual(['about', 'blog'])
+	expect(nav.account).toBe('cta')
+	expect(nav.showAccentPicker).toBe(true)
+})
+
+test('marketing + logged-in: Über + Blog links, the avatar, accent picker present', () => {
+	for (const isAdmin of [false, true]) {
+		const nav = resolveNavbar({
+			variant: 'marketing',
+			isLoggedIn: true,
+			isAdmin,
+		})
+		// Marketing IA never gates an Admin top link — admin is reached elsewhere.
+		expect(nav.productLinks.map((l) => l.section)).toEqual(['about', 'blog'])
+		expect(nav.account).toBe('avatar')
+		expect(nav.showAccentPicker).toBe(true)
+	}
 })
 
 test('minimal: no links, no avatar/login, no accent picker — regardless of auth', () => {

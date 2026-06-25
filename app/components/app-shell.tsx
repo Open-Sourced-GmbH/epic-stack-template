@@ -19,7 +19,8 @@ import { UserDropdown } from './user-dropdown.tsx'
  * section layout wraps its outlet with this; `root.tsx` no longer renders any
  * generic chrome (ADR-068), so every surface owns its frame explicitly. The
  * navbar variant drives what the chrome shows — `full` is the whole-product
- * bar; `minimal` is the auth pass-through.
+ * bar (account/admin), `marketing` is the public bar (landing/blog), and
+ * `minimal` is the auth pass-through.
  *
  * The sidebar slot is unused on single-page surfaces like the public blog; the
  * shared `Sidebar` that fills it for account/admin lands in a later slice.
@@ -129,6 +130,11 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 					{nav.account === 'login' ? (
 						<Button asChild variant="default">
 							<Link to="/login">Log In</Link>
+						</Button>
+					) : null}
+					{nav.account === 'cta' ? (
+						<Button asChild variant="default">
+							<Link to="/signup">Los geht&apos;s</Link>
 						</Button>
 					) : null}
 				</div>

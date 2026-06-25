@@ -8,14 +8,22 @@
  * thin projection of these decisions.
  */
 
-/** `full` is the whole-product chrome; `minimal` is the auth pass-through. */
-export type NavbarVariant = 'full' | 'minimal'
+/**
+ * `full` is the whole-product chrome (account/admin work surfaces); `marketing`
+ * is the public product chrome (landing/blog); `minimal` is the auth
+ * pass-through.
+ */
+export type NavbarVariant = 'full' | 'minimal' | 'marketing'
 
 /** The product sections the navbar can link to. */
-export type NavSection = 'blog' | 'admin'
+export type NavSection = 'about' | 'blog' | 'admin'
 
-/** What the navbar's right-cluster identity slot shows. */
-export type NavbarAccount = 'avatar' | 'login' | 'none'
+/**
+ * What the navbar's right-cluster identity slot shows: the avatar dropdown when
+ * logged in, a Log In button (`full` guest), the „Los geht's" guest CTA
+ * (`marketing` guest), or nothing (`minimal`).
+ */
+export type NavbarAccount = 'avatar' | 'login' | 'cta' | 'none'
 
 export type ProductLink = {
 	/** Stable key + active-section identity. */
@@ -28,6 +36,13 @@ export type ProductLink = {
 	 * (Admin links to `/admin/blog` but owns the whole `/admin` section).
 	 */
 	match: string
+}
+
+const ABOUT_LINK: ProductLink = {
+	section: 'about',
+	to: '/about',
+	label: 'Über',
+	match: '/about',
 }
 
 const BLOG_LINK: ProductLink = {
@@ -56,6 +71,9 @@ export type NavbarVisibility = {
  * - `full`: Blog always, Admin only for the admin role; avatar when logged in
  *   else a Log In button; the accent picker is always present (the
  *   whole-product accent showcase, ADR-062/067).
+ * - `marketing` (landing/blog): the public product links Über + Blog; avatar
+ *   when logged in else the „Los geht's" guest CTA (→ signup); the accent picker
+ *   rides along on desktop, consistent with `full`.
  * - `minimal` (auth): logo + theme toggle only — no links, no identity slot, no
  *   accent picker, whatever the auth state (the ADR-062/067 accent boundary).
  */
@@ -70,6 +88,13 @@ export function resolveNavbar({
 }): NavbarVisibility {
 	if (variant === 'minimal') {
 		return { productLinks: [], account: 'none', showAccentPicker: false }
+	}
+	if (variant === 'marketing') {
+		return {
+			productLinks: [ABOUT_LINK, BLOG_LINK],
+			account: isLoggedIn ? 'avatar' : 'cta',
+			showAccentPicker: true,
+		}
 	}
 	return {
 		productLinks: isAdmin ? [BLOG_LINK, ADMIN_LINK] : [BLOG_LINK],

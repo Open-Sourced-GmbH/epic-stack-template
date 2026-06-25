@@ -159,15 +159,24 @@ test('page 2 hides the hero and shows the pager', async () => {
 	expect(screen.queryByText('Post 7')).toBeNull()
 })
 
-test('renders inside the unified AppShell navbar (full variant)', async () => {
+test('renders inside the unified AppShell navbar (marketing variant)', async () => {
 	renderBlog(['/blog'], true)
 
 	const nav = await screen.findByRole('navigation', { name: 'Primary' })
 	expect(nav).toBeInTheDocument()
-	// Full variant, logged out: the Blog product link and a Log In button.
+	// Marketing variant, logged out: the Über + Blog product links and the
+	// guest CTA (→ signup), not the `full` Log In button.
+	expect(within(nav).getByRole('link', { name: 'Über' })).toHaveAttribute(
+		'href',
+		'/about',
+	)
 	expect(within(nav).getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/blog',
 	)
-	expect(screen.getByRole('link', { name: 'Log In' })).toBeInTheDocument()
+	expect(screen.getByRole('link', { name: /los geht's/i })).toHaveAttribute(
+		'href',
+		'/signup',
+	)
+	expect(screen.queryByRole('link', { name: 'Log In' })).toBeNull()
 })
