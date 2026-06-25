@@ -1,4 +1,11 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { type Prisma } from '@prisma/client'
+import { adminFloorHolds } from './admin-floor.ts'
+import {
+	type AuditActor,
+	labelForActor,
+	recordAuditEvent,
+} from './audit.server.ts'
 import { prisma } from './db.server.ts'
 
 /**
@@ -139,4 +146,135 @@ export async function getUsersForAdmin({
 		pageCount: Math.max(1, Math.ceil(total / perPage)),
 		search: term,
 	}
+}
+
+/**
+ * Thrown when a role change would breach the admin-floor invariant (ADR-069):
+ * dropping the system below one user who can manage both users and roles. The
+ * route action catches this and surfaces the explanatory blocked-operation dialog
+ * rather than letting it become a generic 500.
+ */
+export class AdminFloorError extends Error {
+	constructor(
+		message = 'This change would remove the last administrator who can manage users and roles.',
+	) {
+		super(message)
+		this.name = 'AdminFloorError'
+	}
+}
+
+/**
+ * Set a user's roles to exactly `roleNames` (the first user mutation, EPT-88).
+ * Names resolve to **existing** roles only — a name with no matching `Role` row is
+ * dropped (the editor offers existing roles, never free-text create). The diff
+ * against the user's current roles yields the grants/revokes, each recorded as an
+ * Audit Event (ADR-070).
+ *
+ * Guarded by the admin-floor invariant (ADR-069): the assert runs inside the same
+ * transaction over the *post-change* world, so a revoke that would remove the last
+ * capable admin throws {@link AdminFloorError} and rolls the change back. Only a
+ * revoke can breach the floor, but the assert runs unconditionally to keep the
+ * rule in one place. Returns the applied delta for the caller's response/toast.
+ */
+export async function setUserRoles({
+	userId,
+	roleNames,
+	actor,
+}: {
+	userId: string
+	roleNames: string[]
+	actor: AuditActor
+}): Promise<{ added: string[]; removed: string[] }> {
+	const { target, added, removed } = await prisma.$transaction(async (tx) => {
+		const target = await tx.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				name: true,
+				username: true,
+				email: true,
+				roles: {
+					select: {
+						id: true,
+						name: true,
+						permissions: { select: { entity: true, access: true } },
+					},
+				},
+			},
+		})
+		invariantResponse(target, 'User not found', { status: 404 })
+
+		// Resolve to existing roles only; carry their permissions for the floor check.
+		const nextRoles = await tx.role.findMany({
+			where: { name: { in: roleNames } },
+			select: {
+				id: true,
+				name: true,
+				permissions: { select: { entity: true, access: true } },
+			},
+		})
+
+		const currentNames = new Set(target.roles.map((r) => r.name))
+		const nextNames = new Set(nextRoles.map((r) => r.name))
+		const added = nextRoles
+			.filter((r) => !currentNames.has(r.name))
+			.map((r) => r.name)
+		const removed = target.roles
+			.filter((r) => !nextNames.has(r.name))
+			.map((r) => r.name)
+
+		// Nothing changed — skip the write (and the floor check) entirely.
+		if (added.length === 0 && removed.length === 0) {
+			return { target, added, removed }
+		}
+
+		// Assert the floor only when *this change* would breach it: it must have held
+		// before but not after. (An already-floorless system — e.g. a fresh DB with no
+		// admin — must not freeze every unrelated edit.) Only the target's capability
+		// can change, so build both worlds from the other users plus the target's
+		// current vs. proposed roles.
+		const others = await tx.user.findMany({
+			where: { id: { not: userId } },
+			select: {
+				roles: { select: { permissions: { select: { entity: true, access: true } } } },
+			},
+		})
+		const heldBefore = adminFloorHolds([...others, { roles: target.roles }])
+		const holdsAfter = adminFloorHolds([...others, { roles: nextRoles }])
+		if (heldBefore && !holdsAfter) {
+			throw new AdminFloorError()
+		}
+
+		await tx.user.update({
+			where: { id: userId },
+			data: { roles: { set: nextRoles.map((r) => ({ id: r.id })) } },
+		})
+
+		return { target, added, removed }
+	})
+
+	// Record the trail through the one audit seam (append-only, so a post-commit
+	// write is fine — the role change is already durable). The writes are
+	// independent, so fan them out together.
+	const targetRef = { id: target.id, type: 'user', label: labelForActor(target) }
+	await Promise.all([
+		...added.map((role) =>
+			recordAuditEvent({
+				event: 'role.granted',
+				actor,
+				target: targetRef,
+				details: { role },
+			}),
+		),
+		...removed.map((role) =>
+			recordAuditEvent({
+				event: 'role.revoked',
+				actor,
+				target: targetRef,
+				details: { role },
+			}),
+		),
+	])
+
+	return { added, removed }
 }

@@ -15,6 +15,13 @@ export type TagInputProps = {
 	defaultValue?: string[]
 	/** Fires with the full selection whenever it changes. */
 	onChange?: (tags: string[]) => void
+	/**
+	 * Offer the "Create «query»" row for a typed name that isn't an existing
+	 * suggestion. Set `false` to resolve to existing options only — e.g. assigning
+	 * a user one of the existing roles, where inventing a role makes no sense.
+	 * @default true
+	 */
+	allowCreate?: boolean
 	id?: string
 	placeholder?: string
 	disabled?: boolean
@@ -51,6 +58,7 @@ export function TagInput({
 	value,
 	defaultValue = [],
 	onChange,
+	allowCreate = true,
 	id,
 	placeholder = 'Add a tag…',
 	disabled = false,
@@ -80,6 +88,7 @@ export function TagInput({
 	// Offer "Create" only when the typed name is real, not already chosen, and not
 	// already an exact existing option (then the user reuses rather than creates).
 	const canCreate =
+		allowCreate &&
 		qSlug !== '' &&
 		!selectedSlugs.has(qSlug) &&
 		!matches.some((s) => slugify(s) === qSlug)

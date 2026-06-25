@@ -66,6 +66,29 @@ test('clicking an existing suggestion selects it (no duplicate create)', async (
 	expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
 })
 
+test('allowCreate=false suppresses the Create row (resolve-to-existing only)', async () => {
+	const user = userEvent.setup()
+	render(
+		<TagInput
+			aria-label="Roles"
+			suggestions={['admin', 'user']}
+			allowCreate={false}
+		/>,
+	)
+
+	const input = screen.getByRole('combobox', { name: 'Roles' })
+	// A name that matches an existing suggestion still opens the menu…
+	await user.type(input, 'adm')
+	expect(
+		within(screen.getByRole('listbox')).getByRole('option', { name: 'admin' }),
+	).toBeInTheDocument()
+
+	// …but a brand-new name offers nothing — no Create row, so the menu closes.
+	await user.clear(input)
+	await user.type(input, 'brand-new-role')
+	expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+})
+
 test('a slug already selected is never added twice', async () => {
 	const user = userEvent.setup()
 	const { container } = render(<TagInput name="tags" aria-label="Tags" />)

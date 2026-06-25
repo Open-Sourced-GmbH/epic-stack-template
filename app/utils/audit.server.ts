@@ -51,7 +51,7 @@ export type AuditTarget = {
  * the first present. Captured at write time so the trail survives the user's
  * later deletion (ADR-070).
  */
-function labelForActor(actor: AuditActor): string {
+export function labelForActor(actor: AuditActor): string {
 	return actor.name ?? actor.username ?? actor.email
 }
 
