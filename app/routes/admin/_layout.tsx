@@ -41,15 +41,22 @@ const adminGroups: SidebarGroup[] = [
 ]
 
 /**
- * The access-management group — Users now, Roles/Audit as their slices land. It
- * renders only for viewers who can manage access (`read:user:any`); a plain user
- * who somehow reaches an admin surface never sees a link they'd be 403'd on. As
- * later Access surfaces ship they add their own items here behind their own
- * permissions (the group itself stays gated on holding *any* of them).
+ * Build the access-management group — Users and Roles now, Audit as its slice
+ * lands. Each item renders only for a viewer holding *its own* read permission, so
+ * a plain user who somehow reaches an admin surface never sees a link they'd be
+ * 403'd on, and the group itself disappears when it would be empty.
  */
-const accessGroup: SidebarGroup = {
-	label: 'Access',
-	items: [{ to: '/admin/users', label: 'Users', icon: 'avatar' }],
+function accessGroupFor(
+	user: ReturnType<typeof useOptionalUser>,
+): SidebarGroup | null {
+	const items: SidebarGroup['items'] = []
+	if (userHasPermission(user, 'read:user:any')) {
+		items.push({ to: '/admin/users', label: 'Users', icon: 'avatar' })
+	}
+	if (userHasPermission(user, 'read:role:any')) {
+		items.push({ to: '/admin/roles', label: 'Roles', icon: 'lock-closed' })
+	}
+	return items.length ? { label: 'Access', items } : null
 }
 
 /**
@@ -67,11 +74,11 @@ export default function AdminLayout() {
 		.map((m) => (m.handle as AdminHeaderHandle | undefined)?.adminHeader)
 		.find(Boolean)
 
-	// Show the Access group only to viewers who can manage access; the route
+	// Show each Access link only to viewers who can manage that surface; the route
 	// guards enforce it server-side, this just hides the link for everyone else.
 	const user = useOptionalUser()
-	const canManageAccess = userHasPermission(user, 'read:user:any')
-	const groups = canManageAccess ? [...adminGroups, accessGroup] : adminGroups
+	const accessGroup = accessGroupFor(user)
+	const groups = accessGroup ? [...adminGroups, accessGroup] : adminGroups
 
 	return (
 		<AppShell variant="full" sidebarGroups={groups} sidebarLabel="Admin">

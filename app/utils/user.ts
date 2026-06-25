@@ -30,7 +30,7 @@ export function useUser() {
 // the database (and the seed) must mirror them. The types are derived from the
 // arrays so the type and the runtime list cannot drift.
 export const permissionActions = ['create', 'read', 'update', 'delete'] as const
-export const permissionEntities = ['user', 'post', 'audit'] as const
+export const permissionEntities = ['user', 'post', 'audit', 'role'] as const
 export const permissionAccesses = ['own', 'any'] as const
 
 export type PermissionAction = (typeof permissionActions)[number]
@@ -50,6 +50,12 @@ export const entityAccesses = {
 	// The audit log is an admin-only investigation surface (ADR-070): never
 	// owner-scoped, so it carries `any` alone (`read:audit:any` for the viewer).
 	audit: ['any'],
+	// Roles are editable RBAC data (ADR-069): you manage *the* roles or none, so
+	// the entity is never owner-scoped — `any` alone, generating `*:role:any`.
+	// This is also the second half of the admin-floor capability (`role:any`),
+	// which `admin-floor.ts` picks up automatically now that `role` is a catalog
+	// entity.
+	role: ['any'],
 } as const satisfies Record<PermissionEntity, ReadonlyArray<PermissionAccess>>
 
 // The set of Roles a user can hold, named once here (the database `Role` rows

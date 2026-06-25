@@ -163,6 +163,12 @@ model Role {
   name        String @unique
   description String @default("")
 
+  // Whether this is a built-in (bootstrap-seeded) role — `user`/`admin` (ADR-069).
+  // System roles are protected: they cannot be renamed or deleted through the UI,
+  // and the seed reconciles this flag but never overwrites their (now DB-owned)
+  // permission grants. Custom roles (created through the UI) default to false.
+  system Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

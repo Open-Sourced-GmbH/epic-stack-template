@@ -10,9 +10,11 @@ function role(...entities: string[]) {
 	return { permissions: entities.map((entity) => ({ entity, access: 'any' })) }
 }
 
-test('requiredAdminCapabilities are catalog entities (user today, role once it lands)', () => {
-	// `user` is in the live catalog; `post`/`audit` are never part of the floor.
+test('requiredAdminCapabilities are the catalog floor entities (user + role)', () => {
+	// Both halves of the ADR-069 capability are live catalog entities now that
+	// `role` has landed (EPT-89); `post`/`audit` are never part of the floor.
 	expect(requiredAdminCapabilities).toContain('user')
+	expect(requiredAdminCapabilities).toContain('role')
 	expect(requiredAdminCapabilities).not.toContain('post')
 	expect(requiredAdminCapabilities).not.toContain('audit')
 })

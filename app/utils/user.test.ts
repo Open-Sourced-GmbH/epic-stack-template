@@ -120,6 +120,21 @@ test('post is admin-authored content: every action at :any, never :own', () => {
 	expect(postPerms.some((p) => p.access === roleGrantedAccess.user)).toBe(false)
 })
 
+test('role is an admin-only entity: every action at :any, never :own', () => {
+	// The `role` entity (ADR-069) is never owner-scoped — you manage *the* roles or
+	// none, so it carries `any` alone, generating `*:role:any` and no `role:own`.
+	expect(entityAccesses.role).toEqual(['any'])
+
+	const rolePerms = getPermissionMatrix().filter((p) => p.entity === 'role')
+	// Only the admin role (`:any`) holds the role-management permissions; there is
+	// no `role:own` for the `user` role to pick up.
+	expect(rolePerms.every((p) => p.access === roleGrantedAccess.admin)).toBe(true)
+	expect([...rolePerms.map((p) => p.action)].sort()).toEqual(
+		[...permissionActions].sort(),
+	)
+	expect(rolePerms.some((p) => p.access === roleGrantedAccess.user)).toBe(false)
+})
+
 test('every Role has a granted access level', () => {
 	for (const name of roleNames) {
 		expect(permissionAccesses).toContain(roleGrantedAccess[name])
