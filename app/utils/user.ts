@@ -30,7 +30,7 @@ export function useUser() {
 // the database (and the seed) must mirror them. The types are derived from the
 // arrays so the type and the runtime list cannot drift.
 export const permissionActions = ['create', 'read', 'update', 'delete'] as const
-export const permissionEntities = ['user', 'post'] as const
+export const permissionEntities = ['user', 'post', 'audit'] as const
 export const permissionAccesses = ['own', 'any'] as const
 
 export type PermissionAction = (typeof permissionActions)[number]
@@ -47,6 +47,9 @@ export type PermissionAccess = (typeof permissionAccesses)[number]
 export const entityAccesses = {
 	user: ['own', 'any'],
 	post: ['any'],
+	// The audit log is an admin-only investigation surface (ADR-070): never
+	// owner-scoped, so it carries `any` alone (`read:audit:any` for the viewer).
+	audit: ['any'],
 } as const satisfies Record<PermissionEntity, ReadonlyArray<PermissionAccess>>
 
 // The set of Roles a user can hold, named once here (the database `Role` rows

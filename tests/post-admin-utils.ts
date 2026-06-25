@@ -5,18 +5,23 @@ import { createUser } from './db-utils.ts'
 import { getSessionCookieHeader } from './utils.ts'
 
 /**
- * Shared scaffolding for the Post admin's server tests (`/admin/blog` list +
- * editor action). The test DB is migrated but **not seeded**, so the `post`
- * Permission rows (derived from the RBAC vocabulary) don't exist yet — these
- * helpers upsert them and wire up the signed-in users the guards expect.
+ * Shared scaffolding for the admin server tests (`/admin/*` lists + actions). The
+ * test DB is migrated but **not seeded**, so the `Permission` rows (derived from
+ * the RBAC vocabulary) don't exist yet — these helpers upsert them and wire up
+ * the signed-in users the guards expect.
  */
 
 let roleCounter = 0
 
-/** A user holding every `post` permission — the admin authoring role. */
+/**
+ * A user holding every `any`-access permission — a full admin, mirroring how the
+ * real `admin` role is seeded (`roleGrantedAccess.admin === 'any'`). This is a
+ * superset of the `post` permissions the authoring tests need and also includes
+ * `read:audit:any`, so audit/user/role admin surfaces can reuse it.
+ */
 export async function makeAdmin() {
-	const postPerms = getPermissionMatrix().filter((p) => p.entity === 'post')
-	// Resolve the `post` Permission rows and attach them in a single atomic write.
+	const adminPerms = getPermissionMatrix().filter((p) => p.access === 'any')
+	// Resolve the Permission rows and attach them in a single atomic write.
 	// `connectOrCreate` (rather than a separate upsert-then-connect-by-id) closes
 	// the read-then-connect gap that raced the per-test base-DB copy in
 	// `db-setup.ts` — under full-suite timing the gathered ids could point at rows
@@ -27,9 +32,9 @@ export async function makeAdmin() {
 			...createUser(),
 			roles: {
 				create: {
-					name: `post-admin-${roleCounter++}`,
+					name: `admin-${roleCounter++}`,
 					permissions: {
-						connectOrCreate: postPerms.map((p) => ({
+						connectOrCreate: adminPerms.map((p) => ({
 							where: {
 								action_entity_access: {
 									action: p.action,

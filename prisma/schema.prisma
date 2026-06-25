@@ -31,6 +31,13 @@ model User {
   sessions    Session[]
   connections Connection[]
   passkey     Passkey[]
+
+  // Audit events this user *performed* (the actor side). FK is SetNull on delete
+  // so deleting the user blanks the link but the row's denormalized actorLabel
+  // keeps the trail readable (ADR-070). There is no target back-relation: an
+  // audit target may be a Role/Session set, not just a User, so it is an
+  // un-constrained id+type+label rather than an FK.
+  auditEvents AuditEvent[]
 }
 
 model Post {
@@ -186,6 +193,45 @@ model Verification {
   expiresAt DateTime?
 
   @@unique([target, type])
+}
+
+// An append-only record of a sensitive role/user change (ADR-070). Each row
+// snapshots the actor's and target's identity *labels* alongside the optional
+// keys, so the trail stays readable after the actor or target is deleted — the
+// moment an audit log matters most. Never updated or deleted through the UI.
+model AuditEvent {
+  id String @id @default(cuid())
+
+  // Typed event name, e.g. "role.granted", "user.deactivated". The vocabulary
+  // lives in audit.server.ts (`AuditEventName`); stored as text to stay forward
+  // compatible with new event kinds without a migration.
+  event String
+
+  // Actor (who did it): optional FK + a denormalized identity label captured at
+  // write time. SetNull keeps the row when the actor is later deleted.
+  actor      User?   @relation(fields: [actorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  actorId    String?
+  actorLabel String?
+
+  // Target (what it was done to): an un-constrained id + type discriminator plus
+  // a denormalized label. No FK — a target may be a Role, a Session set, or a
+  // User, so it is not modelled as a single relation.
+  targetId    String?
+  targetType  String?
+  targetLabel String?
+
+  // Structured context as serialized JSON (SQLite has no Json column in this
+  // schema — cf. Verification/Passkey). Read back via audit.server.ts.
+  details String?
+
+  createdAt DateTime @default(now())
+
+  // non-unique foreign key
+  @@index([actorId])
+  // the viewer filters by target and event, and orders by recency
+  @@index([targetId])
+  @@index([event])
+  @@index([createdAt])
 }
 
 model Connection {
