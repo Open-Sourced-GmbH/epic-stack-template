@@ -1,11 +1,14 @@
 import { expect, test } from 'vitest'
+import { getSessionExpirationDate } from '#app/utils/auth.server.ts'
 import { createUser } from '#tests/db-utils.ts'
 import { makeAdmin, makeReader } from '#tests/post-admin-utils.ts'
 import { getAuditEvents } from './audit.server.ts'
 import { prisma } from './db.server.ts'
 import {
 	AdminFloorError,
+	SelfDeactivationError,
 	getUsersForAdmin,
+	setUserDeactivated,
 	setUserRoles,
 } from './user-admin.server.ts'
 
@@ -165,6 +168,133 @@ test('a revoke is allowed while another capable admin remains', async () => {
 
 	await setUserRoles({ userId: first.id, roleNames: [], actor })
 	expect(await roleNamesOf(first.id)).toEqual([])
+})
+
+/** Give `userId` a live session so revocation-on-deactivate is observable. */
+function createSessionFor(userId: string) {
+	return prisma.session.create({
+		select: { id: true },
+		data: { expirationDate: getSessionExpirationDate(), userId },
+	})
+}
+
+async function sessionCountFor(userId: string) {
+	return prisma.session.count({ where: { userId } })
+}
+
+async function deactivatedAtOf(userId: string) {
+	const fresh = await prisma.user.findUniqueOrThrow({
+		where: { id: userId },
+		select: { deactivatedAt: true },
+	})
+	return fresh.deactivatedAt
+}
+
+test('setUserDeactivated sets deactivatedAt and revokes sessions; reactivate clears it', async () => {
+	const user = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	await createSessionFor(user.id)
+
+	await setUserDeactivated({ userId: user.id, deactivated: true, actor })
+	expect(await deactivatedAtOf(user.id)).toBeInstanceOf(Date)
+	// Deactivation logs the user out immediately by dropping their sessions.
+	expect(await sessionCountFor(user.id)).toBe(0)
+
+	await setUserDeactivated({ userId: user.id, deactivated: false, actor })
+	expect(await deactivatedAtOf(user.id)).toBeNull()
+})
+
+test('deactivate then reactivate each write a matching audit event', async () => {
+	const user = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const target = await prisma.user.findUniqueOrThrow({
+		where: { id: user.id },
+		select: { name: true },
+	})
+
+	await setUserDeactivated({ userId: user.id, deactivated: true, actor })
+	await setUserDeactivated({ userId: user.id, deactivated: false, actor })
+
+	const { events } = await getAuditEvents()
+	expect(events.find((e) => e.event === 'user.deactivated')).toMatchObject({
+		targetId: user.id,
+		targetType: 'user',
+		targetLabel: target.name,
+	})
+	expect(events.find((e) => e.event === 'user.reactivated')).toMatchObject({
+		targetId: user.id,
+	})
+})
+
+test('a no-op deactivation writes no audit event', async () => {
+	const user = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+
+	// Already active — reactivating an active user changes nothing.
+	await setUserDeactivated({ userId: user.id, deactivated: false, actor })
+
+	const { events } = await getAuditEvents()
+	expect(events.some((e) => e.event === 'user.reactivated')).toBe(false)
+})
+
+test('self-deactivation is refused', async () => {
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+
+	await expect(
+		setUserDeactivated({ userId: admin.id, deactivated: true, actor }),
+	).rejects.toBeInstanceOf(SelfDeactivationError)
+
+	expect(await deactivatedAtOf(admin.id)).toBeNull()
+})
+
+test('the admin floor blocks deactivating the last capable admin', async () => {
+	const admin = await makeAdmin()
+	// A non-admin actor performs the change so the self-guard isn't what blocks it.
+	const other = await makeReader()
+	const actor = await actorFor(other)
+	await createSessionFor(admin.id)
+
+	await expect(
+		setUserDeactivated({ userId: admin.id, deactivated: true, actor }),
+	).rejects.toBeInstanceOf(AdminFloorError)
+
+	// The transaction rolled back — still active, sessions intact.
+	expect(await deactivatedAtOf(admin.id)).toBeNull()
+	expect(await sessionCountFor(admin.id)).toBe(1)
+})
+
+test('deactivation is allowed while another active admin remains', async () => {
+	const first = await makeAdmin()
+	const second = await makeAdmin()
+	const actor = await actorFor(second)
+
+	await setUserDeactivated({ userId: first.id, deactivated: true, actor })
+	expect(await deactivatedAtOf(first.id)).toBeInstanceOf(Date)
+})
+
+test('deactivation leaves the user’s authored content untouched', async () => {
+	const author = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const post = await prisma.post.create({
+		select: { id: true },
+		data: {
+			title: 'Kept',
+			slug: `kept-${author.id}`,
+			body: 'still here',
+			authorId: author.id,
+		},
+	})
+
+	await setUserDeactivated({ userId: author.id, deactivated: true, actor })
+
+	expect(
+		await prisma.post.findUnique({ where: { id: post.id }, select: { id: true } }),
+	).not.toBeNull()
 })
 
 test('each grant and revoke writes a matching audit event', async () => {

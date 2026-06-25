@@ -8,7 +8,12 @@ import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Alert } from '#app/components/ui/alert.tsx'
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from '#app/components/ui/alert.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import { FormCard } from '#app/components/ui/form-card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Separator } from '#app/components/ui/separator.tsx'
@@ -51,10 +56,12 @@ export async function action({ request }: Route.ActionArgs) {
 	const submission = await parseWithZod(formData, {
 		schema: (intent) =>
 			LoginFormSchema.transform(async (data, ctx) => {
-				if (intent !== null) return { ...data, session: null }
+				if (intent !== null) return { ...data, outcome: null }
 
-				const session = await login(data)
-				if (!session) {
+				const outcome = await login(data)
+				// Only a bad username/password is a credential error; a deactivated
+				// account passes through so the route can show the suspended notice.
+				if (outcome.status === 'invalid') {
 					ctx.addIssue({
 						code: z.ZodIssueCode.custom,
 						message: 'Invalid username or password',
@@ -62,23 +69,29 @@ export async function action({ request }: Route.ActionArgs) {
 					return z.NEVER
 				}
 
-				return { ...data, session }
+				return { ...data, outcome }
 			}),
 		async: true,
 	})
 
-	if (submission.status !== 'success' || !submission.value.session) {
+	if (submission.status !== 'success' || !submission.value.outcome) {
 		return data(
 			{ result: submission.reply({ hideFields: ['password'] }) },
 			{ status: submission.status === 'error' ? 400 : 200 },
 		)
 	}
 
-	const { session, remember, redirectTo } = submission.value
+	const { outcome, remember, redirectTo } = submission.value
+
+	// A deactivated account: the credentials were valid, but there's no session —
+	// render the "account is deactivated" state (story 33) instead of redirecting.
+	if (outcome.status === 'deactivated') {
+		return data({ deactivated: { email: outcome.email } })
+	}
 
 	return handleNewSession({
 		request,
-		session,
+		session: outcome.session,
 		remember: remember ?? false,
 		redirectTo,
 	})
@@ -89,11 +102,15 @@ export default function LoginPage({ actionData }: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const redirectTo = searchParams.get('redirectTo')
 
+	// A deactivated sign-in attempt swaps the whole form for the suspended notice.
+	const deactivated =
+		actionData && 'deactivated' in actionData ? actionData.deactivated : null
+
 	const [form, fields] = useForm({
 		id: 'login-form',
 		constraint: getZodConstraint(LoginFormSchema),
 		defaultValue: { redirectTo },
-		lastResult: actionData?.result,
+		lastResult: actionData && 'result' in actionData ? actionData.result : undefined,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: LoginFormSchema })
 		},
@@ -105,6 +122,10 @@ export default function LoginPage({ actionData }: Route.ComponentProps) {
 	// `--input-invalid` ring — without touching the frozen validation logic.
 	const formErrors = form.errors?.length ? form.errors : null
 	const credentialInvalid = formErrors ? { 'aria-invalid': true as const } : {}
+
+	if (deactivated) {
+		return <DeactivatedNotice email={deactivated.email} />
+	}
 
 	return (
 		<div className="w-full max-w-[360px]">
@@ -210,6 +231,55 @@ export default function LoginPage({ actionData }: Route.ComponentProps) {
 					className="text-brand font-semibold"
 				>
 					Create an account
+				</Link>
+			</p>
+		</div>
+	)
+}
+
+/**
+ * The deactivated sign-in state (story 33): the credentials were valid but the
+ * account is deactivated, so there's no session. Rendered in the minimal auth
+ * shell — an "Access suspended" alert naming the account and reassuring the user
+ * their data is safe, plus a way to reach an admin and to step back to sign-in.
+ */
+function DeactivatedNotice({ email }: { email: string }) {
+	return (
+		<div className="w-full max-w-[380px]">
+			<div className="flex flex-col gap-2 text-center">
+				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					Account access
+				</p>
+				<h1 className="text-h4">This account is deactivated</h1>
+				<p className="text-muted-foreground text-body-sm">
+					An administrator has suspended access to this account.
+				</p>
+			</div>
+
+			<FormCard className="mt-6 p-6 text-left">
+				<Alert tone="error">
+					<AlertTitle>Access suspended</AlertTitle>
+					<AlertDescription>
+						Access for <span className="font-medium">{email}</span> has been
+						suspended. Your data is safe and nothing has been deleted — an
+						administrator can restore access.
+					</AlertDescription>
+				</Alert>
+
+				<div className="mt-6 flex flex-col gap-3">
+					<Button asChild size="wide">
+						<Link to="/support">Contact an administrator</Link>
+					</Button>
+					<Button asChild variant="ghost" size="wide">
+						<Link to="/login">Back to sign in</Link>
+					</Button>
+				</div>
+			</FormCard>
+
+			<p className="text-muted-foreground text-body-sm mt-6 text-center">
+				Need help?{' '}
+				<Link to="/support" className="text-brand font-semibold">
+					Contact support
 				</Link>
 			</p>
 		</div>

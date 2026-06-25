@@ -1,8 +1,64 @@
 import { http, HttpResponse } from 'msw'
 import { describe, expect, test } from 'vitest'
+import { createPassword, createUser } from '#tests/db-utils.ts'
 import { server } from '#tests/mocks/index.ts'
 import { consoleWarn } from '#tests/setup/setup-test-env.ts'
-import { checkIsCommonPassword, getPasswordHashParts } from './auth.server.ts'
+import {
+	checkIsCommonPassword,
+	getPasswordHashParts,
+	login,
+} from './auth.server.ts'
+import { prisma } from './db.server.ts'
+
+/** Create a sign-in-able user with a known password (active unless overridden). */
+function createUserWithPassword(
+	password: string,
+	overrides: Record<string, unknown> = {},
+) {
+	return prisma.user.create({
+		select: { id: true, username: true, email: true },
+		data: {
+			...createUser(),
+			password: { create: createPassword(password) },
+			...overrides,
+		},
+	})
+}
+
+test('login issues a session for an active user with valid credentials', async () => {
+	const password = 'correct horse battery'
+	const user = await createUserWithPassword(password)
+
+	const result = await login({ username: user.username, password })
+
+	expect(result?.status).toBe('success')
+	if (result?.status !== 'success') throw new Error('expected success')
+	expect(result.session.userId).toBe(user.id)
+})
+
+test('login returns invalid (no session) for a wrong password', async () => {
+	const user = await createUserWithPassword('the-real-password')
+
+	const result = await login({ username: user.username, password: 'nope' })
+
+	expect(result?.status).toBe('invalid')
+	expect(await prisma.session.count({ where: { userId: user.id } })).toBe(0)
+})
+
+test('login rejects a deactivated user without creating a session', async () => {
+	const password = 'still-knows-it'
+	const user = await createUserWithPassword(password, {
+		deactivatedAt: new Date('2026-03-01'),
+	})
+
+	const result = await login({ username: user.username, password })
+
+	// The password is still valid, but the auth path refuses a session.
+	expect(result?.status).toBe('deactivated')
+	if (result?.status !== 'deactivated') throw new Error('expected deactivated')
+	expect(result.email).toBe(user.email)
+	expect(await prisma.session.count({ where: { userId: user.id } })).toBe(0)
+})
 
 test('checkIsCommonPassword returns true when password is found in breach database', async () => {
 	const password = 'testpassword'

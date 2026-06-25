@@ -19,6 +19,8 @@ type LoaderData = {
 		roles: string[]
 	}
 	allRoles: string[]
+	/** The signed-in admin's id — drives the self-deactivation guard. */
+	currentUserId: string
 }
 
 function loaderData(overrides: Partial<LoaderData['user']> = {}): LoaderData {
@@ -35,6 +37,8 @@ function loaderData(overrides: Partial<LoaderData['user']> = {}): LoaderData {
 			...overrides,
 		},
 		allRoles: ['admin', 'user'],
+		// A different admin by default, so the self-guard isn't in play.
+		currentUserId: 'admin-self',
 	}
 }
 
@@ -93,6 +97,54 @@ test('the assign combobox offers existing roles without a Create row', async () 
 	// "user" matches; no "Create" affordance (resolve-to-existing only).
 	const options = within(screen.getByRole('listbox')).getAllByRole('option')
 	expect(options.map((o) => o.textContent)).toEqual(['user'])
+})
+
+test('the Account status card offers Deactivate for an active user', async () => {
+	renderDetail(loaderData())
+
+	const card = (await screen.findByText('Account status')).closest('[data-slot="form-card"]')
+	expect(card).not.toBeNull()
+	const button = within(card as HTMLElement).getByRole('button', {
+		name: /deactivate/i,
+	})
+	expect(button).toBeEnabled()
+})
+
+test('the Account status card offers Reactivate for a deactivated user', async () => {
+	renderDetail(loaderData({ deactivatedAt: new Date('2026-03-01') }))
+
+	const card = (await screen.findByText('Account status')).closest('[data-slot="form-card"]')
+	expect(
+		within(card as HTMLElement).getByRole('button', { name: /reactivate/i }),
+	).toBeInTheDocument()
+})
+
+test('you cannot deactivate your own account (control disabled)', async () => {
+	renderDetail({ ...loaderData(), currentUserId: 'user-123' })
+
+	const card = (await screen.findByText('Account status')).closest('[data-slot="form-card"]')
+	expect(
+		within(card as HTMLElement).getByRole('button', { name: /deactivate/i }),
+	).toBeDisabled()
+})
+
+test('a blocked deactivate surfaces the deactivation explanatory dialog', async () => {
+	const user = userEvent.setup()
+	renderDetail(loaderData(), () => ({
+		ok: false,
+		blocked: 'This change would remove the last administrator.',
+		kind: 'deactivation',
+	}))
+
+	const card = (await screen.findByText('Account status')).closest('[data-slot="form-card"]')
+	await user.click(
+		within(card as HTMLElement).getByRole('button', { name: /deactivate/i }),
+	)
+
+	const dialog = await screen.findByRole('dialog')
+	expect(
+		within(dialog).getByText(/can.t deactivate the last admin/i),
+	).toBeInTheDocument()
 })
 
 test('a blocked revoke surfaces the admin-floor explanatory dialog', async () => {

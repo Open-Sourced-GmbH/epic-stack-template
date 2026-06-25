@@ -18,12 +18,21 @@ import { FormCard } from '#app/components/ui/form-card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
 import { Separator } from '#app/components/ui/separator.tsx'
+import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { TagInput } from '#app/components/ui/tag-input.tsx'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '#app/components/ui/tooltip.tsx'
 import { UserAvatar } from '#app/components/user-avatar.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import {
 	AdminFloorError,
+	SelfDeactivationError,
+	setUserDeactivated,
 	setUserRoles,
 } from '#app/utils/user-admin.server.ts'
 import { formatDate } from '../../blog/__feed.tsx'
@@ -40,7 +49,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	// Managing a user's access requires the broad `update:user:any` — the same
 	// permission the mutation guards on, so a viewer who can't change roles never
 	// reaches the editor.
-	await requireUserWithPermission(request, 'update:user:any')
+	const currentUserId = await requireUserWithPermission(
+		request,
+		'update:user:any',
+	)
 
 	// The user and the assignable-role list are independent reads — fire together.
 	const [user, roles] = await Promise.all([
@@ -64,6 +76,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	return {
 		user: { ...user, roles: user.roles.map((r) => r.name) },
 		allRoles: roles.map((r) => r.name),
+		currentUserId,
 	}
 }
 
@@ -78,16 +91,36 @@ export async function action({ params, request }: Route.ActionArgs) {
 		}),
 		request.formData(),
 	])
-	const roleNames = formData.getAll('roles').map(String)
+	const intent = formData.get('intent')
 
 	try {
+		// Account status: deactivate ↔ reactivate (kills sessions, audited).
+		if (intent === 'deactivate' || intent === 'reactivate') {
+			const result = await setUserDeactivated({
+				userId: params.id,
+				deactivated: intent === 'deactivate',
+				actor,
+			})
+			return data({ ok: true as const, ...result })
+		}
+
+		// Default intent: set the user's roles to the submitted set.
+		const roleNames = formData.getAll('roles').map(String)
 		const result = await setUserRoles({ userId: params.id, roleNames, actor })
 		return data({ ok: true as const, ...result })
 	} catch (error) {
-		// The admin-floor invariant (ADR-069) is the one expected rejection — surface
-		// it as the explanatory blocked-operation dialog, not a generic 500.
-		if (error instanceof AdminFloorError) {
-			return data({ ok: false as const, blocked: error.message }, { status: 422 })
+		// The admin-floor invariant and the self-deactivation guard (ADR-069) are the
+		// expected rejections — surface them as the explanatory blocked-operation
+		// dialog (with a context-appropriate title), not a generic 500.
+		if (error instanceof AdminFloorError || error instanceof SelfDeactivationError) {
+			const kind =
+				intent === 'deactivate' || intent === 'reactivate'
+					? ('deactivation' as const)
+					: ('role' as const)
+			return data(
+				{ ok: false as const, blocked: error.message, kind },
+				{ status: 422 },
+			)
 		}
 		throw error
 	}
@@ -118,35 +151,54 @@ function MetaRow({
 	)
 }
 
+/** The blocked-dialog copy for each operation that the admin floor can refuse. */
+const BLOCKED_COPY = {
+	role: {
+		title: 'Can’t remove the last admin',
+		hint: 'grant another account an admin role first, then revoke this one.',
+	},
+	deactivation: {
+		title: 'Can’t deactivate the last admin',
+		hint: 'grant another account an admin role first, then deactivate this one.',
+	},
+} as const
+
+type BlockedKind = keyof typeof BLOCKED_COPY
+
 /**
  * The blocked-operation dialog (GROUNDED-SPEC Surface 2): why the change was
  * refused plus what to do instead. A transient client overlay driven by the
  * action result (ADR-023 keeps it off a route — it's not bookmarkable). Opens
- * whenever the latest submission came back blocked; closing dismisses it.
+ * whenever the latest submission came back blocked; closing dismisses it. The
+ * `kind` (revoke vs. deactivate) selects the title/hint copy, so it always names
+ * the right action.
  */
 function AdminFloorDialog({
+	kind,
 	message,
 	open,
 	onClose,
 }: {
+	kind: BlockedKind
 	message: string
 	open: boolean
 	onClose: () => void
 }) {
+	const { title, hint } = BLOCKED_COPY[kind]
 	return (
 		<Dialog open={open} onOpenChange={(next) => (next ? null : onClose())}>
 			<DialogOverlay />
 			<DialogContent aria-describedby="admin-floor-desc">
 				<div className="text-destructive flex items-center gap-2">
 					<Icon name="lock-closed" className="size-5" aria-hidden />
-					<DialogTitle>Can’t remove the last admin</DialogTitle>
+					<DialogTitle>{title}</DialogTitle>
 				</div>
 				<DialogDescription id="admin-floor-desc" className="mt-2">
 					{message}
 				</DialogDescription>
 				<div className="border-border text-muted-foreground text-body-sm mt-4 rounded-md border p-3">
 					<span className="text-foreground font-medium">What to do instead:</span>{' '}
-					grant another account an admin role first, then revoke this one.
+					{hint}
 				</div>
 				<div className="mt-6 flex justify-end">
 					<DialogClose asChild>
@@ -160,6 +212,15 @@ function AdminFloorDialog({
 	)
 }
 
+/** A blocked action result reduced to its message + which copy to show, or null. */
+function blockedResult(
+	data: { ok: boolean; blocked?: string; kind?: string } | undefined,
+) {
+	if (!data || data.ok || !data.blocked) return null
+	const kind: BlockedKind = data.kind === 'deactivation' ? 'deactivation' : 'role'
+	return { message: data.blocked, kind }
+}
+
 /**
  * The admin user detail (`/admin/users/$id`): an Identity card (avatar +
  * name/email + meta) and a Roles card where assigned roles show as removable
@@ -169,8 +230,9 @@ function AdminFloorDialog({
  * blocked-operation dialog. Admin-only at the loader (`update:user:any`).
  */
 export default function AdminUserDetail({ loaderData }: Route.ComponentProps) {
-	const { user, allRoles } = loaderData
+	const { user, allRoles, currentUserId } = loaderData
 	const fetcher = useFetcher<typeof action>()
+	const statusFetcher = useFetcher<typeof action>()
 
 	// The roles editor is optimistic: local state leads, then reconciles with the
 	// server on every revalidation — so a blocked revoke (server rejects, loader
@@ -189,15 +251,20 @@ export default function AdminUserDetail({ loaderData }: Route.ComponentProps) {
 
 	// The blocked-operation dialog opens on a blocked result and stays open until
 	// dismissed; a fresh submission clears the dismissal so a repeat block reopens
-	// it (the message string alone wouldn't change).
-	const blocked = fetcher.data && !fetcher.data.ok ? fetcher.data.blocked : null
+	// it (the message string alone wouldn't change). Either mutation (roles or
+	// account status) can breach the floor, so read from whichever came back
+	// blocked — the `kind` selects the right title/hint.
+	const blocked =
+		blockedResult(statusFetcher.data) ?? blockedResult(fetcher.data)
 	const [dismissed, setDismissed] = useState(false)
 	useEffect(() => {
 		setDismissed(false)
-	}, [fetcher.data])
+	}, [fetcher.data, statusFetcher.data])
 	const dialogOpen = Boolean(blocked) && !dismissed
 
 	const active = user.deactivatedAt == null
+	const isSelf = user.id === currentUserId
+	const statusPending = statusFetcher.state !== 'idle'
 	const name = displayName(user)
 
 	return (
@@ -262,11 +329,64 @@ export default function AdminUserDetail({ loaderData }: Route.ComponentProps) {
 						allowCreate={false}
 					/>
 				</FormCard>
+
+				<FormCard
+					title="Account status"
+					description={
+						active
+							? 'This account is active and can sign in.'
+							: 'This account is deactivated and cannot sign in.'
+					}
+				>
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-muted-foreground text-body-sm">
+							{active
+								? 'Deactivating ends every active session and blocks sign-in. The account’s content is kept and access can be restored.'
+								: 'Reactivating restores sign-in. No content was lost while deactivated.'}
+						</p>
+						<statusFetcher.Form method="post" className="shrink-0">
+							<input
+								type="hidden"
+								name="intent"
+								value={active ? 'deactivate' : 'reactivate'}
+							/>
+							{isSelf ? (
+								// You can't deactivate your own account — disable the control and
+								// explain why on a focusable span (a disabled button can't trigger
+								// the tooltip itself).
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<span tabIndex={0}>
+												<Button type="button" variant="outline" disabled>
+													Deactivate
+												</Button>
+											</span>
+										</TooltipTrigger>
+										<TooltipContent>
+											You can’t deactivate your own account.
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							) : (
+								<StatusButton
+									type="submit"
+									variant="outline"
+									status={statusPending ? 'pending' : 'idle'}
+									disabled={statusPending}
+								>
+									{active ? 'Deactivate' : 'Reactivate'}
+								</StatusButton>
+							)}
+						</statusFetcher.Form>
+					</div>
+				</FormCard>
 			</div>
 
 			{blocked ? (
 				<AdminFloorDialog
-					message={blocked}
+					kind={blocked.kind}
+					message={blocked.message}
 					open={dialogOpen}
 					onClose={() => setDismissed(true)}
 				/>

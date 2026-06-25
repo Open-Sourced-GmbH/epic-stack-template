@@ -164,6 +164,112 @@ export class AdminFloorError extends Error {
 }
 
 /**
+ * Thrown when an admin tries to deactivate their own account. Self-deactivation is
+ * always refused — it can't strand the admin floor by accident, and locking
+ * yourself out is never the intent. The detail route also hides the control for
+ * your own account, so this is the data-layer backstop.
+ */
+export class SelfDeactivationError extends Error {
+	constructor(message = 'You can’t deactivate your own account.') {
+		super(message)
+		this.name = 'SelfDeactivationError'
+	}
+}
+
+/**
+ * Deactivate (or reactivate) a user (EPT-92). Deactivating stamps
+ * `User.deactivatedAt` **and deletes the user's** `Session` **rows**, so they are
+ * logged out at once (`getUserId` fails immediately) and the auth path's `login()`
+ * then refuses to sign them back in. Their content (posts, etc.) is left untouched.
+ * Reactivating clears the timestamp. Each transition records an Audit Event
+ * (ADR-070); a no-op (already in the requested state) writes nothing.
+ *
+ * Two guards (ADR-069): self-deactivation throws {@link SelfDeactivationError}, and
+ * deactivating the last capable admin throws {@link AdminFloorError}. The floor
+ * assert runs inside the transaction over the *post-change* world and counts only
+ * **active** other admins — a deactivated admin can't act, so they can't hold the
+ * floor. Reactivation can only add a capable admin back, so it never breaches.
+ */
+export async function setUserDeactivated({
+	userId,
+	deactivated,
+	actor,
+}: {
+	userId: string
+	deactivated: boolean
+	actor: AuditActor
+}): Promise<{ deactivated: boolean }> {
+	// Refuse self-deactivation up front — never let an admin lock themselves out.
+	if (deactivated && actor.id === userId) {
+		throw new SelfDeactivationError()
+	}
+
+	const { target, changed } = await prisma.$transaction(async (tx) => {
+		const target = await tx.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				name: true,
+				username: true,
+				email: true,
+				deactivatedAt: true,
+				roles: {
+					select: { permissions: { select: { entity: true, access: true } } },
+				},
+			},
+		})
+		invariantResponse(target, 'User not found', { status: 404 })
+
+		// Already in the requested state — skip the write, the floor check, and audit.
+		if ((target.deactivatedAt != null) === deactivated) {
+			return { target, changed: false }
+		}
+
+		if (deactivated) {
+			// Only *active* other users can hold the floor — a deactivated admin can't
+			// act. Assert solely when this change would breach it (held before, not after).
+			const others = await tx.user.findMany({
+				where: { id: { not: userId }, deactivatedAt: null },
+				select: {
+					roles: {
+						select: { permissions: { select: { entity: true, access: true } } },
+					},
+				},
+			})
+			const heldBefore = adminFloorHolds([...others, { roles: target.roles }])
+			const holdsAfter = adminFloorHolds(others)
+			if (heldBefore && !holdsAfter) {
+				throw new AdminFloorError(
+					'This change would remove the last administrator who can manage users and roles.',
+				)
+			}
+		}
+
+		await tx.user.update({
+			where: { id: userId },
+			data: {
+				deactivatedAt: deactivated ? new Date() : null,
+				// Deactivation revokes access immediately by dropping live sessions.
+				...(deactivated ? { sessions: { deleteMany: {} } } : {}),
+			},
+		})
+
+		return { target, changed: true }
+	})
+
+	// Append-only, so a post-commit write is fine — the change is already durable.
+	if (changed) {
+		await recordAuditEvent({
+			event: deactivated ? 'user.deactivated' : 'user.reactivated',
+			actor,
+			target: { id: target.id, type: 'user', label: labelForActor(target) },
+		})
+	}
+
+	return { deactivated }
+}
+
+/**
  * Set a user's roles to exactly `roleNames` (the first user mutation, EPT-88).
  * Names resolve to **existing** roles only — a name with no matching `Role` row is
  * dropped (the editor offers existing roles, never free-text create). The diff

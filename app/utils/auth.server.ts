@@ -73,23 +73,49 @@ export async function requireAnonymous(request: Request) {
 	}
 }
 
+type LoginSession = { id: string; expirationDate: Date; userId: string }
+
+/**
+ * The outcome of a password sign-in attempt:
+ * - `invalid` — no such user, or the password didn't match.
+ * - `deactivated` — the credentials are valid but the account is deactivated, so
+ *   the auth path refuses a session (ADR-069). The `email` lets the route surface
+ *   the "account is deactivated" notice (story 33).
+ * - `success` — a fresh session.
+ */
+export type LoginResult =
+	| { status: 'invalid' }
+	| { status: 'deactivated'; email: string }
+	| { status: 'success'; session: LoginSession }
+
 export async function login({
 	username,
 	password,
 }: {
 	username: User['username']
 	password: string
-}) {
-	const user = await verifyUserPassword({ username }, password)
-	if (!user) return null
+}): Promise<LoginResult> {
+	const verified = await verifyUserPassword({ username }, password)
+	if (!verified) return { status: 'invalid' }
+
+	// The password checks out — but a deactivated user must not be let back in. We
+	// don't mint a session; the route renders the suspended state instead.
+	const user = await prisma.user.findUnique({
+		where: { id: verified.id },
+		select: { email: true, deactivatedAt: true },
+	})
+	if (user?.deactivatedAt) {
+		return { status: 'deactivated', email: user.email }
+	}
+
 	const session = await prisma.session.create({
 		select: { id: true, expirationDate: true, userId: true },
 		data: {
 			expirationDate: getSessionExpirationDate(),
-			userId: user.id,
+			userId: verified.id,
 		},
 	})
-	return session
+	return { status: 'success', session }
 }
 
 export async function resetUserPassword({
