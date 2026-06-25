@@ -86,13 +86,19 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 	})
 
 	return (
-		<header className="bg-background/80 border-border sticky top-0 z-40 border-b backdrop-blur">
+		<header
+			className={cn(
+				'bg-background/80 border-border sticky top-0 z-40 backdrop-blur',
+				// Minimal (auth) is borderless; every other surface carries the hairline.
+				variant !== 'minimal' && 'border-b',
+			)}
+		>
 			<nav
 				aria-label="Primary"
-				className="container flex h-16 items-center justify-between gap-8"
+				className="container flex h-15 items-center justify-between gap-6"
 			>
-				<div className="flex items-center gap-8">
-					<Logo />
+				<div className="flex items-center gap-6">
+					<Logo hideWordmarkOnMobile={variant !== 'minimal'} />
 					{nav.productLinks.length > 0 ? (
 						<ul className="hidden items-center gap-6 md:flex">
 							{nav.productLinks.map((link) => {
@@ -118,7 +124,7 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 					) : null}
 				</div>
 
-				<div className="flex items-center gap-2 md:gap-4">
+				<div className="flex items-center gap-2.5">
 					{nav.showAccentPicker ? (
 						<AccentSwitch
 							userPreference={requestInfo?.userPrefs.accent ?? undefined}
