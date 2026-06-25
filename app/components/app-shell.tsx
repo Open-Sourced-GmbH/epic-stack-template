@@ -3,7 +3,7 @@ import { AccentSwitch } from '#app/routes/resources/accent.tsx'
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
 import { cn } from '#app/utils/misc.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
-import { useOptionalUser, userHasRole } from '#app/utils/user.ts'
+import { useOptionalUser } from '#app/utils/user.ts'
 import {
 	isSectionActive,
 	resolveNavbar,
@@ -83,7 +83,6 @@ function AppNavbar({ variant }: { variant: NavbarVariant }) {
 	const nav = resolveNavbar({
 		variant,
 		isLoggedIn: Boolean(user),
-		isAdmin: user ? userHasRole(user, 'admin') : false,
 	})
 
 	return (

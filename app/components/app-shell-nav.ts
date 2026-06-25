@@ -15,8 +15,12 @@
  */
 export type NavbarVariant = 'full' | 'minimal' | 'marketing'
 
-/** The product sections the navbar can link to. */
-export type NavSection = 'about' | 'blog' | 'admin'
+/**
+ * The product sections the navbar can link to. `back` is the lone `full`-variant
+ * affordance — the „Zurück zur Website" link out of the work surfaces, not a
+ * product section that can ever be "active".
+ */
+export type NavSection = 'about' | 'blog' | 'back'
 
 /**
  * What the navbar's right-cluster identity slot shows: the avatar dropdown when
@@ -52,11 +56,13 @@ const BLOG_LINK: ProductLink = {
 	match: '/blog',
 }
 
-const ADMIN_LINK: ProductLink = {
-	section: 'admin',
-	to: '/admin/blog',
-	label: 'Admin',
-	match: '/admin',
+const BACK_LINK: ProductLink = {
+	section: 'back',
+	to: '/',
+	label: 'Zurück zur Website',
+	// `/` would only ever match the marketing index, so the back-link stays inert
+	// on every work surface — it's a way out, never a highlighted section.
+	match: '/',
 }
 
 export type NavbarVisibility = {
@@ -66,11 +72,14 @@ export type NavbarVisibility = {
 }
 
 /**
- * Resolve the navbar's visible affordances from auth state, role, and variant.
+ * Resolve the navbar's visible affordances from auth state and variant.
  *
- * - `full`: Blog always, Admin only for the admin role; avatar when logged in
- *   else a Log In button; the accent picker is always present (the
- *   whole-product accent showcase, ADR-062/067).
+ * - `full` (account/admin work surfaces): the top links collapse to a single
+ *   „Zurück zur Website" back-link → `/`; Blog lives under the marketing nav and
+ *   Admin is reached via the avatar dropdown (role-gated there) and the section
+ *   sidebar, so neither is a top product link. Avatar when logged in else a Log
+ *   In button; the accent picker is always present (the whole-product accent
+ *   showcase, ADR-062/067).
  * - `marketing` (landing/blog): the public product links Über + Blog; avatar
  *   when logged in else the „Los geht's" guest CTA (→ signup); the accent picker
  *   rides along on desktop, consistent with `full`.
@@ -80,11 +89,9 @@ export type NavbarVisibility = {
 export function resolveNavbar({
 	variant,
 	isLoggedIn,
-	isAdmin,
 }: {
 	variant: NavbarVariant
 	isLoggedIn: boolean
-	isAdmin: boolean
 }): NavbarVisibility {
 	if (variant === 'minimal') {
 		return { productLinks: [], account: 'none', showAccentPicker: false }
@@ -97,7 +104,7 @@ export function resolveNavbar({
 		}
 	}
 	return {
-		productLinks: isAdmin ? [BLOG_LINK, ADMIN_LINK] : [BLOG_LINK],
+		productLinks: [BACK_LINK],
 		account: isLoggedIn ? 'avatar' : 'login',
 		showAccentPicker: true,
 	}

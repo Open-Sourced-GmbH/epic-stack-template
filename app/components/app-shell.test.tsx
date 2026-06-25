@@ -33,6 +33,7 @@ function renderShell(variant: NavbarVariant, path = '/') {
 				{ index: true, Component: Page },
 				{ path: 'blog', Component: Page },
 				{ path: 'login', Component: Page },
+				{ path: 'settings', Component: Page },
 			],
 		},
 	])
@@ -66,6 +67,24 @@ test('marketing highlights the active product section via aria-current', async (
 	expect(blog).toHaveAttribute('aria-current', 'page')
 	expect(screen.getByRole('link', { name: 'Über' })).not.toHaveAttribute(
 		'aria-current',
+	)
+})
+
+test('full variant collapses the work-surface IA to a single „Zurück zur Website" back-link → /', async () => {
+	renderShell('full', '/settings')
+
+	await screen.findByText('shell body')
+	expect(
+		screen.getByRole('link', { name: /zurück zur website/i }),
+	).toHaveAttribute('href', '/')
+	// The work-surface top links are gone — Blog lives under the marketing nav,
+	// Admin under the avatar dropdown.
+	expect(screen.queryByRole('link', { name: 'Blog' })).toBeNull()
+	expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull()
+	// Logged-out guest on a work surface still gets the `full` Log In button.
+	expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute(
+		'href',
+		'/login',
 	)
 })
 
