@@ -3,6 +3,7 @@ import { Outlet, useMatches } from 'react-router'
 import { AppShell } from '#app/components/app-shell.tsx'
 import { PageHeader } from '#app/components/ui/page-header.tsx'
 import { type SidebarGroup } from '#app/components/ui/sidebar.tsx'
+import { useOptionalUser, userHasPermission } from '#app/utils/user.ts'
 
 // The admin section rides the unified AppShell chrome (ADR-068): the universal
 // top navbar (which owns the wordmark, the role-gated Admin link, and the
@@ -40,6 +41,18 @@ const adminGroups: SidebarGroup[] = [
 ]
 
 /**
+ * The access-management group — Users now, Roles/Audit as their slices land. It
+ * renders only for viewers who can manage access (`read:user:any`); a plain user
+ * who somehow reaches an admin surface never sees a link they'd be 403'd on. As
+ * later Access surfaces ship they add their own items here behind their own
+ * permissions (the group itself stays gated on holding *any* of them).
+ */
+const accessGroup: SidebarGroup = {
+	label: 'Access',
+	items: [{ to: '/admin/users', label: 'Users', icon: 'avatar' }],
+}
+
+/**
  * Shared layout for every `admin/` route. The unified AppShell (`full` navbar +
  * a section `Sidebar`) frames the routed surface — admin now has a top navbar
  * *and* a sidebar (it previously had only a bespoke left rail). The shell owns
@@ -54,8 +67,14 @@ export default function AdminLayout() {
 		.map((m) => (m.handle as AdminHeaderHandle | undefined)?.adminHeader)
 		.find(Boolean)
 
+	// Show the Access group only to viewers who can manage access; the route
+	// guards enforce it server-side, this just hides the link for everyone else.
+	const user = useOptionalUser()
+	const canManageAccess = userHasPermission(user, 'read:user:any')
+	const groups = canManageAccess ? [...adminGroups, accessGroup] : adminGroups
+
 	return (
-		<AppShell variant="full" sidebarGroups={adminGroups} sidebarLabel="Admin">
+		<AppShell variant="full" sidebarGroups={groups} sidebarLabel="Admin">
 			{adminHeader ? (
 				<div className="container max-w-(--shell-max) pt-10">
 					<PageHeader

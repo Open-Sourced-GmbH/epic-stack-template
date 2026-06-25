@@ -15,6 +15,7 @@ import AdminLayout, { type AdminHeader } from './_layout.tsx'
 function renderAdmin(
 	initialPath = '/admin/blog',
 	handles: { blog?: { adminHeader: AdminHeader }; cache?: { adminHeader: AdminHeader } } = {},
+	user: unknown = null,
 ) {
 	const Stub = createRoutesStub([
 		{
@@ -25,6 +26,7 @@ function renderAdmin(
 					hints: { theme: 'light', timeZone: 'UTC' },
 					userPrefs: { theme: 'light' },
 				},
+				user,
 			}),
 			HydrateFallback: () => null,
 			children: [
@@ -55,12 +57,13 @@ function adminSidebar() {
 	return within(screen.getByRole('navigation', { name: 'Admin' }))
 }
 
-test('renders a Manage sidebar with Blog / Cache around the outlet', async () => {
+test('renders the section sidebar with Blog / Cache around the outlet', async () => {
 	renderAdmin('/admin/blog')
 
 	expect(await screen.findByText('blog body')).toBeInTheDocument()
 	const sidebar = adminSidebar()
-	expect(sidebar.getByText('Manage')).toBeInTheDocument()
+	// The admin rail groups the surfaces under Blog / System.
+	expect(sidebar.getByText('System')).toBeInTheDocument()
 	expect(sidebar.getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/admin/blog',
@@ -68,6 +71,42 @@ test('renders a Manage sidebar with Blog / Cache around the outlet', async () =>
 	expect(sidebar.getByRole('link', { name: 'Cache' })).toHaveAttribute(
 		'href',
 		'/admin/cache',
+	)
+})
+
+/** A user holding `read:user:any` — an access manager — for the gating tests. */
+const accessManager = {
+	id: 'mgr',
+	name: 'Manager',
+	username: 'mgr',
+	roles: [
+		{
+			name: 'admin',
+			permissions: [{ entity: 'user', action: 'read', access: 'any' }],
+		},
+	],
+}
+
+test('hides the Access group from a viewer without management permission', async () => {
+	renderAdmin('/admin/blog')
+
+	await screen.findByText('blog body')
+	const sidebar = adminSidebar()
+	// Blog/Cache are always there; the access-management group is not.
+	expect(sidebar.getByRole('link', { name: 'Blog' })).toBeInTheDocument()
+	expect(sidebar.queryByText('Access')).toBeNull()
+	expect(sidebar.queryByRole('link', { name: 'Users' })).toBeNull()
+})
+
+test('reveals the Access group (Users) to a manager holding read:user:any', async () => {
+	renderAdmin('/admin/blog', {}, accessManager)
+
+	await screen.findByText('blog body')
+	const sidebar = adminSidebar()
+	expect(sidebar.getByText('Access')).toBeInTheDocument()
+	expect(sidebar.getByRole('link', { name: 'Users' })).toHaveAttribute(
+		'href',
+		'/admin/users',
 	)
 })
 

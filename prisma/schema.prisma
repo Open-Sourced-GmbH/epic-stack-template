@@ -20,6 +20,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Account-deactivation marker (ADR-069). Null = active; a timestamp records
+  // when an admin deactivated the account. This slice only reads it (the status
+  // column shows Active for everyone); the deactivation write-path and the
+  // deactivated-sign-in block arrive in a later slice.
+  deactivatedAt DateTime?
+
   // Product-email opt-in. Consulted at the send site via the userPreferences
   // check-point helper; defaults on so existing accounts stay subscribed.
   allowProductEmails Boolean @default(true)
