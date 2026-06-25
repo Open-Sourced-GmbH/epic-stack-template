@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#fff;color:#34383F;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .doc{box-sizing:border-box;max-width:8.5in;margin:0 auto;background:#fff;
+    padding:54px clamp(22px,5vw,0.78in) 96px;}
+  .doc-frame{width:100%;border-collapse:collapse;}
+  .doc-frame td{padding:0;}
+  .hdr-space,.ftr-space{display:none;}
+  h1,h2,h3,h4{text-wrap:balance;}
+  p,li{text-wrap:pretty;}
+  .print-footer{display:none;}
+  @page{size:A4;margin:0;}
+  @media print{
+    html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    html,body{margin:0;padding:0;}
+    .doc{max-width:none !important;margin:0 !important;padding:0 0.7in !important;box-shadow:none !important;}
+    .hdr-space,.ftr-space{display:table-cell;height:0.7in;}
+    h1,h2,h3,h4,h5,h6{break-after:avoid;}
+    figure,pre,blockquote,img,svg,tr,.keep{break-inside:avoid;}
+    p,li{orphans:3;widows:3;}
+    .screen-only{display:none !important;}
+    .print-footer{display:flex;position:fixed;left:0;right:0;bottom:0;height:0.7in;
+      align-items:center;justify-content:space-between;padding:0 0.7in;
+      font-size:8.5px;letter-spacing:.04em;color:#A2A8B0;text-transform:uppercase;}
+  }
+</style>
+</helmet>
+
+<main class="doc">
+<div class="print-footer">
+  <span>Navigation-Redesign · Spezifikation &amp; Handout</span>
+  <span>Vertraulich — interner Gebrauch</span>
+</div>
+<table class="doc-frame" role="presentation">
+<thead><tr><td class="hdr-space"></td></tr></thead>
+<tbody><tr><td>
+
+<!-- ============ COVER ============ -->
+<div style="display:flex;align-items:center;gap:11px;margin-bottom:26px">
+  <span style="width:30px;height:30px;border-radius:8px;background:oklch(60% .135 172);display:flex;align-items:center;justify-content:center;flex:none"><span style="color:#fff;font-size:13px;line-height:1">▲</span></span>
+  <span style="display:flex;flex-direction:column;line-height:1.05"><span style="font-size:13px;font-weight:680;letter-spacing:-0.01em;color:#15181C">open</span><span style="font-size:9px;font-weight:600;letter-spacing:.22em;color:#99A0A8;text-transform:uppercase">sourced</span></span>
+  <span style="margin-left:auto;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:oklch(46% .12 172);background:#EDF6F4;border-radius:999px;padding:5px 12px">Design-Handout</span>
+</div>
+
+<div style="font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:oklch(46% .12 172);margin-bottom:10px">Navigation · Desktop &amp; Mobile</div>
+<h1 style="margin:0;font-size:38px;line-height:1.06;font-weight:700;letter-spacing:-0.03em;color:#15181C">Navigation-Redesign<br>Spezifikation &amp; Übergabe-Handout</h1>
+<p style="margin:18px 0 0;font-size:16px;line-height:1.6;color:#4A4F57;max-width:38em">Eine vollständige Beschreibung der überarbeiteten Anwendungs-Navigation: eine einzige Navbar, die sich aus Route, Rolle und Ansicht auflöst — konsistent über Marketing, Login, Konto und Admin, in hellem und dunklem Theme, auf Desktop und Mobile.</p>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border:1px solid #E5E8EC;border-radius:11px;overflow:hidden">
+  <div style="padding:13px 15px;border-right:1px solid #E5E8EC"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Version</div><div style="font-size:14px;font-weight:600;color:#15181C">2.0</div></div>
+  <div style="padding:13px 15px;border-right:1px solid #E5E8EC"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Datum</div><div style="font-size:14px;font-weight:600;color:#15181C">25. Juni 2026</div></div>
+  <div style="padding:13px 15px;border-right:1px solid #E5E8EC"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Grundlage</div><div style="font-size:14px;font-weight:600;color:#15181C">Epic Stack UI</div></div>
+  <div style="padding:13px 15px"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Status</div><div style="font-size:14px;font-weight:600;color:oklch(46% .12 172)">Freigegeben</div></div>
+</div>
+
+<!-- ============ TOC ============ -->
+<div class="keep" style="margin-top:34px;padding:22px 24px;background:#F5FAF9;border:1px solid #E2EFEC;border-radius:13px">
+  <div style="font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:oklch(46% .12 172);margin-bottom:14px">Inhalt</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 38px">
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">01</span>Überblick &amp; Ziele</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">02</span>Designprinzipien</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">03</span>Informationsarchitektur</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">04</span>resolveNavbar — Auflösungslogik</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">05</span>Navbar-Varianten</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">06</span>Linke &amp; rechte Cluster</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">07</span>Rollen &amp; Sichtbarkeit</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">08</span>Responsive: Desktop ↔ Mobile</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">09</span>Mobile Drawer</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">10</span>Sektions-Sidebar</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">11</span>Theming</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">12</span>Designtokens</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">13</span>Komponenten-Inventar</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">14</span>Interaktion &amp; Motion</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">15</span>Barrierefreiheit</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">16</span>Zustände &amp; Edge Cases</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">17</span>Änderungsprotokoll</div>
+    <div style="display:flex;gap:11px;font-size:13.5px;color:#34383F"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:oklch(46% .12 172);font-weight:600">18</span>Übergabe-Checkliste &amp; Glossar</div>
+  </div>
+</div>
+
+<!-- ============ 01 ÜBERBLICK ============ -->
+<section style="margin-top:40px;padding-top:26px;border-top:2px solid #15181C">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">01</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Überblick &amp; Ziele</h2>
+  </header>
+  <p style="margin:0 0 14px;font-size:15px;line-height:1.66">Die Anwendung hatte historisch mehrere, voneinander abweichende Kopfzeilen — eine für die Marketing-Seiten, eine für den eingeloggten Bereich, eine für den Admin. Jede pflegte eigene Abstände, Logos und Zustände. Das Redesign ersetzt sie durch <strong>eine einzige Navbar-Komponente</strong>, deren Erscheinung deterministisch aus drei Eingaben hervorgeht: der aktuellen <em>Route</em>, der <em>Rolle</em> des Nutzers und der <em>Ansicht</em> (Desktop oder Mobile).</p>
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.66">Das Ergebnis ist eine Fläche, die sich überall gleich anfühlt, aber pro Kontext genau die richtige Dichte zeigt: aufgeräumt im Marketing, fokussiert im Login, arbeitsfähig in Konto und Admin.</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:13px">
+    <div class="keep" style="padding:15px 16px;border:1px solid #E5E8EC;border-radius:11px"><div style="font-size:26px;font-weight:700;letter-spacing:-0.02em;color:oklch(50% .13 172)">1</div><div style="font-size:12.5px;line-height:1.45;color:#5A606A;margin-top:3px">Navbar-Komponente für alle Flächen</div></div>
+    <div class="keep" style="padding:15px 16px;border:1px solid #E5E8EC;border-radius:11px"><div style="font-size:26px;font-weight:700;letter-spacing:-0.02em;color:oklch(50% .13 172)">3</div><div style="font-size:12.5px;line-height:1.45;color:#5A606A;margin-top:3px">Varianten: Minimal, Marketing, Full</div></div>
+    <div class="keep" style="padding:15px 16px;border:1px solid #E5E8EC;border-radius:11px"><div style="font-size:26px;font-weight:700;letter-spacing:-0.02em;color:oklch(50% .13 172)">2</div><div style="font-size:12.5px;line-height:1.45;color:#5A606A;margin-top:3px">Themes (hell/dunkel) als Class-Flip</div></div>
+  </div>
+</section>
+
+<!-- ============ 02 PRINZIPIEN ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">02</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Designprinzipien</h2>
+  </header>
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div class="keep" style="display:flex;gap:15px;padding:16px 18px;background:#FAFBFC;border:1px solid #ECEFF2;border-radius:12px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:oklch(50% .13 172);flex:none;width:22px">A</span>
+      <div><div style="font-size:14.5px;font-weight:620;color:#15181C;margin-bottom:3px">Eine Navbar für jede Fläche</div><div style="font-size:13.5px;line-height:1.58;color:#4A4F57">Statt drei getrennter Kopfzeilen löst genau eine Komponente alle Kontexte auf. Was sichtbar ist, entscheiden Bedingungen — nicht Duplikate.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:15px;padding:16px 18px;background:#FAFBFC;border:1px solid #ECEFF2;border-radius:12px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:oklch(50% .13 172);flex:none;width:22px">B</span>
+      <div><div style="font-size:14.5px;font-weight:620;color:#15181C;margin-bottom:3px">Tokens statt Hex-Werte</div><div style="font-size:13.5px;line-height:1.58;color:#4A4F57">Jede Farbe, jeder Abstand und jeder Radius referenziert ein Designtoken. Kein Element kennt seinen rohen Farbwert — nur seine Rolle (<code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">brand</code>, <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">muted-foreground</code>, …).</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:15px;padding:16px 18px;background:#FAFBFC;border:1px solid #ECEFF2;border-radius:12px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:oklch(50% .13 172);flex:none;width:22px">C</span>
+      <div><div style="font-size:14.5px;font-weight:620;color:#15181C;margin-bottom:3px">Dark Mode als Class-Flip</div><div style="font-size:13.5px;line-height:1.58;color:#4A4F57">Das Theme ist eine einzige <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">.dark</code>-Klasse an der Wurzel. Alle <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">*-foreground</code>-, Flächen- und Rahmen-Tokens kippen automatisch.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:15px;padding:16px 18px;background:#FAFBFC;border:1px solid #ECEFF2;border-radius:12px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:oklch(50% .13 172);flex:none;width:22px">D</span>
+      <div><div style="font-size:14.5px;font-weight:620;color:#15181C;margin-bottom:3px">Zugänglich von Grund auf</div><div style="font-size:13.5px;line-height:1.58;color:#4A4F57">Fokus-Ringe, ARIA-Labels, Tastaturbedienung und ausreichende Trefferflächen sind Teil der Spezifikation, kein nachträglicher Zusatz.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 IA ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">03</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Informationsarchitektur</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Die App gliedert sich in vier <strong>Flächen</strong> (Surfaces). Jede Fläche bündelt verwandte Routen und bestimmt, welche Navbar-Variante aufgelöst wird.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Fläche</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Beispiel-Routen</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Zweck</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Variante</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">Marketing</td><td style="padding:9px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">/ · /blog</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Öffentliche Akquise &amp; Inhalte</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Marketing</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">Login</td><td style="padding:9px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">/login · /signup</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Authentifizierung, ablenkungsfrei</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Minimal</td></tr>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">Konto</td><td style="padding:9px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">/settings/*</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Profil, Sicherheit, Sitzungen</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Full</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">Admin</td><td style="padding:9px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">/admin/*</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Verwaltung: Blog, Cache</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Full</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 04 resolveNavbar ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">04</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">resolveNavbar — Auflösungslogik</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Eine einzige Funktion bestimmt die Variante. Sie liest Route und Ansicht und liefert das Layout; die Rolle moduliert anschließend nur, <em>welche Bausteine</em> innerhalb dieser Variante erscheinen (siehe Abschnitt 07).</p>
+  <div class="keep" style="background:#15181C;border-radius:12px;padding:18px 20px;margin-bottom:18px">
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.7;color:#D7DCE2">
+      <span style="color:#7FD7C6">isFull</span>      = route ∈ &#123; account, admin &#125;<br>
+      <span style="color:#7FD7C6">isMarketing</span> = route ∈ &#123; marketing, blog &#125;<br>
+      <span style="color:#7FD7C6">isMinimal</span>   = route = login<br>
+      <span style="color:#8C93A0">// Variante = isMinimal ? Minimal : isMarketing ? Marketing : Full</span>
+    </div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Route</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Variante</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Logo/Wortmarke</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Produkt-Links</th>
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Section-Sidebar</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">login</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Minimal</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Wortmarke</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#9AA1AB">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#9AA1AB">—</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">marketing · blog</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Marketing</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Wortmarke</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Funktionen · Über · Docs · Blog</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#9AA1AB">—</td></tr>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">account</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Full</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Wortmarke</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">„Zurück zur Website“</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Konto</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;font-weight:560;color:#15181C">admin</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Full</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">Wortmarke</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#4A4F57">„Zurück zur Website“</td><td style="padding:9px 13px;border:1px solid #E5E8EC;color:oklch(46% .12 172);font-weight:560">Manage</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:14px 0 0;font-size:12.5px;line-height:1.55;color:#6A7178;font-style:italic">Hinweis: In Account &amp; Admin führt der einzige Produkt-Link zurück ins Marketing („Zurück zur Website“). Ein separater „Admin“-Eintrag in der Top-Nav entfällt dort bewusst — der Zugang bleibt über das Avatar-Menü erhalten.</p>
+</section>
+
+<!-- ============ 05 VARIANTEN ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">05</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Navbar-Varianten</h2>
+  </header>
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.66">Alle Varianten teilen dieselbe Höhe (60&nbsp;px), dieselbe Innenraum-Logik (linker Cluster / rechter Cluster) und dieselben Tokens. Sie unterscheiden sich nur im Inhalt.</p>
+
+  <div class="keep" style="border:1px solid #E5E8EC;border-radius:13px;overflow:hidden;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:11px;padding:13px 17px;background:#F5FAF9;border-bottom:1px solid #E2EFEC">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:oklch(46% .12 172)">Minimal</span>
+      <span style="font-size:12.5px;color:#6A7178">Login &amp; Registrierung</span>
+    </div>
+    <div style="padding:15px 18px;font-size:13.5px;line-height:1.6;color:#4A4F57">Maximale Reduktion: nur Logo und Wortmarke. Keine Produkt-Links, kein Avatar, keine Theme-Steuerung im Weg. Die gesamte Aufmerksamkeit liegt auf der Authentifizierungs-Karte. Die Navbar verzichtet sogar auf den unteren Rahmen, damit Kopf und Karte als eine ruhige Fläche wirken.</div>
+  </div>
+
+  <div class="keep" style="border:1px solid #E5E8EC;border-radius:13px;overflow:hidden;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:11px;padding:13px 17px;background:#F5FAF9;border-bottom:1px solid #E2EFEC">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:oklch(46% .12 172)">Marketing</span>
+      <span style="font-size:12.5px;color:#6A7178">Öffentliche Seiten</span>
+    </div>
+    <div style="padding:15px 18px;font-size:13.5px;line-height:1.6;color:#4A4F57">Links Wortmarke plus Produkt-Navigation (<strong>Funktionen, Über, Docs, Blog</strong>). Rechts Akzent- und Theme-Steuerung sowie — je nach Rolle — entweder die primäre CTA „Los geht's“ (Gast) oder die Identität (angemeldet). Einladend, aber nicht überladen.</div>
+  </div>
+
+  <div class="keep" style="border:1px solid #E5E8EC;border-radius:13px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:11px;padding:13px 17px;background:#F5FAF9;border-bottom:1px solid #E2EFEC">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:oklch(46% .12 172)">Full</span>
+      <span style="font-size:12.5px;color:#6A7178">Konto &amp; Admin (App-Shell)</span>
+    </div>
+    <div style="padding:15px 18px;font-size:13.5px;line-height:1.6;color:#4A4F57">Die Arbeitsumgebung. Links Wortmarke und der Rücksprung „Zurück zur Website“; darunter (Desktop) eine <strong>Sektions-Sidebar</strong> mit gruppierten Einträgen. Rechts Akzent, Theme und die Identität mit Avatar-Menü. Auf Mobile ersetzt ein Hamburger-Menü die linke Navigation und öffnet den Drawer.</div>
+  </div>
+</section>
+
+<!-- ============ 06 CLUSTER ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">06</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Linke &amp; rechte Cluster</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Die Navbar ist eine <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">justify-between</code>-Zeile mit zwei Clustern. Links liegt Identität der Anwendung und Navigation, rechts liegt persönliche Steuerung.</p>
+
+  <h3 style="margin:8px 0 10px;font-size:15.5px;font-weight:640;color:#15181C">Linker Cluster</h3>
+  <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px">
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Hamburger (nur Mobile)</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Öffnet den Drawer. Nur in den Varianten Marketing &amp; Full sichtbar.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Logo + Wortmarke</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Immer ein Link zur Startseite (<code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">title=„Zur Startseite“</code>). Die Wortmarke kann auf Mobile zugunsten von Platz entfallen.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Produkt-Links</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Marketing: Funktionen · Über · Docs · Blog. Full: ein einzelner Rücksprung „Zurück zur Website“. Nur auf Desktop.</span></div>
+  </div>
+
+  <h3 style="margin:8px 0 10px;font-size:15.5px;font-weight:640;color:#15181C">Rechter Cluster</h3>
+  <div style="display:flex;flex-direction:column;gap:9px">
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Akzent-Auswahl</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Popover mit fünf Akzentfarben (Teal, Blau, Violett, Amber, Rosé). Setzt <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--brand</code> live. Nur Desktop.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Theme-Umschalter</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Zyklus hell → dunkel → system. Icon spiegelt den Zustand (Sonne / Mond / Laptop).</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Primäre CTA</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">„Anmelden“ (Full, Gast) bzw. „Los geht's“ (Marketing, Gast). Verschwindet, sobald angemeldet.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:160px">Identität / Avatar</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Avatar-Initialen + Name (Desktop). Klick öffnet das Menü: Konto, Admin (nur Admins), Abmelden.</span></div>
+  </div>
+</section>
+
+<!-- ============ 07 ROLLEN ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">07</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Rollen &amp; Sichtbarkeit</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Drei Rollen — <strong>Gast</strong>, <strong>User</strong>, <strong>Admin</strong> — steuern, welche Bausteine im rechten Cluster und in der Navigation erscheinen. Die Variante selbst bleibt unberührt.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Baustein</th>
+      <th style="text-align:center;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Gast</th>
+      <th style="text-align:center;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">User</th>
+      <th style="text-align:center;padding:10px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Admin</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">CTA „Anmelden / Los geht's“</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Identität / Avatar-Menü</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td></tr>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Admin-Eintrag (Menü &amp; Drawer)</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Akzent &amp; Theme (Desktop)</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td></tr>
+      <tr><td style="padding:9px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Section-Sidebar (Konto/Admin)</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:#C2C7CE">—</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td><td style="padding:9px 13px;border:1px solid #E5E8EC;text-align:center;color:oklch(50% .13 172);font-weight:700">✓</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:14px 0 0;font-size:12.5px;line-height:1.55;color:#6A7178;font-style:italic">Beim Abmelden in Konto oder Admin wechselt die Route automatisch zurück ins Marketing — ein Gast soll nie auf einer geschützten Fläche stranden.</p>
+</section>
+
+<!-- ============ 08 RESPONSIVE ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">08</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Responsive: Desktop ↔ Mobile</h2>
+  </header>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="keep" style="padding:17px 19px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:oklch(46% .12 172);margin-bottom:9px">Desktop</div>
+      <ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.62;color:#4A4F57">
+        <li>Produkt-Links inline im linken Cluster</li>
+        <li>Section-Sidebar als feste Spalte (218&nbsp;px)</li>
+        <li>Avatar mit Name; Akzent- &amp; Theme-Steuerung sichtbar</li>
+        <li>Popover für Akzent &amp; Avatar-Menü</li>
+      </ul>
+    </div>
+    <div class="keep" style="padding:17px 19px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:oklch(46% .12 172);margin-bottom:9px">Mobile</div>
+      <ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.62;color:#4A4F57">
+        <li>Hamburger ersetzt die linke Navigation</li>
+        <li>Sidebar wird zum Off-Canvas-Drawer</li>
+        <li>Avatar ohne Name; Steuerung in den Drawer-Footer</li>
+        <li>Geräte-Rahmen 390&nbsp;px breit, Trefferflächen ≥ 44&nbsp;px</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin:16px 0 0;font-size:15px;line-height:1.66">Der Wechsel ist keine Skalierung, sondern eine Umverteilung: Steuerungen wandern aus der Kopfzeile in den Drawer-Footer, Inline-Links werden zu Listeneinträgen. Die Identität (Wer bin ich? Welches Theme?) bleibt jederzeit in einem Tap erreichbar.</p>
+</section>
+
+<!-- ============ 09 DRAWER ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">09</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Mobile Drawer</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Ein Off-Canvas-Panel (86&nbsp;% Breite, max. 330&nbsp;px), das von links einfährt. Es ist in drei Bänder gegliedert: Kopf, scrollbare Navigation, Footer mit Identität und Darstellung.</p>
+  <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:140px">Kopf</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Logo, Wortmarke und Schließen-Schaltfläche auf opaker Fläche.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:140px">Navigation</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Kontextabhängig: in Full „Zurück zur Website“ + Sektions-Einträge; in Marketing „Blog“ (und „Admin“ für Admins).</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:140px">Footer</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Identitätszeile (Avatar, Name, Abmelden) und ein Darstellungs-Streifen mit Akzent- und Theme-Schaltern.</span></div>
+  </div>
+  <div class="keep" style="display:flex;gap:13px;padding:15px 17px;background:#FFF8EC;border:1px solid #F4E4C2;border-radius:11px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9A7B1E;flex:none">Fix</span>
+    <div style="font-size:13px;line-height:1.55;color:#5E5430">Das Panel ist jetzt <strong>blickdicht</strong>: Der Akzent-Schimmer (<code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#F1E8D2;padding:1px 5px;border-radius:4px">brand-soft</code>, von Natur aus halbtransparent) liegt über einer opaken Grundfläche (<code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#F1E8D2;padding:1px 5px;border-radius:4px">background</code>). Zuvor schien der Seiteninhalt durch und vermischte sich mit dem Menü.</div>
+  </div>
+</section>
+
+<!-- ============ 10 SIDEBAR ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">10</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Sektions-Sidebar</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">In der Full-Variante auf Desktop trägt eine 218&nbsp;px breite Spalte mit zartem <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">brand-soft</code>-Wash die Sektions-Navigation. Einträge sind in beschriftete Gruppen gegliedert; der aktive Eintrag erhält die Markenfüllung.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="keep" style="padding:16px 18px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6A7178;margin-bottom:10px">Konto</div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">General</div>
+      <div style="font-size:13.5px;color:#4A4F57;margin-bottom:11px">Profil</div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Security</div>
+      <div style="font-size:13.5px;color:#4A4F57;line-height:1.7">Passwort · Verbindungen · Sitzungen</div>
+    </div>
+    <div class="keep" style="padding:16px 18px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6A7178;margin-bottom:10px">Admin</div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#99A0A8;margin-bottom:5px">Manage</div>
+      <div style="font-size:13.5px;color:#4A4F57;line-height:1.7">Blog <span style="font-size:11px;color:#fff;background:oklch(60% .135 172);border-radius:6px;padding:1px 7px">24</span> · Cache</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 THEMING ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">11</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Theming</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Zwei unabhängige Achsen: <strong>Helligkeit</strong> (hell / dunkel / system) und <strong>Akzent</strong> (fünf Marken-Töne). Beide wirken global über CSS-Variablen an der Shell-Wurzel.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+    <div class="keep" style="padding:16px 18px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:6px">Helligkeit</div>
+      <div style="font-size:13px;line-height:1.55;color:#4A4F57">Class-Flip: <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">.dark</code> an der Wurzel kippt alle Tokens. „System“ folgt <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">prefers-color-scheme</code>.</div>
+    </div>
+    <div class="keep" style="padding:16px 18px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:6px">Akzent</div>
+      <div style="font-size:13px;line-height:1.55;color:#4A4F57">Setzt <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--brand</code>, <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--primary</code>, <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--ring</code> gemeinsam. <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--brand-soft</code> leitet sich per <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">color-mix</code> ab.</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:11px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #E5E8EC;border-radius:999px"><span style="width:15px;height:15px;border-radius:50%;background:oklch(60% .135 172)"></span><span style="font-size:12.5px;color:#4A4F57">Teal</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #E5E8EC;border-radius:999px"><span style="width:15px;height:15px;border-radius:50%;background:oklch(60% .15 250)"></span><span style="font-size:12.5px;color:#4A4F57">Blau</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #E5E8EC;border-radius:999px"><span style="width:15px;height:15px;border-radius:50%;background:oklch(56% .20 300)"></span><span style="font-size:12.5px;color:#4A4F57">Violett</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #E5E8EC;border-radius:999px"><span style="width:15px;height:15px;border-radius:50%;background:oklch(70% .16 65)"></span><span style="font-size:12.5px;color:#4A4F57">Amber</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #E5E8EC;border-radius:999px"><span style="width:15px;height:15px;border-radius:50%;background:oklch(62% .21 18)"></span><span style="font-size:12.5px;color:#4A4F57">Rosé</span></div>
+  </div>
+</section>
+
+<!-- ============ 12 TOKENS ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">12</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Designtokens</h2>
+  </header>
+  <h3 style="margin:6px 0 10px;font-size:15.5px;font-weight:640;color:#15181C">Farbrollen</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Token</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Rolle</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Paar (Vordergrund)</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">background</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Seitenfläche</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">foreground</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">card</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Karten / erhabene Flächen</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">card-foreground</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">popover</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Menüs / Overlays</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">popover-foreground</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">brand / primary</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Markenakzent, primäre Aktion</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">primary-foreground</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">brand-soft</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Zarter Marken-Wash (≈13&nbsp;%)</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">brand</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">muted</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Gedämpfte Flächen / Sekundärtext</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">muted-foreground</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">accent</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Hover-Füllung</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6A7178">accent-foreground</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">border / input</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Haarlinien</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#9AA1AB">—</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#15181C">ring</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Fokus-Ring (= Akzent)</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#9AA1AB">—</td></tr>
+    </tbody>
+  </table>
+  <h3 style="margin:6px 0 10px;font-size:15.5px;font-weight:640;color:#15181C">Typo-Skala &amp; Radius</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="keep" style="padding:15px 17px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6A7178;margin-bottom:8px">Typo</div>
+      <div style="font-size:12.5px;line-height:1.85;color:#4A4F57;font-family:ui-monospace,Menlo,monospace">text-mega · h1…h6 · body-2xl…2xs · caption · button</div>
+    </div>
+    <div class="keep" style="padding:15px 17px;border:1px solid #E5E8EC;border-radius:12px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6A7178;margin-bottom:8px">Radius</div>
+      <div style="font-size:12.5px;line-height:1.85;color:#4A4F57;font-family:ui-monospace,Menlo,monospace">sm · md · lg · xl — alle aus <span style="color:#15181C">--radius</span>. Inputs &amp; Buttons: md.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 KOMPONENTEN ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">13</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Komponenten-Inventar</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Jedes Navigations-Element bildet auf eine reale Epic-Stack-UI-Komponente ab. Nichts wird neu nachgebaut.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Element</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Epic-UI-Komponente</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Hinweis</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">CTA / Schaltflächen</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Button</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Varianten default / ghost / outline</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Avatar-Menü</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">DropdownMenu + Avatar</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Radix-Fokusfalle, Initialen-Fallback</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Mobile Drawer</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Sheet</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Off-Canvas, esc-to-close</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Sektions-Sidebar</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Sidebar</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Config-getrieben, gruppierte Items</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Trenner</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Separator</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">role=separator</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Status-Marke</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Badge</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">„live“ / „entwurf“, Zähler</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Tooltip / Hinweise</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:oklch(46% .12 172)">Tooltip</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">eigener Provider</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 14 MOTION ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">14</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Interaktion &amp; Motion</h2>
+  </header>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.66">Bewegung ist punktuell und zweckgebunden: Sie erklärt Herkunft (woher kommt das Panel?) und Hierarchie (was ist neu?), ohne je zu verzögern. Standard-Easing für Einblendungen ist <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">cubic-bezier(.22,.61,.36,1)</code>.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:#EDF6F4">
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Element</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Bewegung</th>
+      <th style="text-align:left;padding:9px 13px;font-weight:600;color:#15181C;border:1px solid #DCE6E3">Dauer</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Drawer-Panel</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Slide −100 % → 0 + Fade</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">300&nbsp;ms</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Backdrop</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Fade-in</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">180&nbsp;ms</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Routen-Inhalt</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Translate-Y 9 px + Fade</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">340&nbsp;ms</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Tabellenzeilen (Admin)</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Stagger, 60 ms Versatz</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">400&nbsp;ms</td></tr>
+      <tr><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Popover / Dropdown</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Pop-in, scale .98 + Fade</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">140&nbsp;ms</td></tr>
+      <tr style="background:#FAFBFC"><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#15181C;font-weight:540">Aktiv-Zustände</td><td style="padding:8px 13px;border:1px solid #E5E8EC;color:#4A4F57">Übergang bg / Farbe / Schatten</td><td style="padding:8px 13px;border:1px solid #E5E8EC;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#4A4F57">180&nbsp;ms</td></tr>
+    </tbody>
+  </table>
+  <div class="keep" style="display:flex;gap:13px;padding:14px 17px;background:#EDF6F4;border:1px solid #DCE6E3;border-radius:11px;margin-top:14px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:oklch(46% .12 172);flex:none">A11y</span>
+    <div style="font-size:13px;line-height:1.55;color:#3A5650">Unter <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#DCEEEA;padding:1px 5px;border-radius:4px">prefers-reduced-motion</code> werden alle Dauern und Verzögerungen auf nahezu null gesetzt — die Funktion bleibt, die Bewegung entfällt.</div>
+  </div>
+</section>
+
+<!-- ============ 15 A11Y ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">15</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Barrierefreiheit</h2>
+  </header>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 22px">
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>ARIA-Labels auf Hamburger („Menü“) und Avatar-Trigger</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>Fokus-Ring über <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">--ring</code> (= Akzent)</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>Drawer &amp; Menüs: Fokusfalle, esc schließt (Radix)</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>Trefferflächen auf Mobile ≥ 44 px (Drawer-Items 46 px)</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>Kontrast über Token-Paare (AA in hell &amp; dunkel)</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="color:oklch(50% .13 172);font-weight:700;flex:none">›</span>Reduzierte Bewegung respektiert (s. Abschnitt 14)</div>
+  </div>
+</section>
+
+<!-- ============ 16 EDGE CASES ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">16</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Zustände &amp; Edge Cases</h2>
+  </header>
+  <div style="display:flex;flex-direction:column;gap:9px">
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:150px">Abmelden geschützt</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">In Konto/Admin wechselt die Route beim Abmelden automatisch ins Marketing.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:150px">Lange Namen</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Identität kürzt mit Ellipsis; E-Mail-Zeile bricht nicht um.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:150px">Leere Listen</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Empty-State-Muster mit gestricheltem Rahmen und Icon-Kachel (Epic).</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:150px">Laden</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Skeleton-Platzhalter statt Spinner-Sprüngen.</span></div>
+    <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:150px">System-Theme</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Folgt der OS-Einstellung; Icon zeigt Laptop.</span></div>
+  </div>
+</section>
+
+<!-- ============ 17 CHANGELOG ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">17</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Änderungsprotokoll</h2>
+  </header>
+  <div style="display:flex;flex-direction:column;gap:11px">
+    <div class="keep" style="display:flex;gap:14px;padding:14px 16px;border:1px solid #E5E8EC;border-radius:11px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#fff;background:oklch(60% .135 172);border-radius:6px;padding:3px 8px;flex:none;height:fit-content">NAV</span>
+      <div><div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:2px">Top-Nav: „Blog“ → „Zurück zur Website“</div><div style="font-size:13px;line-height:1.55;color:#4A4F57">In Konto &amp; Admin führt der Produkt-Link nicht mehr zum Blog, sondern zurück ins Marketing — klarer Rücksprung aus der App-Shell.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:14px;padding:14px 16px;border:1px solid #E5E8EC;border-radius:11px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#fff;background:oklch(60% .135 172);border-radius:6px;padding:3px 8px;flex:none;height:fit-content">NAV</span>
+      <div><div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:2px">„Admin“ aus der Top-Nav entfernt</div><div style="font-size:13px;line-height:1.55;color:#4A4F57">In Konto &amp; Admin war der Admin-Link redundant. Der Zugang bleibt über das Avatar-Menü (und im Marketing für Admins) erhalten.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:14px;padding:14px 16px;border:1px solid #E5E8EC;border-radius:11px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#fff;background:oklch(70% .16 65);border-radius:6px;padding:3px 8px;flex:none;height:fit-content">FIX</span>
+      <div><div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:2px">Drawer blickdicht gemacht</div><div style="font-size:13px;line-height:1.55;color:#4A4F57">Der Marken-Wash liegt jetzt über einer opaken Grundfläche; der Seiteninhalt scheint nicht mehr durch das offene Menü.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:14px;padding:14px 16px;border:1px solid #E5E8EC;border-radius:11px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#fff;background:oklch(56% .20 300);border-radius:6px;padding:3px 8px;flex:none;height:fit-content">MOT</span>
+      <div><div style="font-size:13.5px;font-weight:620;color:#15181C;margin-bottom:2px">Motion-Pass</div><div style="font-size:13px;line-height:1.55;color:#4A4F57">Drawer-Slide, Routen-Einblendung, Zeilen-Stagger und weiche Aktiv-Übergänge ergänzt — alle unter Berücksichtigung reduzierter Bewegung.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 CHECKLISTE + GLOSSAR ============ -->
+<section style="margin-top:34px;padding-top:26px;border-top:1px solid #E5E8EC">
+  <header style="display:flex;align-items:baseline;gap:13px;margin-bottom:15px">
+    <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:oklch(46% .12 172)">18</span>
+    <h2 style="margin:0;font-size:23px;font-weight:660;letter-spacing:-0.02em;color:#15181C">Übergabe-Checkliste &amp; Glossar</h2>
+  </header>
+  <h3 style="margin:6px 0 11px;font-size:15.5px;font-weight:640;color:#15181C">Checkliste für die Implementierung</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;margin-bottom:22px">
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Tokens vollständig verdrahtet (keine Hex-Werte)</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Dark Mode als <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">.dark</code>-Klasse</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>resolveNavbar im Router angebunden</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Drawer mit Fokusfalle &amp; esc-to-close</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Trefferflächen ≥ 44 px auf Mobile</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>prefers-reduced-motion umgesetzt</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Rollen-Sichtbarkeit serverseitig abgesichert</div>
+    <div style="display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#4A4F57"><span style="width:16px;height:16px;border:1.5px solid oklch(60% .135 172);border-radius:4px;flex:none;margin-top:1px"></span>Kontrast AA in beiden Themes geprüft</div>
+  </div>
+  <h3 style="margin:6px 0 11px;font-size:15.5px;font-weight:640;color:#15181C">Glossar</h3>
+  <div style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Fläche / Surface</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Eine Gruppe verwandter Routen (Marketing, Login, Konto, Admin).</span></div>
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Variante</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Die aufgelöste Navbar-Form: Minimal, Marketing oder Full.</span></div>
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Cluster</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Linke (Identität/Navigation) bzw. rechte (persönliche Steuerung) Gruppe der Navbar.</span></div>
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Token</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Eine benannte Design-Variable mit einer Rolle statt eines rohen Werts.</span></div>
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Class-Flip</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Theme-Wechsel allein durch Setzen/Entfernen der <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#EDF1F3;padding:1px 5px;border-radius:4px">.dark</code>-Klasse.</span></div>
+    <div style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EEF1F4"><span style="font-size:13px;font-weight:600;color:#15181C;flex:none;width:135px">Drawer</span><span style="font-size:13px;line-height:1.5;color:#4A4F57">Off-Canvas-Navigationspanel auf Mobile.</span></div>
+  </div>
+</section>
+
+<div style="margin-top:42px;padding-top:18px;border-top:2px solid #15181C;display:flex;align-items:center;justify-content:space-between">
+  <span style="font-size:11.5px;color:#99A0A8">Navigation-Redesign · Spezifikation &amp; Handout · v2.0</span>
+  <span style="font-size:11.5px;color:#99A0A8">Epic Stack UI · 25. Juni 2026</span>
+</div>
+
+</td></tr></tbody>
+<tfoot><tr><td class="ftr-space"></td></tr></tfoot>
+</table>
+</main>
+</x-dc>
+</body>
+</html>

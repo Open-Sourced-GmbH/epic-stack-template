@@ -95,14 +95,67 @@ not architectural decisions (those are ADRs under `docs/decisions/`).
   when entity and action match and the granted access is among those required (or
   none is required). Both the server guard (`requireUserWithPermission`) and the
   client check (`userHasPermission`) go through it, so the two cannot diverge.
-- **Role** — a named bundle of Permissions a user holds. The set is the typed
-  registry `roleNames` (`user`, `admin`) in `app/utils/user.ts`; guards take a
-  `RoleName`, so a mistyped role is a compile error (see
-  [ADR-058](../decisions/058-role-name-is-a-typed-registry.md)). Each role's
-  grant is the **role→access policy** `roleGrantedAccess` (admin → `any`,
-  user → `own`); the seed derives the `Permission` matrix and role grants from
-  these registries, so the database rows cannot drift from the vocabulary (see
-  [ADR-059](../decisions/059-seed-derives-permission-matrix-from-registry.md)).
+- **Role** — a named bundle of Permissions a user holds (a user may hold
+  several). Roles are **data** an admin edits: created, renamed, deleted, and
+  re-granted through the user/role-management surface. The role→permission
+  **grant** is therefore owned by the database after the initial seed — the seed
+  *bootstraps* a role's grants once from `roleGrantedAccess` and never overwrites
+  them again (`update: {}`), so UI edits survive re-seeds and deploys. This
+  **amends [ADR-059](../decisions/059-seed-derives-permission-matrix-from-registry.md)**:
+  the "no drift from the vocabulary" guarantee now covers the **permission
+  catalog** only, not role grants.
+- **System Role** vs **Custom Role** — `user` and `admin` are **System Roles**:
+  they stay in the typed registry `roleNames` in `app/utils/user.ts` (so guards
+  like `requireUserWithRole('admin')` still compile, see
+  [ADR-058](../decisions/058-role-name-is-a-typed-registry.md)) and carry a
+  protected flag — they **cannot be deleted or renamed**, though their permission
+  *grants* remain editable. Every other role is a **Custom Role**: pure data,
+  fully editable/deletable, and **never referenced by name in code** — it matters
+  only through the permissions it carries (which is why the management surface is
+  permission-gated, not role-gated). `RoleName` thus narrows to mean "roles the
+  code knows about" (System Roles), not "all roles".
+- **Permission Catalog** vs **Grant** — the **Catalog** is the fixed set of valid
+  `action × entity × access` permissions, derived in code from
+  `permissionEntities`/`permissionActions`/`entityAccesses` and reconciled into
+  the `Permission` table by the seed. Admins **cannot** invent new entities or
+  actions at runtime (a permission with no guarding code is dead data); extending
+  the catalog is a developer code change. A **Grant** is the editable join between
+  a Role and a catalog Permission — that, not the catalog, is what the
+  management UI toggles. Managing roles uses a new `role` entity
+  (`*:role:any`); managing users reuses the existing `*:user:any`; the audit
+  viewer uses a new `audit` entity (`read:audit:any`).
+- **Last-capable-admin invariant** — the system must always retain **at least one
+  user holding both `*:role:any` and `*:user:any`** (one fully-capable
+  administrator). Every sensitive mutation (revoke a role, strip a grant, delete
+  or deactivate a user) is blocked at the data layer when it would drop the count
+  below one, so an admin cannot lock everyone out of administration. Separately,
+  the UI/server **block self-deactivate and self-delete** as footgun guards;
+  self role-revocation is allowed unless it would breach this invariant.
+
+### User Administration
+
+- **Deactivated User** — a user whose access is suspended without deleting their
+  data. Marked by a nullable **`User.deactivatedAt`** timestamp (null = active).
+  Deactivating **blocks new logins** *and* **revokes existing sessions
+  immediately** (a deactivated user is logged out at once, not at session
+  expiry). It is **reversible** — reactivating clears `deactivatedAt`. The user's
+  **content is untouched**: published Posts stand, author credit unchanged.
+  Distinct from **deletion**, which is the existing irreversible cascade (sessions,
+  password, images, connections, passkeys removed; Post author credit set null).
+- **Force logout** — an admin revoking a user's `Session` rows so they must
+  re-authenticate. Shares the session-revocation mechanism that deactivation
+  uses; force-logout alone leaves the account active. Admin-triggered **password
+  reset** reuses the existing `reset-password` Verification email flow (an admin
+  never sets or sees a password).
+- **Audit Event** — an append-only record of a sensitive role/user change
+  (role granted/revoked, role created/edited/deleted, grant changed, user
+  deactivated/reactivated/deleted, sessions revoked). Each row carries a typed
+  **event**, an optional **actor** and **target** foreign key **plus a
+  denormalized identity label** (an email/username/name snapshot), a JSON
+  **details** blob, and `createdAt`. The denormalized labels are deliberate: an
+  Audit Event must stay readable **after the actor or target it references is
+  deleted** — the exact moment the trail matters most. Events are never edited or
+  deleted through the UI; the `/admin/audit` viewer is read-only and filterable.
 
 ### Identity & Verification
 
