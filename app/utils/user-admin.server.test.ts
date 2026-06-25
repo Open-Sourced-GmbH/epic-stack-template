@@ -7,7 +7,11 @@ import { prisma } from './db.server.ts'
 import {
 	AdminFloorError,
 	SelfDeactivationError,
+	SelfDeletionError,
+	deleteUser,
 	getUsersForAdmin,
+	revokeUserSessions,
+	sendUserPasswordReset,
 	setUserDeactivated,
 	setUserRoles,
 } from './user-admin.server.ts'
@@ -295,6 +299,172 @@ test('deactivation leaves the user’s authored content untouched', async () => 
 	expect(
 		await prisma.post.findUnique({ where: { id: post.id }, select: { id: true } }),
 	).not.toBeNull()
+})
+
+test('revokeUserSessions force-logs-out without deactivating, and counts the kill', async () => {
+	const user = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	await createSessionFor(user.id)
+	await createSessionFor(user.id)
+
+	const { count } = await revokeUserSessions({ userId: user.id, actor })
+
+	// Both live sessions are gone (the user must re-auth)…
+	expect(count).toBe(2)
+	expect(await sessionCountFor(user.id)).toBe(0)
+	// …but the account stays active — force-logout is not deactivation.
+	expect(await deactivatedAtOf(user.id)).toBeNull()
+})
+
+test('revokeUserSessions records a sessions-revoked audit event', async () => {
+	const user = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const target = await prisma.user.findUniqueOrThrow({
+		where: { id: user.id },
+		select: { name: true },
+	})
+	await createSessionFor(user.id)
+
+	await revokeUserSessions({ userId: user.id, actor })
+
+	const { events } = await getAuditEvents()
+	expect(events.find((e) => e.event === 'user.sessions.revoked')).toMatchObject({
+		targetId: user.id,
+		targetType: 'user',
+		targetLabel: target.name,
+	})
+})
+
+test('sendUserPasswordReset arms a reset-password verification and audits it', async () => {
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: (await makeReader()).id },
+		select: { id: true, username: true, name: true },
+	})
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const request = new Request('http://localhost:3000/admin/users/x')
+
+	const result = await sendUserPasswordReset({ userId: user.id, request, actor })
+
+	expect(result.status).toBe('success')
+	// A reset-password verification is now armed for the user (the existing flow).
+	expect(
+		await prisma.verification.findUnique({
+			where: {
+				target_type: { target: user.username, type: 'reset-password' },
+			},
+			select: { id: true },
+		}),
+	).not.toBeNull()
+	// The admin never sets or sees a password — none is created here.
+	expect(
+		await prisma.password.findUnique({
+			where: { userId: user.id },
+			select: { userId: true },
+		}),
+	).toBeNull()
+	const { events } = await getAuditEvents()
+	expect(events.find((e) => e.event === 'user.password.reset')).toMatchObject({
+		targetId: user.id,
+		targetType: 'user',
+		targetLabel: user.name,
+	})
+})
+
+test('deleteUser removes the account but keeps authored posts (credit blanked)', async () => {
+	const author = await makeReader()
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+	const label = (
+		await prisma.user.findUniqueOrThrow({
+			where: { id: author.id },
+			select: { name: true },
+		})
+	).name
+	const post = await prisma.post.create({
+		select: { id: true },
+		data: {
+			title: 'Survivor',
+			slug: `survivor-${author.id}`,
+			body: 'outlives its author',
+			authorId: author.id,
+		},
+	})
+
+	await deleteUser({ userId: author.id, actor })
+
+	// The user is gone…
+	expect(
+		await prisma.user.findUnique({
+			where: { id: author.id },
+			select: { id: true },
+		}),
+	).toBeNull()
+	// …but the post stands, with its author credit blanked (SetNull).
+	const survivor = await prisma.post.findUniqueOrThrow({
+		where: { id: post.id },
+		select: { id: true, authorId: true },
+	})
+	expect(survivor.authorId).toBeNull()
+	// The deletion is on the audit trail (label snapshotted before the row went).
+	const { events } = await getAuditEvents()
+	expect(events.find((e) => e.event === 'user.deleted')).toMatchObject({
+		targetId: author.id,
+		targetType: 'user',
+		targetLabel: label,
+	})
+})
+
+test('self-deletion is refused', async () => {
+	const admin = await makeAdmin()
+	const actor = await actorFor(admin)
+
+	await expect(
+		deleteUser({ userId: admin.id, actor }),
+	).rejects.toBeInstanceOf(SelfDeletionError)
+
+	// The account survives the refusal.
+	expect(
+		await prisma.user.findUnique({
+			where: { id: admin.id },
+			select: { id: true },
+		}),
+	).not.toBeNull()
+})
+
+test('the admin floor blocks deleting the last capable admin', async () => {
+	const admin = await makeAdmin()
+	// A different actor performs the delete so the self-guard isn't what blocks it.
+	const other = await makeReader()
+	const actor = await actorFor(other)
+
+	await expect(
+		deleteUser({ userId: admin.id, actor }),
+	).rejects.toBeInstanceOf(AdminFloorError)
+
+	// The transaction rolled back — the admin is still here.
+	expect(
+		await prisma.user.findUnique({
+			where: { id: admin.id },
+			select: { id: true },
+		}),
+	).not.toBeNull()
+})
+
+test('deletion is allowed while another capable admin remains', async () => {
+	const first = await makeAdmin()
+	const second = await makeAdmin()
+	const actor = await actorFor(second)
+
+	await deleteUser({ userId: first.id, actor })
+	expect(
+		await prisma.user.findUnique({
+			where: { id: first.id },
+			select: { id: true },
+		}),
+	).toBeNull()
 })
 
 test('each grant and revoke writes a matching audit event', async () => {

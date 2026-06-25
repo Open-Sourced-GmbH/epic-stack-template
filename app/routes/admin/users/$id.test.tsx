@@ -19,11 +19,16 @@ type LoaderData = {
 		roles: string[]
 	}
 	allRoles: string[]
-	/** The signed-in admin's id — drives the self-deactivation guard. */
+	/** The signed-in admin's id — drives the self-deactivation/self-deletion guard. */
 	currentUserId: string
+	/** Live session count — drives the Sessions card and Force log out. */
+	sessionCount: number
 }
 
-function loaderData(overrides: Partial<LoaderData['user']> = {}): LoaderData {
+function loaderData(
+	overrides: Partial<LoaderData['user']> = {},
+	rest: Partial<Omit<LoaderData, 'user'>> = {},
+): LoaderData {
 	return {
 		user: {
 			id: 'user-123',
@@ -39,6 +44,8 @@ function loaderData(overrides: Partial<LoaderData['user']> = {}): LoaderData {
 		allRoles: ['admin', 'user'],
 		// A different admin by default, so the self-guard isn't in play.
 		currentUserId: 'admin-self',
+		sessionCount: 2,
+		...rest,
 	}
 }
 
@@ -144,6 +151,86 @@ test('a blocked deactivate surfaces the deactivation explanatory dialog', async 
 	const dialog = await screen.findByRole('dialog')
 	expect(
 		within(dialog).getByText(/can.t deactivate the last admin/i),
+	).toBeInTheDocument()
+})
+
+test('the Sessions & security card shows the active count and both actions', async () => {
+	renderDetail(loaderData({}, { sessionCount: 3 }))
+
+	const card = (await screen.findByText('Sessions & security')).closest(
+		'[data-slot="form-card"]',
+	)
+	expect(card).not.toBeNull()
+	const scope = within(card as HTMLElement)
+	expect(scope.getByText(/active sessions \(3\)/i)).toBeInTheDocument()
+	expect(
+		scope.getByRole('button', { name: /force log out/i }),
+	).toBeEnabled()
+	expect(
+		scope.getByRole('button', { name: /send reset email/i }),
+	).toBeInTheDocument()
+})
+
+test('Force log out is disabled when there are no active sessions', async () => {
+	renderDetail(loaderData({}, { sessionCount: 0 }))
+
+	const card = (await screen.findByText('Sessions & security')).closest(
+		'[data-slot="form-card"]',
+	)
+	expect(
+		within(card as HTMLElement).getByRole('button', { name: /force log out/i }),
+	).toBeDisabled()
+})
+
+test('the Danger zone delete button opens a double-check confirmation dialog', async () => {
+	const user = userEvent.setup()
+	renderDetail(loaderData())
+
+	await user.click(
+		await screen.findByRole('button', { name: /delete user…/i }),
+	)
+
+	const dialog = await screen.findByRole('dialog')
+	expect(
+		within(dialog).getByText(/delete ada lovelace\?/i),
+	).toBeInTheDocument()
+	// The confirm button is a two-stage double-check.
+	const confirm = within(dialog).getByRole('button', { name: /^delete user$/i })
+	await user.click(confirm)
+	expect(
+		within(dialog).getByRole('button', { name: /confirm delete/i }),
+	).toBeInTheDocument()
+})
+
+test('you cannot delete your own account (control disabled, no dialog)', async () => {
+	renderDetail({ ...loaderData(), currentUserId: 'user-123' })
+
+	const card = (await screen.findByText('Danger zone')).closest(
+		'[data-slot="form-card"]',
+	)
+	expect(
+		within(card as HTMLElement).getByRole('button', { name: /delete user…/i }),
+	).toBeDisabled()
+})
+
+test('a blocked delete surfaces the deletion explanatory dialog', async () => {
+	const user = userEvent.setup()
+	renderDetail(loaderData(), () => ({
+		ok: false,
+		blocked: 'This change would remove the last administrator.',
+		kind: 'deletion',
+	}))
+
+	await user.click(
+		await screen.findByRole('button', { name: /delete user…/i }),
+	)
+	// Confirm the double-check to actually submit the delete.
+	const dialog = await screen.findByRole('dialog')
+	await user.click(within(dialog).getByRole('button', { name: /^delete user$/i }))
+	await user.click(within(dialog).getByRole('button', { name: /confirm delete/i }))
+
+	expect(
+		await screen.findByText(/can.t delete the last admin/i),
 	).toBeInTheDocument()
 })
 

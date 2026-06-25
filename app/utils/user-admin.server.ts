@@ -1,5 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { type Prisma } from '@prisma/client'
+import { createElement } from 'react'
+import { ForgotPasswordEmail } from '#app/components/emails/forgot-password.tsx'
 import { adminFloorHolds } from './admin-floor.ts'
 import {
 	type AuditActor,
@@ -7,6 +9,8 @@ import {
 	recordAuditEvent,
 } from './audit.server.ts'
 import { prisma } from './db.server.ts'
+import { sendEmail } from './email.server.ts'
+import { prepareVerification } from './verification.server.ts'
 
 /**
  * The shape the admin user list (`/admin/users`) reads per row: enough to render
@@ -177,6 +181,19 @@ export class SelfDeactivationError extends Error {
 }
 
 /**
+ * Thrown when an admin tries to delete their own account (EPT-94). Like
+ * self-deactivation this is always refused — deleting yourself is irreversible and
+ * never the intent. The detail route also hides the control for your own account,
+ * so this is the data-layer backstop.
+ */
+export class SelfDeletionError extends Error {
+	constructor(message = 'You can’t delete your own account.') {
+		super(message)
+		this.name = 'SelfDeletionError'
+	}
+}
+
+/**
  * Deactivate (or reactivate) a user (EPT-92). Deactivating stamps
  * `User.deactivatedAt` **and deletes the user's** `Session` **rows**, so they are
  * logged out at once (`getUserId` fails immediately) and the auth path's `login()`
@@ -267,6 +284,162 @@ export async function setUserDeactivated({
 	}
 
 	return { deactivated }
+}
+
+/**
+ * Force-log-out a user (EPT-94): delete every one of their `Session` rows so the
+ * next request fails `getUserId` and they must re-authenticate. Unlike
+ * {@link setUserDeactivated} this leaves `deactivatedAt` untouched — the account
+ * stays active and can sign straight back in. Records a `user.sessions.revoked`
+ * Audit Event (ADR-070) and returns how many sessions were killed. No floor or
+ * self guard: logging someone out can't strand the admin floor.
+ */
+export async function revokeUserSessions({
+	userId,
+	actor,
+}: {
+	userId: string
+	actor: AuditActor
+}): Promise<{ count: number }> {
+	// The label lookup and the session purge are independent (the delete keys off
+	// `userId`, not the lookup) — fire them together.
+	const [target, { count }] = await Promise.all([
+		prisma.user.findUnique({
+			where: { id: userId },
+			select: { id: true, name: true, username: true, email: true },
+		}),
+		prisma.session.deleteMany({ where: { userId } }),
+	])
+	invariantResponse(target, 'User not found', { status: 404 })
+
+	await recordAuditEvent({
+		event: 'user.sessions.revoked',
+		actor,
+		target: { id: target.id, type: 'user', label: labelForActor(target) },
+	})
+
+	return { count }
+}
+
+/**
+ * Permanently delete a user (EPT-94). The delete is the existing irreversible
+ * cascade — sessions, password, images, connections and passkeys go with the row
+ * — while authored `Post`s survive with their author credit blanked (`SetNull`).
+ * Records a `user.deleted` Audit Event (ADR-070), its label snapshotted *before*
+ * the row is gone so the trail outlives the account.
+ *
+ * Two guards (ADR-069): self-deletion throws {@link SelfDeletionError}, and
+ * deleting the last capable admin throws {@link AdminFloorError}. The floor assert
+ * runs inside the transaction over the *post-change* world and counts only
+ * **active** other admins (a deactivated admin can't hold the floor), mirroring
+ * {@link setUserDeactivated}.
+ */
+export async function deleteUser({
+	userId,
+	actor,
+}: {
+	userId: string
+	actor: AuditActor
+}): Promise<void> {
+	// Refuse self-deletion up front — never let an admin erase themselves.
+	if (actor.id === userId) {
+		throw new SelfDeletionError()
+	}
+
+	const { target } = await prisma.$transaction(async (tx) => {
+		const target = await tx.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				name: true,
+				username: true,
+				email: true,
+				roles: {
+					select: { permissions: { select: { entity: true, access: true } } },
+				},
+			},
+		})
+		invariantResponse(target, 'User not found', { status: 404 })
+
+		// Only *active* other users can hold the floor. Assert solely when this
+		// delete would breach it (held before with the target, not after without).
+		const others = await tx.user.findMany({
+			where: { id: { not: userId }, deactivatedAt: null },
+			select: {
+				roles: {
+					select: { permissions: { select: { entity: true, access: true } } },
+				},
+			},
+		})
+		const heldBefore = adminFloorHolds([...others, { roles: target.roles }])
+		const holdsAfter = adminFloorHolds(others)
+		if (heldBefore && !holdsAfter) {
+			throw new AdminFloorError(
+				'This change would remove the last administrator who can manage users and roles.',
+			)
+		}
+
+		await tx.user.delete({ where: { id: userId } })
+
+		return { target }
+	})
+
+	// Append-only, so a post-commit write is fine — the deletion is already durable.
+	await recordAuditEvent({
+		event: 'user.deleted',
+		actor,
+		target: { id: target.id, type: 'user', label: labelForActor(target) },
+	})
+}
+
+/**
+ * Trigger a password reset for a user *on their behalf* (EPT-94): arm the existing
+ * `reset-password` Verification and email the user the same recovery link the
+ * self-serve "forgot password" flow sends. The admin never sets or sees a
+ * password — they only kick off the user-driven reset. A `user.password.reset`
+ * Audit Event (ADR-070) is recorded on a successful send. Returns the email send
+ * status so the route can toast success or surface the failure.
+ */
+export async function sendUserPasswordReset({
+	userId,
+	request,
+	actor,
+}: {
+	userId: string
+	request: Request
+	actor: AuditActor
+}): Promise<{ status: 'success' | 'error' }> {
+	const target = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { id: true, name: true, username: true, email: true },
+	})
+	invariantResponse(target, 'User not found', { status: 404 })
+
+	const { verifyUrl, otp } = await prepareVerification({
+		period: 10 * 60,
+		request,
+		type: 'reset-password',
+		target: target.username,
+	})
+
+	const response = await sendEmail({
+		to: target.email,
+		subject: `Epic Notes Password Reset`,
+		react: createElement(ForgotPasswordEmail, {
+			onboardingUrl: verifyUrl.toString(),
+			otp,
+		}),
+	})
+
+	if (response.status === 'success') {
+		await recordAuditEvent({
+			event: 'user.password.reset',
+			actor,
+			target: { id: target.id, type: 'user', label: labelForActor(target) },
+		})
+	}
+
+	return { status: response.status }
 }
 
 /**
