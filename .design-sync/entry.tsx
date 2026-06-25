@@ -110,6 +110,7 @@ export { Switch } from '#app/components/ui/switch.tsx'
 export { Table } from '#app/components/ui/table.tsx'
 export { TagInput } from '#app/components/ui/tag-input.tsx'
 export { Textarea } from '#app/components/ui/textarea.tsx'
+export { ToggleChip } from '#app/components/ui/toggle-chip.tsx'
 export {
 	Tooltip,
 	TooltipContent,

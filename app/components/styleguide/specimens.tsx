@@ -82,6 +82,7 @@ import { Switch } from '#app/components/ui/switch.tsx'
 import { Table } from '#app/components/ui/table.tsx'
 import { TagInput } from '#app/components/ui/tag-input.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { ToggleChip } from '#app/components/ui/toggle-chip.tsx'
 import {
 	Tooltip,
 	TooltipContent,
@@ -1138,6 +1139,32 @@ export const specimens: Specimen[] = [
 							/>
 						</svg>
 					</span>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'toggle-chip',
+		group: 'Forms',
+		subtitle: 'off / on / locked + permission-matrix grant pair (own · any)',
+		viewport: { width: 480, height: 240 },
+		render: () => (
+			<div className="flex flex-col gap-5">
+				<div className="flex items-center gap-2">
+					<ToggleChip pressed={false}>off</ToggleChip>
+					<ToggleChip pressed>on</ToggleChip>
+					<ToggleChip pressed locked lockedReason="Protected by the admin floor">
+						locked
+					</ToggleChip>
+				</div>
+				{/* As used per-grant in the role editor's permission matrix: an
+				    own/any chip pair per row. */}
+				<div className="flex flex-col gap-2">
+					<span className="text-muted-foreground text-body-2xs">read</span>
+					<div className="flex items-center gap-2">
+						<ToggleChip pressed>own</ToggleChip>
+						<ToggleChip pressed={false}>any</ToggleChip>
+					</div>
 				</div>
 			</div>
 		),
