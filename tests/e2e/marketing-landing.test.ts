@@ -53,14 +53,19 @@ test('landing renders inside the unified AppShell navbar', async ({
 }) => {
 	await navigate('/')
 
-	// The landing now shares the universal AppShell top navbar (marketing variant)
-	// with the blog: the Primary nav carries the Über + Blog product links, and —
-	// logged out — the guest CTA (→ signup) rather than the `full` Log In button.
+	// The landing shares the universal AppShell top navbar (marketing variant)
+	// with the blog: the Primary nav leads with the landing in-page section
+	// anchors (Work / … / FAQ), then the Blog route link, and — logged out — the
+	// guest CTA (→ signup) rather than the `full` Log In button.
 	const nav = page.getByRole('navigation', { name: 'Primary' })
 	await expect(nav).toBeVisible()
-	await expect(nav.getByRole('link', { name: 'Über' })).toBeVisible()
+	await expect(nav.getByRole('link', { name: 'Work' })).toBeVisible()
 	await expect(nav.getByRole('link', { name: 'Blog' })).toBeVisible()
 	await expect(page.getByRole('link', { name: /los geht's/i })).toBeVisible()
+
+	// A section anchor in the top nav jumps to its section on the landing page.
+	await nav.getByRole('link', { name: 'Work' }).click()
+	await expect(page).toHaveURL(/#work$/)
 })
 
 test('footer sitemap anchors jump to their section', async ({
@@ -157,13 +162,13 @@ test('navbar accent swatch re-themes and persists without a redirect 404', async
 }) => {
 	await navigate('/')
 
-	// Pick an accent preset swatch in the navbar (posts to /resources/accent via a
-	// JS fetcher). The bespoke customizer dock is retired — the navbar's
-	// AccentSwitch now owns accent selection. The submission is fetcher-only and
-	// must NOT redirect: a redirect from a single-fetch POST returns a 202 to the
-	// index `.data` URL that 404s through the splat route. We assert the page
+	// Open the navbar design customizer popover and pick an accent preset swatch
+	// (posts to /resources/accent via a JS fetcher). The submission is fetcher-only
+	// and must NOT redirect: a redirect from a single-fetch POST returns a 202 to
+	// the index `.data` URL that 404s through the splat route. We assert the page
 	// stays put (no error boundary), the swatch reads as active, and the cookie
 	// commits.
+	await page.getByRole('button', { name: /customize theme/i }).click()
 	await page.getByRole('button', { name: 'Iris' }).click()
 	await expect(page.getByText(/can't find this page/i)).toHaveCount(0)
 	await expect(page.getByRole('button', { name: 'Iris' })).toHaveAttribute(
@@ -178,8 +183,10 @@ test('navbar accent swatch re-themes and persists without a redirect 404', async
 		})
 		.toBeTruthy()
 
-	// A fresh server round-trip re-applies the accent from its cookie.
+	// A fresh server round-trip re-applies the accent from its cookie. Reopen the
+	// customizer (navigation closes the popover) to read the active swatch.
 	await navigate('/')
+	await page.getByRole('button', { name: /customize theme/i }).click()
 	await expect(page.getByRole('button', { name: 'Iris' })).toHaveAttribute(
 		'aria-pressed',
 		'true',

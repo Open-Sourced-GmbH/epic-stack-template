@@ -164,12 +164,14 @@ test('renders inside the unified AppShell navbar (marketing variant)', async () 
 
 	const nav = await screen.findByRole('navigation', { name: 'Primary' })
 	expect(nav).toBeInTheDocument()
-	// Marketing variant, logged out: the Über + Blog product links and the
-	// guest CTA (→ signup), not the `full` Log In button.
-	expect(within(nav).getByRole('link', { name: 'Über' })).toHaveAttribute(
+	// Marketing variant, logged out: the landing section anchors (→ /#<id>) lead
+	// the bar, then the Blog route link, then the guest CTA (→ signup) — not the
+	// `full` Log In button. (Über was dropped from the bar; it lives in the footer.)
+	expect(within(nav).getByRole('link', { name: 'Work' })).toHaveAttribute(
 		'href',
-		'/about',
+		'/#work',
 	)
+	expect(within(nav).queryByRole('link', { name: 'Über' })).toBeNull()
 	expect(within(nav).getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/blog',

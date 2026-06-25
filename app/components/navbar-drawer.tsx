@@ -1,14 +1,13 @@
-import { Img } from 'openimg/react'
 import * as React from 'react'
 import { Form, Link, useLocation } from 'react-router'
 import { AccentSwitch } from '#app/routes/resources/accent.tsx'
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
-import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
+import { cn } from '#app/utils/misc.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import {
 	accountCtaLink,
-	isSectionActive,
+	isLinkActive,
 	type NavbarVisibility,
 } from './app-shell-nav.ts'
 import { Logo } from './logo.tsx'
@@ -20,6 +19,7 @@ import {
 	SheetClose,
 	SheetContent,
 	SheetOverlay,
+	SheetPortal,
 	SheetTitle,
 	SheetTrigger,
 } from './ui/sheet.tsx'
@@ -31,6 +31,7 @@ import {
 	SidebarNav,
 	type SidebarGroup,
 } from './ui/sidebar.tsx'
+import { UserAvatar } from './user-avatar.tsx'
 
 /**
  * The mobile story for the universal navbar (EPT-83). Below `md` (and only on
@@ -51,11 +52,14 @@ import {
  */
 export function NavbarDrawer({
 	nav,
+	activeSection = null,
 	sidebarGroups,
 	sidebarLabel = 'Section',
 }: {
 	/** The resolved navbar affordances (product links + identity slot). */
 	nav: NavbarVisibility
+	/** The landing section currently in view (scrollspy), for anchor highlighting. */
+	activeSection?: string | null
 	/** The section nav groups on account / admin (mirrors the desktop rail). */
 	sidebarGroups?: SidebarGroup[]
 	/** Accessible label for the section nav (e.g. "Account", "Admin"). */
@@ -80,110 +84,121 @@ export function NavbarDrawer({
 					<MenuGlyph />
 				</Button>
 			</SheetTrigger>
-			<SheetOverlay className="motion-reduce:animate-none" />
-			<SheetContent
-				side="left"
-				// The dialog is named by its sr-only SheetTitle below.
-				// Opaque base: composite the translucent --brand-soft wash over
-				// --background so nothing behind the panel bleeds through.
-				style={{
-					background:
-						'linear-gradient(var(--brand-soft), var(--brand-soft)), var(--background)',
-				}}
-				className="gap-0 p-0 motion-reduce:animate-none"
-			>
-				{/* Header — logo + close. */}
-				<div className="border-border flex items-center justify-between border-b px-4 py-3">
-					<SheetTitle className="sr-only">Menü</SheetTitle>
-					<Logo />
-					<SheetClose asChild>
-						<Button variant="ghost" size="icon" aria-label="Menü schließen">
-							<Icon name="cross-1" className="size-4" />
-						</Button>
-					</SheetClose>
-				</div>
+			{/* Portal to the body: the navbar is a sticky `backdrop-blur` header,
+			    which establishes the containing block for fixed descendants — an
+			    in-place panel would be clipped to the ~60px header strip (and the
+			    page would show through). The portal lets the rail fill the viewport. */}
+			<SheetPortal>
+				<SheetOverlay className="motion-reduce:animate-none" />
+				<SheetContent
+					side="left"
+					// The dialog is named by its sr-only SheetTitle below.
+					// Opaque base: composite the translucent --brand-soft wash over
+					// --background so nothing behind the panel bleeds through.
+					style={{
+						background:
+							'linear-gradient(var(--brand-soft), var(--brand-soft)), var(--background)',
+					}}
+					className="gap-0 p-0 motion-reduce:animate-none"
+				>
+					{/* Header — logo + close. */}
+					<div className="border-border flex items-center justify-between border-b px-4 py-3">
+						<SheetTitle className="sr-only">Menü</SheetTitle>
+						<Logo />
+						<SheetClose asChild>
+							<Button variant="ghost" size="icon" aria-label="Menü schließen">
+								<Icon name="cross-1" className="size-4" />
+							</Button>
+						</SheetClose>
+					</div>
 
-				{/* Nav — product links, then (account/admin) the section groups. */}
-				<div className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 py-4">
-					{nav.productLinks.length > 0 ? (
-						<nav aria-label="Seiten" className="flex flex-col gap-1">
-							{nav.productLinks.map((link) => {
-								const active = isSectionActive(location.pathname, link)
-								return (
-									<Link
-										key={link.section}
-										to={link.to}
-										onClick={close}
-										aria-current={active ? 'page' : undefined}
-										className={cn(itemBase, active ? itemActive : itemIdle)}
+					{/* Nav — product links, then (account/admin) the section groups. */}
+					<div className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 py-4">
+						{nav.productLinks.length > 0 ? (
+							<nav aria-label="Seiten" className="flex flex-col gap-1">
+								{nav.productLinks.map((link) => {
+									const active = isLinkActive(link, {
+										pathname: location.pathname,
+										activeSection,
+									})
+									return (
+										<Link
+											key={link.section}
+											to={link.to}
+											onClick={close}
+											aria-current={active ? 'page' : undefined}
+											className={cn(itemBase, active ? itemActive : itemIdle)}
+										>
+											{link.label}
+										</Link>
+									)
+								})}
+							</nav>
+						) : null}
+						{sidebarGroups ? (
+							<>
+								<Separator />
+								<SidebarNav
+									groups={sidebarGroups}
+									label={sidebarLabel}
+									pathname={location.pathname}
+									linkComponent={Link}
+									onNavigate={close}
+								/>
+							</>
+						) : null}
+					</div>
+
+					{/* Footer — identity (or guest CTA) + the appearance strip. */}
+					<div className="border-border flex flex-col gap-4 border-t px-4 py-4">
+						{user ? (
+							<div className="flex items-center gap-3">
+								<UserAvatar
+									name={user.name ?? user.username}
+									imageObjectKey={user.image?.objectKey}
+									className="size-9"
+								/>
+								<div className="min-w-0 flex-1">
+									<p className="text-body-sm truncate font-bold">
+										{user.name ?? user.username}
+									</p>
+									<p className="text-muted-foreground truncate text-xs">
+										{user.email}
+									</p>
+								</div>
+								<Form action="/logout" method="POST">
+									<Button
+										type="submit"
+										variant="ghost"
+										size="icon"
+										aria-label="Logout"
 									>
-										{link.label}
-									</Link>
-								)
-							})}
-						</nav>
-					) : null}
-					{sidebarGroups ? (
-						<>
-							<Separator />
-							<SidebarNav
-								groups={sidebarGroups}
-								label={sidebarLabel}
-								pathname={location.pathname}
-								linkComponent={Link}
-								onNavigate={close}
-							/>
-						</>
-					) : null}
-				</div>
-
-				{/* Footer — identity (or guest CTA) + the appearance strip. */}
-				<div className="border-border flex flex-col gap-4 border-t px-4 py-4">
-					{user ? (
-						<div className="flex items-center gap-3">
-							<Img
-								className="size-9 shrink-0 rounded-full object-cover"
-								alt={user.name ?? user.username}
-								src={getUserImgSrc(user.image?.objectKey)}
-								width={256}
-								height={256}
-								aria-hidden="true"
-							/>
-							<div className="min-w-0 flex-1">
-								<p className="text-body-sm truncate font-bold">
-									{user.name ?? user.username}
-								</p>
-								<p className="text-muted-foreground truncate text-xs">
-									{user.email}
-								</p>
+										<Icon name="exit" className="size-4" />
+									</Button>
+								</Form>
 							</div>
-							<Form action="/logout" method="POST">
-								<Button type="submit" variant="ghost" size="icon" aria-label="Logout">
-									<Icon name="exit" className="size-4" />
-								</Button>
-							</Form>
-						</div>
-					) : ctaLink ? (
-						<Button asChild variant="default" onClick={close}>
-							<Link to={ctaLink.to}>{ctaLink.label}</Link>
-						</Button>
-					) : null}
+						) : ctaLink ? (
+							<Button asChild variant="default" onClick={close}>
+								<Link to={ctaLink.to}>{ctaLink.label}</Link>
+							</Button>
+						) : null}
 
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-							Darstellung
-						</span>
-						<div className="flex items-center gap-3">
-							<AccentSwitch
-								userPreference={requestInfo?.userPrefs.accent ?? undefined}
-							/>
-							<ThemeSwitch
-								userPreference={requestInfo?.userPrefs.theme ?? null}
-							/>
+						<div className="flex items-center justify-between gap-3">
+							<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+								Darstellung
+							</span>
+							<div className="flex items-center gap-3">
+								<AccentSwitch
+									userPreference={requestInfo?.userPrefs.accent ?? undefined}
+								/>
+								<ThemeSwitch
+									userPreference={requestInfo?.userPrefs.theme ?? null}
+								/>
+							</div>
 						</div>
 					</div>
-				</div>
-			</SheetContent>
+				</SheetContent>
+			</SheetPortal>
 		</Sheet>
 	)
 }

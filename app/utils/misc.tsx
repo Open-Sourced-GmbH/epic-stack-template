@@ -15,6 +15,23 @@ export function getPostImgSrc(objectKey: string) {
 	return `/resources/images?objectKey=${encodeURIComponent(objectKey)}`
 }
 
+/**
+ * Up-to-two-letter initials for an avatar fallback (first letter of the first
+ * two words), upper-cased; `?` when a name yields nothing. The single source for
+ * the {@link UserAvatar} fallback so every avatar degrades identically when a
+ * photo is missing or slow.
+ */
+export function initials(name: string): string {
+	return (
+		name
+			.split(/\s+/)
+			.filter(Boolean)
+			.slice(0, 2)
+			.map((word) => word[0]?.toUpperCase() ?? '')
+			.join('') || '?'
+	)
+}
+
 export function getImgSrc({
 	height,
 	optimizerEndpoint,

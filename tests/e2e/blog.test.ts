@@ -38,11 +38,12 @@ test('the blog renders inside the unified AppShell navbar', async ({
 	await navigate('/blog')
 
 	// The universal AppShell top navbar (marketing variant) frames the blog: the
-	// Primary nav with the Über + Blog product links, and — logged out — the
-	// guest CTA (→ signup) rather than the `full` Log In button.
+	// Primary nav leads with the landing section anchors (Work / … → /#<id>), then
+	// the Blog route link, and — logged out — the guest CTA (→ signup) rather than
+	// the `full` Log In button.
 	const nav = page.getByRole('navigation', { name: 'Primary' })
 	await expect(nav).toBeVisible()
-	await expect(nav.getByRole('link', { name: 'Über' })).toBeVisible()
+	await expect(nav.getByRole('link', { name: 'Work' })).toBeVisible()
 	await expect(nav.getByRole('link', { name: 'Blog' })).toBeVisible()
 	await expect(page.getByRole('link', { name: /los geht's/i })).toBeVisible()
 	await expect(

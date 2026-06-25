@@ -375,13 +375,16 @@
 	::before,
 	::backdrop,
 	::file-selector-button {
-		border-color: hsl(var(--border));
+		border-color: var(--border);
 	}
 
-	/* Button-hover cursor, driven by the customizer's `--btn-cursor` pref. Wrapped
-	   in `:where()` so it carries zero specificity — any explicit `cursor-*`
-	   utility (e.g. the dock's own controls, which always stay `pointer`) wins. */
-	:where(button:not(:disabled)) {
+	/* Button-hover cursor, driven by the customizer's `--btn-cursor` pref. Targets
+	   both native `<button>`s and the `Button` component's link-rendered instances
+	   (`asChild` → `<a data-slot="button">`, e.g. the navbar CTA / hero buttons),
+	   so the pref applies to every button surface, not just the native ones. Wrapped
+	   in `:where()` so it carries zero specificity — any explicit `cursor-*` utility
+	   (e.g. the customizer's own controls, which always stay `pointer`) wins. */
+	:where(button, [data-slot='button']):not(:disabled) {
 		cursor: var(--btn-cursor, default);
 	}
 
@@ -558,6 +561,23 @@
 		}
 		to {
 			width: 100%;
+		}
+	}
+
+	/* Theme customizer popover (EPT-19). The expanded card pops in; gated here so
+	   reduced-motion visitors get the resting (fully-visible) state with no
+	   animation. */
+	.tc-pop {
+		animation: tc-pop 0.18s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+	}
+	@keyframes tc-pop {
+		from {
+			opacity: 0;
+			transform: translateY(8px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: none;
 		}
 	}
 }

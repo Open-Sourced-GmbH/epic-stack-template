@@ -40,14 +40,17 @@ function renderShell(variant: NavbarVariant, path = '/') {
 	render(<Stub initialEntries={[path]} />)
 }
 
-test('marketing variant shows the Über + Blog product links and the guest CTA', async () => {
+test('marketing variant shows the section anchors + Blog and the guest CTA', async () => {
 	renderShell('marketing')
 
 	await screen.findByText('shell body')
-	expect(screen.getByRole('link', { name: 'Über' })).toHaveAttribute(
+	// The landing in-page sections lead the bar as scroll-anchor links → /#<id>;
+	// Über is dropped (it lives in the footer sitemap now).
+	expect(screen.getByRole('link', { name: 'Work' })).toHaveAttribute(
 		'href',
-		'/about',
+		'/#work',
 	)
+	expect(screen.queryByRole('link', { name: 'Über' })).toBeNull()
 	expect(screen.getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/blog',
@@ -60,12 +63,14 @@ test('marketing variant shows the Über + Blog product links and the guest CTA',
 	expect(screen.queryByRole('link', { name: /log in/i })).toBeNull()
 })
 
-test('marketing highlights the active product section via aria-current', async () => {
+test('marketing highlights the active route section via aria-current', async () => {
 	renderShell('marketing', '/blog')
 
 	const blog = await screen.findByRole('link', { name: 'Blog' })
 	expect(blog).toHaveAttribute('aria-current', 'page')
-	expect(screen.getByRole('link', { name: 'Über' })).not.toHaveAttribute(
+	// Anchor links are scrollspy-driven; with no IntersectionObserver in jsdom
+	// none is active, so they never carry aria-current from the pathname.
+	expect(screen.getByRole('link', { name: 'Work' })).not.toHaveAttribute(
 		'aria-current',
 	)
 })

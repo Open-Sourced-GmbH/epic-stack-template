@@ -1,18 +1,20 @@
+import * as React from 'react'
 import { Link, useLocation } from 'react-router'
-import { AccentSwitch } from '#app/routes/resources/accent.tsx'
 import { ThemeSwitch } from '#app/routes/resources/theme-switch.tsx'
+import { DEFAULT_ACCENT } from '#app/utils/accent.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { useOptionalRequestInfo } from '#app/utils/request-info.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import {
 	accountCtaLink,
-	isSectionActive,
+	isLinkActive,
 	resolveNavbar,
 	type NavbarVariant,
 	type NavbarVisibility,
 } from './app-shell-nav.ts'
 import { Logo } from './logo.tsx'
 import { NavbarDrawer } from './navbar-drawer.tsx'
+import { ThemeCustomizer } from './theme-customizer.tsx'
 import { Button } from './ui/button.tsx'
 import { SidebarRail, type SidebarGroup } from './ui/sidebar.tsx'
 import { UserDropdown } from './user-dropdown.tsx'
@@ -89,11 +91,49 @@ export function AppShellBoundary({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Scrollspy for the navbar's in-page anchor links: observes the landing section
+ * elements (by id) and returns whichever is currently in view, so the matching
+ * nav link can highlight as the visitor scrolls. Pure progressive enhancement —
+ * the resting state is `null` (no section active), and where the sections don't
+ * exist (e.g. the blog) the observer simply finds nothing. Guards on
+ * `IntersectionObserver` so SSR and jsdom are no-ops.
+ */
+function useActiveSection(anchorIds: Array<string>): string | null {
+	const [active, setActive] = React.useState<string | null>(null)
+	// Join to a primitive so the effect only re-subscribes when the ids change,
+	// not on every render's fresh array identity.
+	const key = anchorIds.join(',')
+	React.useEffect(() => {
+		if (typeof IntersectionObserver === 'undefined') return
+		const ids = key ? key.split(',') : []
+		if (ids.length === 0) return
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) setActive(entry.target.id)
+				}
+			},
+			// The mid-viewport band: a section counts as in view once it crosses the
+			// centre line, matching the retired marketing header's scrollspy feel.
+			{ rootMargin: '-50% 0px -50% 0px' },
+		)
+		for (const id of ids) {
+			const el = document.getElementById(id)
+			if (el) observer.observe(el)
+		}
+		return () => observer.disconnect()
+	}, [key])
+	return active
+}
+
+/**
  * The universal top navbar. Its visible affordances are decided by the pure
  * {@link resolveNavbar} resolver, so this component is a thin projection: the
  * logo (→ `/`), the resolved product links with the active section highlighted,
- * and a right cluster of accent picker + theme toggle + identity (the avatar
- * dropdown or a Log In button). The accent picker and theme toggle reuse the
+ * and a right cluster of design customizer + theme toggle + identity (the avatar
+ * dropdown or a Log In button). On surfaces that expose the accent picker the
+ * desktop cluster is the full `ThemeCustomizer` popover (accent + theme + cursor),
+ * with a bare `ThemeSwitch` as the mobile/auth fallback; all of it rides the
  * existing cookie-backed switches (ADR-005), and the identity reuses the shared
  * `UserDropdown` — none of it is re-implemented here.
  */
@@ -114,6 +154,12 @@ function AppNavbar({
 		isLoggedIn: Boolean(user),
 	})
 	const ctaLink = accountCtaLink(nav.account)
+	// Scrollspy over the resolved anchor links (the landing in-page sections), so
+	// the link for the section in view highlights as you scroll.
+	const anchorIds = nav.productLinks
+		.map((link) => link.anchorId)
+		.filter((id): id is string => Boolean(id))
+	const activeSection = useActiveSection(anchorIds)
 
 	return (
 		<header
@@ -133,6 +179,7 @@ function AppNavbar({
 					{variant !== 'minimal' ? (
 						<NavbarDrawer
 							nav={nav}
+							activeSection={activeSection}
 							sidebarGroups={sidebarGroups}
 							sidebarLabel={sidebarLabel}
 						/>
@@ -141,17 +188,25 @@ function AppNavbar({
 					{nav.productLinks.length > 0 ? (
 						<ul className="hidden items-center gap-6 md:flex">
 							{nav.productLinks.map((link) => {
-								const active = isSectionActive(location.pathname, link)
+								const active = isLinkActive(link, {
+									pathname: location.pathname,
+									activeSection,
+								})
 								return (
 									<li key={link.section}>
 										<Link
 											to={link.to}
 											aria-current={active ? 'page' : undefined}
+											// A brand underline that scales in from the left on hover
+											// (and stays drawn for the active section) — the resting
+											// state is server-rendered, so the animation is pure
+											// enhancement on top of a plain coloured link.
 											className={cn(
-												'text-sm transition-colors',
+												'after:bg-brand hover:text-brand relative py-1 text-sm transition-colors',
+												'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:transition-transform hover:after:scale-x-100',
 												active
-													? 'text-brand'
-													: 'text-muted-foreground hover:text-foreground',
+													? 'text-brand after:scale-x-100'
+													: 'text-muted-foreground after:scale-x-0',
 											)}
 										>
 											{link.label}
@@ -165,15 +220,28 @@ function AppNavbar({
 
 				<div className="flex items-center gap-2.5">
 					{nav.showAccentPicker ? (
-						// Desktop-only: below `md` the accent cycle lives in the drawer's
-						// appearance strip, so the bar stays uncluttered on mobile.
-						<div className="hidden md:flex">
-							<AccentSwitch
-								userPreference={requestInfo?.userPrefs.accent ?? undefined}
-							/>
-						</div>
-					) : null}
-					<ThemeSwitch userPreference={requestInfo?.userPrefs.theme ?? null} />
+						<>
+							{/* Desktop: the full design customizer popover (accent presets +
+							    Hue/Chroma/Light sliders + theme + cursor). It subsumes the bare
+							    accent swatches and theme toggle on these surfaces (ADR 062). */}
+							<div className="hidden md:flex">
+								<ThemeCustomizer
+									accent={requestInfo?.userPrefs.accent ?? DEFAULT_ACCENT}
+									cursor={requestInfo?.userPrefs.cursor ?? 'default'}
+									theme={requestInfo?.userPrefs.theme ?? null}
+								/>
+							</div>
+							{/* Mobile: a quick theme toggle; the accent + cursor controls live
+							    in the navbar drawer's appearance strip below `md`. */}
+							<div className="md:hidden">
+								<ThemeSwitch
+									userPreference={requestInfo?.userPrefs.theme ?? null}
+								/>
+							</div>
+						</>
+					) : (
+						<ThemeSwitch userPreference={requestInfo?.userPrefs.theme ?? null} />
+					)}
 					{nav.account === 'avatar' ? <UserDropdown /> : null}
 					{ctaLink ? (
 						<Button asChild variant="default">

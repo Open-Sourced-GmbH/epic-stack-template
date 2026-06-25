@@ -1,15 +1,11 @@
 import { Link } from 'react-router'
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Card, CardContent } from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
-import { cn, getPostImgSrc, getUserImgSrc } from '#app/utils/misc.tsx'
+import { UserAvatar } from '#app/components/user-avatar.tsx'
+import { cn, getPostImgSrc } from '#app/utils/misc.tsx'
 import { type FeedPost } from '#app/utils/post.server.ts'
 
 /**
@@ -35,17 +31,6 @@ export function coverArt(seed: string): keyof typeof COVER_GRADIENTS {
 	let hash = 0
 	for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
 	return COVER_KEYS[hash % COVER_KEYS.length]!
-}
-
-export function initials(name: string): string {
-	return (
-		name
-			.split(/\s+/)
-			.filter(Boolean)
-			.slice(0, 2)
-			.map((word) => word[0]?.toUpperCase() ?? '')
-			.join('') || '?'
-	)
 }
 
 export function formatDate(value: Date | string): string {
@@ -101,17 +86,12 @@ function AuthorChip({ post, className }: { post: FeedPost; className?: string })
 	const name = post.author?.name ?? post.author?.username ?? 'Open Sourced'
 	return (
 		<div className={cn('flex items-center gap-2', className)}>
-			<Avatar className="size-7">
-				{post.author?.image ? (
-					<AvatarImage
-						src={getUserImgSrc(post.author.image.objectKey)}
-						alt=""
-					/>
-				) : null}
-				<AvatarFallback className="text-body-2xs">
-					{initials(name)}
-				</AvatarFallback>
-			</Avatar>
+			<UserAvatar
+				name={name}
+				imageObjectKey={post.author?.image?.objectKey}
+				className="size-7"
+				fallbackClassName="text-body-2xs"
+			/>
 			<span className="text-muted-foreground text-body-xs">
 				{name}
 				{post.publishedAt ? (

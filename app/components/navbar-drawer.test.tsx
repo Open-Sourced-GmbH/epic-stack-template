@@ -93,9 +93,10 @@ test('renders the variant product links, highlighting the active section', async
 
 	await user.click(await screen.findByRole('button', { name: 'Menü' }))
 	const panel = within(screen.getByRole('dialog', { name: 'Menü' }))
-	expect(panel.getByRole('link', { name: 'Über' })).toHaveAttribute(
+	// The landing section anchors lead the marketing drawer (→ /#<id>), Blog last.
+	expect(panel.getByRole('link', { name: 'Work' })).toHaveAttribute(
 		'href',
-		'/about',
+		'/#work',
 	)
 	expect(panel.getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',

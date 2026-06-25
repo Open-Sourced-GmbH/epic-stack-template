@@ -30,11 +30,12 @@ type AdminHeaderHandle = { adminHeader?: AdminHeader }
  */
 const adminGroups: SidebarGroup[] = [
 	{
-		label: 'Manage',
-		items: [
-			{ to: '/admin/blog', label: 'Blog', icon: 'file-text' },
-			{ to: '/admin/cache', label: 'Cache', icon: 'clock' },
-		],
+		label: 'Blog',
+		items: [{ to: '/admin/blog', label: 'Blog', icon: 'file-text' }],
+	},
+	{
+		label: 'System',
+		items: [{ to: '/admin/cache', label: 'Cache', icon: 'clock' }],
 	},
 ]
 

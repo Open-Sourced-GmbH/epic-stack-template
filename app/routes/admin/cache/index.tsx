@@ -13,7 +13,15 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Field } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { Label } from '#app/components/ui/label.tsx'
 import { useRowSelection } from '#app/components/ui/row-selection.ts'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '#app/components/ui/select.tsx'
 import { Table, type TableColumn } from '#app/components/ui/table.tsx'
 import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
 import {
@@ -314,36 +322,39 @@ export default function CacheAdminRoute({ loaderData }: Route.ComponentProps) {
 							max: '10000',
 						}}
 					/>
-					<div className="mb-2 flex flex-col gap-1">
-						<label
-							htmlFor="cache-instance"
-							className="text-foreground text-body-xs font-medium"
-						>
-							Instance
-						</label>
-						<select
-							id="cache-instance"
-							name="instance"
-							defaultValue={instance}
-							className="border-input bg-background h-10 rounded-md border px-3 text-body-sm"
-						>
-							{Object.entries(loaderData.instances).map(([inst, region]) => (
-								<option key={inst} value={inst}>
-									{[
-										inst,
-										`(${region})`,
-										inst === loaderData.currentInstanceInfo.currentInstance
-											? '(current)'
-											: '',
-										inst === loaderData.currentInstanceInfo.primaryInstance
-											? '(primary)'
-											: '',
-									]
-										.filter(Boolean)
-										.join(' ')}
-								</option>
-							))}
-						</select>
+					{/* Mirror the `Field` DOM exactly — label, control, then the same
+					    reserved 32px error slot — so the styled Select trigger lines up
+					    with the Search/Limit inputs under `items-end`. */}
+					<div className="w-auto">
+						<Label htmlFor="cache-instance">Instance</Label>
+						<Select name="instance" defaultValue={instance}>
+							<SelectTrigger
+								id="cache-instance"
+								aria-label="Instance"
+								className="min-w-56"
+							>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{Object.entries(loaderData.instances).map(([inst, region]) => (
+									<SelectItem key={inst} value={inst}>
+										{[
+											inst,
+											`(${region})`,
+											inst === loaderData.currentInstanceInfo.currentInstance
+												? '(current)'
+												: '',
+											inst === loaderData.currentInstanceInfo.primaryInstance
+												? '(primary)'
+												: '',
+										]
+											.filter(Boolean)
+											.join(' ')}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<div className="min-h-[32px] px-4 pt-1 pb-3" aria-hidden />
 					</div>
 				</div>
 				<p className="text-muted-foreground text-body-sm">

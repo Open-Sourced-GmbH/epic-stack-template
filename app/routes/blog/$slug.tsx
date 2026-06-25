@@ -1,21 +1,12 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { Link } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from '#app/components/ui/avatar.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Card } from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { UserAvatar } from '#app/components/user-avatar.tsx'
 import { renderPostBody } from '#app/utils/markdown.server.ts'
-import {
-	cn,
-	getDomainUrl,
-	getPostImgSrc,
-	getUserImgSrc,
-} from '#app/utils/misc.tsx'
+import { cn, getDomainUrl, getPostImgSrc } from '#app/utils/misc.tsx'
 import {
 	type ArticlePost,
 	type NavPost,
@@ -24,13 +15,7 @@ import {
 	getPostBySlug,
 } from '#app/utils/post.server.ts'
 import { type Route } from './+types/$slug.ts'
-import {
-	COVER_GRADIENTS,
-	TagPills,
-	coverArt,
-	formatDate,
-	initials,
-} from './__feed.tsx'
+import { COVER_GRADIENTS, TagPills, coverArt, formatDate } from './__feed.tsx'
 
 /** The post fields the client renders — the raw `body` stays server-side. */
 type ArticleView = Omit<ArticlePost, 'body'>
@@ -121,15 +106,11 @@ function Byline({ post }: { post: ArticleView }) {
 	return (
 		<div className="border-border mt-6 flex flex-wrap items-center justify-between gap-3 border-b pb-6">
 			<div className="flex items-center gap-3">
-				<Avatar className="size-9">
-					{post.author?.image ? (
-						<AvatarImage
-							src={getUserImgSrc(post.author.image.objectKey)}
-							alt=""
-						/>
-					) : null}
-					<AvatarFallback>{initials(name)}</AvatarFallback>
-				</Avatar>
+				<UserAvatar
+					name={name}
+					imageObjectKey={post.author?.image?.objectKey}
+					className="size-9"
+				/>
 				<div className="flex flex-col gap-0.5">
 					<span className="text-body-sm font-medium">{name}</span>
 					<div className="flex items-center gap-2">

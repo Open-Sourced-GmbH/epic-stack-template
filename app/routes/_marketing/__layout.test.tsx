@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { createRoutesStub } from 'react-router'
 import { expect, test } from 'vitest'
 import { MarketingLayout } from './__layout.tsx'
@@ -35,15 +35,17 @@ function renderLayout(children: React.ReactNode) {
 	render(<Stub initialEntries={['/']} />)
 }
 
-test('renders the unified AppShell navbar: Über + Blog links and the guest CTA', async () => {
+test('renders the unified AppShell navbar: section anchors + Blog and the guest CTA', async () => {
 	renderLayout(<p>child content</p>)
 
 	const nav = await screen.findByRole('navigation', { name: 'Primary' })
 	expect(nav).toBeInTheDocument()
-	expect(screen.getByRole('link', { name: 'Über' })).toHaveAttribute(
+	// The landing section anchors lead the bar (→ /#<id>); Blog is the route link.
+	expect(within(nav).getByRole('link', { name: 'Work' })).toHaveAttribute(
 		'href',
-		'/about',
+		'/#work',
 	)
+	expect(within(nav).queryByRole('link', { name: 'Über' })).toBeNull()
 	expect(screen.getByRole('link', { name: 'Blog' })).toHaveAttribute(
 		'href',
 		'/blog',

@@ -2,11 +2,6 @@ import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { useEffect } from 'react'
 import { data, Link, useFetcher } from 'react-router'
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { DropdownMenuItem } from '#app/components/ui/dropdown-menu.tsx'
@@ -14,13 +9,9 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { Pagination } from '#app/components/ui/pagination.tsx'
 import { useRowSelection } from '#app/components/ui/row-selection.ts'
 import { Table, type TableColumn } from '#app/components/ui/table.tsx'
+import { UserAvatar } from '#app/components/user-avatar.tsx'
 import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
-import {
-	cn,
-	getPostImgSrc,
-	getUserImgSrc,
-	useDoubleCheck,
-} from '#app/utils/misc.tsx'
+import { cn, getPostImgSrc, useDoubleCheck } from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import {
 	bulkPostAction,
@@ -28,12 +19,7 @@ import {
 	type AdminPost,
 } from '#app/utils/post.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
-import {
-	COVER_GRADIENTS,
-	coverArt,
-	formatDate,
-	initials,
-} from '../../blog/__feed.tsx'
+import { COVER_GRADIENTS, coverArt, formatDate } from '../../blog/__feed.tsx'
 import { type Route } from './+types/index.ts'
 
 /** The header New post button — fed into the admin shell's `PageHeader`. */
@@ -153,17 +139,12 @@ function PostCell({ post }: { post: AdminPost }) {
 					{title || 'Untitled draft'}
 				</Link>
 				<span className="text-muted-foreground text-body-xs flex items-center gap-1.5">
-					<Avatar className="size-5">
-						{post.author?.image ? (
-							<AvatarImage
-								src={getUserImgSrc(post.author.image.objectKey)}
-								alt=""
-							/>
-						) : null}
-						<AvatarFallback className="bg-accent text-accent-foreground text-[0.6rem]">
-							{initials(name)}
-						</AvatarFallback>
-					</Avatar>
+					<UserAvatar
+						name={name}
+						imageObjectKey={post.author?.image?.objectKey}
+						className="size-5"
+						fallbackClassName="bg-accent text-accent-foreground text-[0.6rem]"
+					/>
 					{name}
 					<span className="text-muted-foreground/80 font-mono">
 						/{post.slug}

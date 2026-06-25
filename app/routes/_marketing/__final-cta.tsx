@@ -43,12 +43,14 @@ export function FinalCta() {
 				<div className="relative mt-8 flex flex-wrap justify-center gap-3">
 					<Link
 						to="/support"
+						data-slot="button"
 						className="inline-flex h-11 items-center rounded-md bg-white px-6 font-semibold text-[oklch(from_var(--brand)_calc(l-0.25)_c_h)] transition-transform hover:-translate-y-px"
 					>
 						Start a project
 					</Link>
 					<Link
 						to="/support"
+						data-slot="button"
 						className="inline-flex h-11 items-center rounded-md border border-white/40 px-6 font-medium text-white transition-colors hover:bg-white/10"
 					>
 						Book a call

@@ -3,7 +3,7 @@ import { MarketingFooter } from './__footer.tsx'
 
 /**
  * Shared marketing chrome. The landing now renders inside the universal
- * {@link AppShell} navbar (`marketing` variant — Über/Blog links, accent picker,
+ * {@link AppShell} navbar (`marketing` variant — section anchors + Blog link, accent picker,
  * theme toggle, guest CTA / owner avatar), identical to the public blog. The
  * bespoke sticky header and its theme-customizer dock are retired (EPT-80); the
  * navbar owns the accent + theme controls, so there is no per-surface chrome to

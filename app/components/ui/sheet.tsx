@@ -36,6 +36,21 @@ function SheetClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
 	return <DialogPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
+/**
+ * Opt-in portal to `document.body` for the overlay + content. The Sheet renders
+ * in place by default (so `/styleguide` can snapshot the open panel), but an
+ * in-place fixed panel is clipped to the nearest ancestor that establishes a
+ * containing block for fixed descendants — e.g. a sticky navbar with
+ * `backdrop-blur`/`filter`/`transform`. Real app drawers mounted inside such
+ * chrome must wrap their overlay + content in `SheetPortal` so the panel sizes
+ * to the viewport, not that ancestor.
+ */
+function SheetPortal(
+	props: React.ComponentProps<typeof DialogPrimitive.Portal>,
+) {
+	return <DialogPrimitive.Portal data-slot="sheet-portal" {...props} />
+}
+
 function SheetOverlay({
 	className,
 	...props
@@ -44,7 +59,7 @@ function SheetOverlay({
 		<DialogPrimitive.Overlay
 			data-slot="sheet-overlay"
 			className={cn(
-				'fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+				'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
 				className,
 			)}
 			{...props}
@@ -65,10 +80,10 @@ function SheetContent({
 			data-slot="sheet-content"
 			data-side={side}
 			className={cn(
-				'bg-popover text-popover-foreground border-border fixed inset-y-0 z-50 flex h-full w-3/4 max-w-sm flex-col gap-4 p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300',
+				'bg-popover text-popover-foreground border-border data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-y-0 z-50 flex h-full w-3/4 max-w-sm flex-col gap-4 p-6 shadow-lg data-[state=closed]:duration-200 data-[state=open]:duration-300',
 				side === 'left'
-					? 'left-0 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left'
-					: 'right-0 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
+					? 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left left-0 border-r'
+					: 'data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right right-0 border-l',
 				className,
 			)}
 			{...props}
@@ -106,6 +121,7 @@ export {
 	Sheet,
 	SheetTrigger,
 	SheetClose,
+	SheetPortal,
 	SheetOverlay,
 	SheetContent,
 	SheetTitle,

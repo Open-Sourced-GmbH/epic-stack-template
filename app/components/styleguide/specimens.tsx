@@ -73,7 +73,7 @@ import {
 	SheetOverlay,
 	SheetTitle,
 } from '#app/components/ui/sheet.tsx'
-import { Sidebar } from '#app/components/ui/sidebar.tsx'
+import { Sidebar, type SidebarGroup } from '#app/components/ui/sidebar.tsx'
 import { Skeleton } from '#app/components/ui/skeleton.tsx'
 import { Slider } from '#app/components/ui/slider.tsx'
 import { Spinner } from '#app/components/ui/spinner.tsx'
@@ -289,32 +289,110 @@ const commandEmptyActions: Command[] = [
 	},
 ]
 
-// Team roster for the `screen-team` reference screen. The `variant` walks the
-// Badge scale (Owner = primary, Admin = secondary, Member = outline) so the row
-// uses the real Badge primitive instead of a hand-rolled status pill.
-const teamMembers = [
+// Section-navigation rosters for the reference screens, mirroring the real
+// `accountGroups` (settings/profile/_layout.tsx) and `adminGroups`
+// (admin/_layout.tsx) so the published shells match what the app actually
+// renders into the AppShell sidebar slot.
+const accountNavGroups: SidebarGroup[] = [
 	{
-		name: 'Ada Lovelace',
-		email: 'ada@epic.dev',
-		role: 'Owner',
-		initials: 'AL',
-		variant: 'default',
+		label: 'Account',
+		items: [{ to: '/settings/profile', label: 'General', icon: 'avatar' }],
 	},
 	{
-		name: 'Grace Hopper',
-		email: 'grace@epic.dev',
-		role: 'Admin',
-		initials: 'GH',
-		variant: 'secondary',
+		label: 'Security',
+		items: [
+			{ to: '/settings/profile/change-email', label: 'Email', icon: 'envelope-closed' },
+			{ to: '/settings/profile/password', label: 'Password', icon: 'dots-horizontal' },
+			{ to: '/settings/profile/two-factor', label: 'Two-Factor', icon: 'lock-closed' },
+			{ to: '/settings/profile/connections', label: 'Connections', icon: 'link-2' },
+			{ to: '/settings/profile/passkeys', label: 'Passkeys', icon: 'passkey' },
+		],
 	},
+]
+
+const adminNavGroups: SidebarGroup[] = [
 	{
-		name: 'Alan Turing',
-		email: 'alan@epic.dev',
-		role: 'Member',
-		initials: 'AT',
-		variant: 'outline',
+		label: 'Manage',
+		items: [
+			{ to: '/admin/blog', label: 'Blog', icon: 'file-text' },
+			{ to: '/admin/cache', label: 'Cache', icon: 'clock' },
+		],
 	},
-] as const
+]
+
+/**
+ * The pine logo tile (a `rounded bg-brand` square carrying the inline two-tier
+ * pine glyph in `text-primary-foreground`), mirroring `_auth/_layout.tsx`'s
+ * `AuthBrand`. The sprite has no pine icon, so the glyph is inline SVG drawn
+ * with `currentColor` so it tracks the tile's text colour in light and dark.
+ * Sized by the caller (the auth lockup is a large `size-12 rounded-xl`; the
+ * navbar uses a small `size-8 rounded-lg`).
+ */
+function PineMark({
+	className = 'size-12 rounded-xl',
+	glyphClassName = 'size-7',
+}: {
+	className?: string
+	glyphClassName?: string
+}) {
+	return (
+		<div
+			className={`bg-brand text-primary-foreground flex items-center justify-center shadow-sm ${className}`}
+		>
+			<svg viewBox="0 0 24 24" className={glyphClassName} aria-hidden focusable="false">
+				<polygon points="12,3 7,11 17,11" fill="currentColor" />
+				<polygon points="12,8 6,16 18,16" fill="currentColor" />
+				<rect x="11" y="15" width="2" height="5" rx="0.5" fill="currentColor" />
+			</svg>
+		</div>
+	)
+}
+
+/**
+ * The universal top navbar from `app-shell.tsx`, rebuilt as a self-contained,
+ * token-styled strip for the reference-screen compositions (the real `AppShell`
+ * pulls request-info-backed theme/accent switches that can't render outside a
+ * route). `minimal` is the borderless auth pass-through (logo + theme toggle);
+ * `full` carries the hairline plus an identity avatar — the account/admin bar.
+ */
+function ShellNavbar({ variant }: { variant: 'minimal' | 'full' }) {
+	return (
+		<header
+			className={`bg-background/80 border-border backdrop-blur ${variant === 'full' ? 'border-b' : ''}`}
+		>
+			<nav
+				aria-label="Primary"
+				className="flex h-15 items-center justify-between gap-6 px-6"
+			>
+				<div className="flex items-center gap-2.5">
+					<PineMark className="size-8 rounded-lg" glyphClassName="size-5" />
+					<span className="text-body-sm font-semibold">Epic Notes</span>
+				</div>
+				<div className="flex items-center gap-2.5">
+					{/* Theme toggle — a ghost icon button carrying the sun glyph (Icon
+					    isn't in the curated bundle, so the glyph is inline, mirroring the
+					    Switch specimen's dark-mode composition). */}
+					<Button variant="ghost" size="icon-sm" aria-label="Toggle theme">
+						<svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden>
+							<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+							<path
+								d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+							/>
+						</svg>
+					</Button>
+					{variant === 'full' ? (
+						<Avatar className="size-8">
+							<AvatarFallback>AL</AvatarFallback>
+						</Avatar>
+					) : null}
+				</div>
+			</nav>
+		</header>
+	)
+}
 
 /**
  * A representative, hand-tokenised code snippet for the code specimens. It is a
@@ -1420,171 +1498,305 @@ export const specimens: Specimen[] = [
 
 	// --- Reference screens -----------------------------------------------------
 	//
-	// The four `improove-001` handoff screens, rebuilt from real primitives only.
-	// In the design exploration each hand-rolled the missing pieces (Field, Card,
-	// Badge, Avatar, Skeleton, Alert) with bespoke markup; here every one is the
-	// shipping component, so these double as proof that no hand-rolled primitive
-	// remains and as the acceptance reference snapshotted to Claude Design.
+	// Composition templates: whole-page layouts assembled from the curated
+	// primitives only, mirroring the app's real shipping shells so Claude Design
+	// grounds feature design in assembled surfaces, not just atoms. Each rebuilds
+	// the AppShell chrome (`ShellNavbar`) + section `Sidebar` as a self-contained,
+	// token-styled strip — the real `AppShell` pulls request-info-backed
+	// theme/accent switches that can't render outside a route. They double as
+	// proof that no hand-rolled primitive remains.
 	{
 		name: 'screen-auth',
 		group: 'Reference screens',
-		subtitle: 'sign in — Card + Field + Checkbox + Button',
-		viewport: { width: 420, height: 480 },
+		subtitle: 'auth shell — minimal navbar + centered FormCard (real /login)',
+		viewport: { width: 480, height: 660 },
+		// AppShell `minimal` (borderless navbar: logo + theme toggle) over the
+		// centered single column from `_auth/_layout.tsx`: a faint brand-glow
+		// radial, the pine logo lockup, an h1, then the login FormCard.
 		render: () => (
-			<Card className="mx-auto w-full max-w-sm">
-				<CardHeader>
-					<CardTitle>Welcome back</CardTitle>
-					<CardDescription>Sign in to your account</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-col gap-5">
-					<Field label="Email" htmlFor="screen-auth-email">
-						<Input
-							id="screen-auth-email"
-							type="email"
-							placeholder="you@example.com"
-						/>
-					</Field>
-					<Field label="Password" htmlFor="screen-auth-password">
-						<Input
-							id="screen-auth-password"
-							type="password"
-							placeholder="••••••••"
-						/>
-					</Field>
-					<div className="flex items-center gap-2">
-						<Checkbox id="screen-auth-remember" defaultChecked />
-						<Label htmlFor="screen-auth-remember">Remember me</Label>
+			<div className="border-border bg-background w-full overflow-hidden rounded-lg border">
+				<ShellNavbar variant="minimal" />
+				<div className="relative flex flex-col items-center px-4 py-10">
+					<div
+						aria-hidden
+						className="pointer-events-none absolute inset-x-0 top-0 h-40"
+						style={{
+							background:
+								'radial-gradient(60% 100% at 50% 0%, var(--brand-glow), transparent 70%)',
+						}}
+					/>
+					<div className="relative z-10 flex w-full flex-col items-center gap-8">
+						<PineMark />
+						<div className="w-full max-w-[360px]">
+							<div className="flex flex-col gap-2 text-center">
+								<h1 className="text-h4">Sign in to your account</h1>
+								<p className="text-muted-foreground text-body-sm">
+									Welcome back! Please enter your details.
+								</p>
+							</div>
+							<FormCard className="mt-6 p-6 text-left">
+								<div className="flex flex-col gap-4">
+									<Field label="Email" htmlFor="screen-auth-email">
+										<Input
+											id="screen-auth-email"
+											type="email"
+											placeholder="you@example.com"
+										/>
+									</Field>
+									<Field label="Password" htmlFor="screen-auth-password">
+										<Input
+											id="screen-auth-password"
+											type="password"
+											placeholder="••••••••"
+										/>
+									</Field>
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-2">
+											<Checkbox id="screen-auth-remember" defaultChecked />
+											<Label htmlFor="screen-auth-remember">Remember me</Label>
+										</div>
+										<a href="#forgot" className="text-brand text-body-sm">
+											Forgot password?
+										</a>
+									</div>
+									<StatusButton status="idle" size="wide">
+										Sign in
+									</StatusButton>
+									<Separator label="or continue with" className="my-1" />
+									<Button variant="outline" size="wide">
+										Continue with GitHub
+									</Button>
+								</div>
+							</FormCard>
+							<p className="text-muted-foreground text-body-sm mt-6 text-center">
+								New here?{' '}
+								<a href="#signup" className="text-brand">
+									Create an account
+								</a>
+							</p>
+						</div>
 					</div>
-				</CardContent>
-				<CardFooter>
-					<Button size="wide">Sign in</Button>
-				</CardFooter>
-			</Card>
+				</div>
+			</div>
+		),
+	},
+	{
+		name: 'screen-section-shell',
+		group: 'Reference screens',
+		subtitle: 'AppShell full — navbar + section Sidebar + content slot (account/admin frame)',
+		viewport: { width: 920, height: 460 },
+		// The reusable chrome every account/admin page fills: the `full` navbar
+		// (identity avatar + theme toggle) over a row of the section `Sidebar`
+		// rail and the content column. Settings + admin below are filled instances
+		// of this same frame.
+		render: () => (
+			<div className="border-border bg-background flex h-[440px] w-full flex-col overflow-hidden rounded-lg border">
+				<ShellNavbar variant="full" />
+				<div className="flex min-h-0 flex-1">
+					<Sidebar
+						label="Section"
+						pathname="/section/overview"
+						groups={[
+							{
+								label: 'Section',
+								items: [
+									{ to: '/section/overview', label: 'Overview', icon: 'avatar' },
+									{ to: '/section/activity', label: 'Activity', icon: 'clock' },
+								],
+							},
+							{
+								label: 'Manage',
+								items: [
+									{ to: '/section/items', label: 'Items', icon: 'file-text' },
+									{ to: '/section/links', label: 'Links', icon: 'link-2' },
+								],
+							},
+						]}
+					/>
+					<div className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+						<PageHeader
+							eyebrow="Section"
+							title="Overview"
+							headingLevel={1}
+							actions={<Button>New item</Button>}
+						/>
+						<div className="border-border text-muted-foreground text-body-sm flex flex-1 items-center justify-center rounded-lg border border-dashed">
+							Content area — each page fills this slot
+						</div>
+					</div>
+				</div>
+			</div>
 		),
 	},
 	{
 		name: 'screen-settings',
 		group: 'Reference screens',
-		subtitle: 'profile + save bar — Card + Field + StatusButton',
-		viewport: { width: 460, height: 480 },
+		subtitle: 'settings page — full navbar + account Sidebar + PageHeader + FormCards (real /settings/profile)',
+		viewport: { width: 920, height: 720 },
+		// The account shell filled in: the `full` navbar + the account `Sidebar`
+		// rail, then a PageHeader over stacked FormCards — a profile section, a
+		// Switch-backed preference, and the destructive delete-account zone.
 		render: () => (
-			<div className="mx-auto flex w-full max-w-md flex-col gap-3">
-				<Card>
-					<CardHeader>
-						<CardTitle>Profile</CardTitle>
-						<CardDescription>Update your public details.</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-col gap-5">
-						<Field label="Display name" htmlFor="screen-settings-name">
-							<Input id="screen-settings-name" defaultValue="Ada Lovelace" />
-						</Field>
-						<Field label="Bio" htmlFor="screen-settings-bio">
-							<Textarea
-								id="screen-settings-bio"
-								rows={3}
-								defaultValue="Mathematician. First programmer."
-							/>
-						</Field>
-					</CardContent>
-				</Card>
-				{/* Save bar: a layout strip, not a primitive — styled with tokens only. */}
-				<div className="border-border bg-card flex items-center justify-between rounded-lg border px-4 py-3">
-					<span className="text-muted-foreground text-body-sm">
-						Unsaved changes
-					</span>
-					<div className="flex gap-2">
-						<Button variant="ghost">Discard</Button>
-						<StatusButton status="idle">Save</StatusButton>
-					</div>
-				</div>
-			</div>
-		),
-	},
-	{
-		name: 'screen-team',
-		group: 'Reference screens',
-		subtitle: 'team rows — Avatar + Badge + DropdownMenu row actions',
-		viewport: { width: 480, height: 280 },
-		render: () => (
-			<div className="mx-auto flex w-full max-w-md flex-col gap-1">
-				{teamMembers.map(({ name, email, role, initials, variant }) => (
-					<div
-						key={email}
-						className="hover:bg-muted/60 flex items-center justify-between rounded-md px-2 py-2"
-					>
-						<div className="flex items-center gap-3">
-							<Avatar>
-								<AvatarFallback>{initials}</AvatarFallback>
-							</Avatar>
-							<div className="flex flex-col">
-								<span className="text-body-sm font-medium">{name}</span>
-								<span className="text-muted-foreground text-body-2xs">
-									{email}
-								</span>
+			<div className="border-border bg-background flex w-full flex-col overflow-hidden rounded-lg border">
+				<ShellNavbar variant="full" />
+				<div className="flex min-h-0 flex-1">
+					<Sidebar
+						label="Account"
+						pathname="/settings/profile"
+						groups={accountNavGroups}
+					/>
+					<div className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+						<PageHeader eyebrow="Account" title="Settings" headingLevel={1} />
+						<FormCard title="Profile" description="Update your name and username.">
+							<div className="flex flex-col gap-4">
+								<Field label="Name" htmlFor="screen-settings-name">
+									<Input id="screen-settings-name" defaultValue="Ada Lovelace" />
+								</Field>
+								<Field label="Username" htmlFor="screen-settings-username">
+									<Input id="screen-settings-username" defaultValue="ada" />
+								</Field>
+								<div className="flex justify-end">
+									<StatusButton status="idle">Save</StatusButton>
+								</div>
 							</div>
-						</div>
-						<div className="flex items-center gap-3">
-							<Badge variant={variant}>{role}</Badge>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label={`Actions for ${name}`}
-									>
-										<span aria-hidden>⋯</span>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent>
-									<DropdownMenuItem>View profile</DropdownMenuItem>
-									<DropdownMenuItem>Change role</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem>Remove</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
+						</FormCard>
+						<FormCard
+							title="Preferences"
+							description="Choose what we email you about."
+						>
+							<div className="flex items-center justify-between gap-4">
+								<div className="flex flex-col">
+									<Label htmlFor="screen-settings-emails">Product emails</Label>
+									<span className="text-muted-foreground text-body-2xs">
+										Occasional product news and tips.
+									</span>
+								</div>
+								<Switch id="screen-settings-emails" defaultChecked />
+							</div>
+						</FormCard>
+						<FormCard
+							variant="destructive"
+							title="Delete account & data"
+							description="This permanently removes your account and all of its data."
+						>
+							<Button variant="destructive">Delete account</Button>
+						</FormCard>
 					</div>
-				))}
+				</div>
 			</div>
 		),
 	},
 	{
-		name: 'screen-states',
+		name: 'screen-admin-blog',
 		group: 'Reference screens',
-		subtitle: 'empty · error · loading — Button + Alert + Skeleton',
-		viewport: { width: 460, height: 520 },
-		render: () => (
-			<div className="mx-auto flex w-full max-w-md flex-col gap-4">
-				{/* Empty */}
-				<div className="border-border flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center">
-					<div className="bg-muted text-muted-foreground mb-1 flex size-10 items-center justify-center rounded-full">
-						<span aria-hidden className="text-body-lg">
-							+
-						</span>
+		subtitle: 'admin list — full navbar + admin Sidebar + PageHeader + Table (real /admin/blog)',
+		viewport: { width: 980, height: 560 },
+		// The admin shell filled in: the `full` navbar + the admin `Sidebar` rail,
+		// then a PageHeader with the new-post action over the populated Table
+		// (row selection, status pills, ⋯ row menu, pager footer).
+		render: () => {
+			type Post = {
+				id: string
+				title: string
+				monogram: string
+				status: 'published' | 'draft'
+				updated: string
+			}
+			const posts: Post[] = [
+				{ id: '1', title: 'Shipping the Pine design system', monogram: 'S', status: 'published', updated: '2h ago' },
+				{ id: '2', title: 'Notes on grounded design', monogram: 'N', status: 'draft', updated: 'Yesterday' },
+				{ id: '3', title: 'Building on the Epic Stack', monogram: 'B', status: 'published', updated: '3d ago' },
+			]
+			// A static view of the selection contract (one row selected) so the
+			// screen snapshots the brand left bar + indeterminate header without
+			// any interaction.
+			const selection = {
+				isSelected: (id: string) => id === '1',
+				toggle: () => {},
+				toggleAll: () => {},
+				allSelected: false,
+				someSelected: true,
+			}
+			const columns = [
+				{
+					key: 'title',
+					header: 'Post',
+					cell: (post: Post) => (
+						<div className="flex items-center gap-3">
+							<span className="bg-brand-soft text-brand flex size-8 items-center justify-center rounded-lg text-body-sm font-semibold">
+								{post.monogram}
+							</span>
+							<span className="font-medium">{post.title}</span>
+						</div>
+					),
+				},
+				{
+					key: 'status',
+					header: 'Status',
+					cell: (post: Post) =>
+						post.status === 'published' ? (
+							<Badge variant="brand" dot>
+								Published
+							</Badge>
+						) : (
+							<Badge variant="secondary" dot>
+								Draft
+							</Badge>
+						),
+				},
+				{
+					key: 'updated',
+					header: 'Updated',
+					cell: (post: Post) => post.updated,
+					className: 'text-muted-foreground text-body-sm',
+				},
+			]
+			return (
+				<div className="border-border bg-background flex w-full flex-col overflow-hidden rounded-lg border">
+					<ShellNavbar variant="full" />
+					<div className="flex min-h-0 flex-1">
+						<Sidebar label="Admin" pathname="/admin/blog" groups={adminNavGroups} />
+						<div className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+							<PageHeader
+								eyebrow="Admin"
+								title="Blog"
+								headingLevel={1}
+								actions={
+									<>
+										<Button variant="outline">Preview</Button>
+										<Button>New post</Button>
+									</>
+								}
+							/>
+							<Table
+								aria-label="Posts"
+								columns={columns}
+								data={posts}
+								getRowId={(post) => post.id}
+								columnTemplate="1fr auto auto"
+								selection={selection}
+								getRowLabel={(post) => post.title}
+								rowActions={(post) => (
+									<>
+										<DropdownMenuItem>Edit</DropdownMenuItem>
+										<DropdownMenuItem>Copy link</DropdownMenuItem>
+										<DropdownMenuItem>Delete {post.title}</DropdownMenuItem>
+									</>
+								)}
+								getRowActionsLabel={(post) => `Actions for ${post.title}`}
+								footer={
+									<Pagination
+										page={1}
+										pageCount={4}
+										getPageHref={(p) => `#page-${p}`}
+									/>
+								}
+							/>
+						</div>
 					</div>
-					<span className="text-body-sm font-medium">No projects yet</span>
-					<span className="text-muted-foreground text-body-2xs">
-						Create your first project to get started.
-					</span>
-					<Button className="mt-2">New project</Button>
 				</div>
-				{/* Error */}
-				<Alert tone="error">
-					<AlertTitle>Couldn't load projects.</AlertTitle>
-					<AlertDescription>
-						Check your connection and try again.
-					</AlertDescription>
-				</Alert>
-				{/* Loading */}
-				<Card>
-					<CardContent className="flex flex-col gap-3">
-						<Skeleton className="h-4 w-2/5" />
-						<Skeleton className="h-4 w-5/6" />
-						<Skeleton className="h-4 w-3/4" />
-					</CardContent>
-				</Card>
-			</div>
-		),
+			)
+		},
 	},
 	{
 		name: 'code-block',

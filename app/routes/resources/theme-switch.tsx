@@ -51,8 +51,13 @@ export function ThemeSwitch({
 	const fetcher = useFetcher<typeof action>()
 	const requestInfo = useRequestInfo()
 
+	// No fixed `id`: the navbar renders more than one ThemeSwitch on mobile (the
+	// top-bar quick toggle + the drawer's appearance strip), and a hardcoded id
+	// gave them colliding `<form id>`s — Conform binds to the first match by DOM
+	// id, so the second form's submit fell through to a native document POST and
+	// rendered the action's raw JSON. Letting Conform generate a unique id per
+	// instance (its `useId` default) keeps every toggle a real fetcher submit.
 	const [form] = useForm({
-		id: 'theme-switch',
 		lastResult: fetcher.data?.result,
 	})
 
