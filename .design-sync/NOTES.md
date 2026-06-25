@@ -158,3 +158,65 @@ before re-running `/design-sync`.
   `<Name>Props` here won't follow automatically; update by hand.
 - **StatusButton glyph** limitation above is environment-level; re-check only if
   claude.ai/design changes how it serves bundle assets.
+
+## Composition templates (`templates/` layer) — hand-authored, NOT converter output
+
+The Claude Design project carries a **`templates/<slug>/`** layer of full-page
+**design compositions** alongside the 30 converter `components/`. These are
+**hand-authored `.dc.html`** files (the `<x-dc>` + `<x-import
+component-from-global-scope="EpicUI.*">` format, mounted by the `dc-runtime`
+`support.js` against a self-contained `ds-base.js`) — the converter never
+produces or syncs them; they're pushed by hand via `DesignSync`. The styleguide
+snapshot (`styleguide/` + `manifest.json`) is a **human-review artifact only** —
+it is NOT what reaches the project; nothing under `styleguide/` is uploaded.
+
+As of 2026-06-25 there are **four**, mirroring the app's real shells:
+`auth-sign-in` (minimal navbar + centered login FormCard), `settings-profile`
+(full navbar + account Sidebar + PageHeader + FormCards), `admin-blog` (full
+navbar + admin Sidebar + Table), `section-shell` (the reusable full AppShell
+frame). Each dir = `<Name>.dc.html` + `ds-base.js` + `support.js` + `.thumbnail`.
+
+Authoring recipe (kept in `.design-sync/.cache/templates/`, gitignored scratch):
+- **Layout is hand-built with inline-styled token divs** (`var(--brand)`,
+  `var(--card)`, `var(--border)`, …, redefined on the root wrapper); `x-import`
+  is used ONLY for **leaf primitives with scalar props** (Button, Input, Label,
+  Checkbox, Switch, Separator, Badge, StatusButton, Skeleton). Compound
+  components (Table, Sidebar, PageHeader, FormCard) **can't** be x-imported —
+  their array/function props don't pass as HTML attrs — so compose them inline.
+- `x-import` attrs map kebab→camel (`default-value`→`defaultValue`,
+  `html-for`→`htmlFor`); booleans pass as `="true"`; keep `hint-size="W,H"`.
+- **`ds-base.js` = `ds-bundle/_vendor/react.js` + `ds-bundle/_ds_bundle.js`
+  concatenated** — `react.js` sets `window.React`+`window.ReactDOM` (react-dom.js
+  is a 26-byte stub), `_ds_bundle.js` sets `window.EpicUI`. Rebuild it from a
+  fresh `ds-bundle/` so templates render the current (30-component) set. Reuse
+  the newest `support.js` (the local copy under
+  `docs/design/nav-handoff/.../support.js`).
+- **Render-verify before pushing**: `.design-sync/.cache/verify-templates.mjs`
+  loads each `.dc.html` in headless chromium, asserts the x-dc mounted (no
+  pageerror, real `<button>`s), and screenshots → `.thumbnail`. **Sandbox gotcha:
+  the dc-runtime's React fallback is an SRI-pinned unpkg CDN (network-blocked) —**
+  `page.addInitScript(ds-base.js)` so `window.React` is set first and the CDN
+  path no-ops. Launch playwright with default `chromium.launch()` (don't pin an
+  executablePath — cached builds live at `chrome-linux64/chrome` OR
+  `chrome-linux/chrome`); pass `type:'png'` to `screenshot` since `.thumbnail`
+  has no extension.
+- **Push**: `finalize_plan` with `localDir` = the templates working dir,
+  `writes: ["templates/**", "_ds_needs_recompile"]`, `deletes: []`; sentinel
+  first → files (ds-base.js 1.8MB each, one per `write_files` call) → sentinel
+  re-arm last so the app re-indexes the `@template` cards.
+
+## Navbar (AppShell) layout — kept in sync with the templates + reference screens
+
+The universal navbar (`app-shell.tsx` + `app-shell-nav.ts`) was restyled
+(EPT-79/81/82/83, 2026-06-25). The hand-built navbar in the `templates/` and in
+the styleguide `ShellNavbar`/`BrandLockup` (specimens.tsx) must track it:
+- Brand = the **▲ "Open Sourced" lockup** (`bg-brand` tile + stacked
+  `open`/`sourced` wordmark) on EVERY navbar — NOT the old pine "Epic Notes"
+  mark. (The auth *centered hero* keeps the separate pine tile — `AuthBrand`.)
+- **`minimal`** (auth): lockup + theme toggle, borderless.
+- **`full`** (account/admin): lockup + the single **„Zurück zur Website"**
+  back-link; right cluster = the **accent-customizer pill** (accent swatch +
+  name, e.g. "Teal") + the **avatar identity** (ringed avatar + bold name +
+  chevron). `showAccentPicker` is now true on `full`, so the customizer subsumes
+  the bare theme toggle on desktop. When the nav changes again, update both the
+  4 `.dc.html` navbars and `ShellNavbar` together.

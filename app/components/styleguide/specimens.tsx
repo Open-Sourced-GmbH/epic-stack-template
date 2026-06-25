@@ -349,11 +349,37 @@ function PineMark({
 }
 
 /**
- * The universal top navbar from `app-shell.tsx`, rebuilt as a self-contained,
- * token-styled strip for the reference-screen compositions (the real `AppShell`
- * pulls request-info-backed theme/accent switches that can't render outside a
- * route). `minimal` is the borderless auth pass-through (logo + theme toggle);
- * `full` carries the hairline plus an identity avatar — the account/admin bar.
+ * The "Open Sourced" brand lockup (▲ on a `bg-brand` tile beside the stacked
+ * open/sourced wordmark) — the single navbar/footer mark (ADR-068, EPT-81),
+ * mirroring `logo.tsx`. The navbar logo; the auth centered hero keeps the
+ * separate {@link PineMark} tile (matching `_auth/_layout.tsx`'s `AuthBrand`).
+ */
+function BrandLockup() {
+	return (
+		<span className="flex items-center gap-2.5">
+			<span
+				aria-hidden
+				className="bg-brand text-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg text-sm font-bold"
+			>
+				▲
+			</span>
+			<span className="grid leading-snug">
+				<span className="text-foreground text-sm font-bold tracking-tight">open</span>
+				<span className="text-muted-foreground text-[0.625rem] font-semibold tracking-[0.2em] uppercase">
+					sourced
+				</span>
+			</span>
+		</span>
+	)
+}
+
+/**
+ * The universal top navbar from `app-shell.tsx` (post EPT-81/82), rebuilt as a
+ * self-contained, token-styled strip for the reference-screen compositions (the
+ * real `AppShell` pulls request-info-backed switches that can't render outside a
+ * route). `minimal` is the borderless auth pass-through (brand lockup + theme
+ * toggle); `full` adds the „Zurück zur Website" back-link and a right cluster of
+ * the accent-customizer pill + the avatar identity (ringed avatar + name).
  */
 function ShellNavbar({ variant }: { variant: 'minimal' | 'full' }) {
 	return (
@@ -364,29 +390,61 @@ function ShellNavbar({ variant }: { variant: 'minimal' | 'full' }) {
 				aria-label="Primary"
 				className="flex h-15 items-center justify-between gap-6 px-6"
 			>
-				<div className="flex items-center gap-2.5">
-					<PineMark className="size-8 rounded-lg" glyphClassName="size-5" />
-					<span className="text-body-sm font-semibold">Epic Notes</span>
+				<div className="flex items-center gap-6">
+					<BrandLockup />
+					{variant === 'full' ? (
+						<span className="text-muted-foreground text-sm">
+							Zurück zur Website
+						</span>
+					) : null}
 				</div>
 				<div className="flex items-center gap-2.5">
-					{/* Theme toggle — a ghost icon button carrying the sun glyph (Icon
-					    isn't in the curated bundle, so the glyph is inline, mirroring the
-					    Switch specimen's dark-mode composition). */}
-					<Button variant="ghost" size="icon-sm" aria-label="Toggle theme">
-						<svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden>
-							<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
-							<path
-								d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-							/>
-						</svg>
-					</Button>
 					{variant === 'full' ? (
-						<Avatar className="size-8">
-							<AvatarFallback>AL</AvatarFallback>
-						</Avatar>
+						/* Accent-customizer trigger pill (collapsed): the active accent
+						   swatch + name. Subsumes the bare theme toggle on full/marketing
+						   surfaces (ADR-062). */
+						<span className="bg-card text-card-foreground border-border flex items-center gap-2 rounded-full border py-1.5 pr-3 pl-1.5">
+							<span className="bg-brand size-5 rounded-full" />
+							<span className="text-sm font-medium">Teal</span>
+						</span>
+					) : (
+						/* Minimal (auth): a ghost theme toggle, the sun glyph inline (Icon
+						   isn't in the curated bundle). */
+						<Button variant="ghost" size="icon-sm" aria-label="Toggle theme">
+							<svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden>
+								<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+								<path
+									d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+								/>
+							</svg>
+						</Button>
+					)}
+					{variant === 'full' ? (
+						<span className="flex items-center gap-2">
+							<Avatar className="ring-border size-8 ring-1">
+								<AvatarFallback className="bg-brand-soft text-brand">
+									AL
+								</AvatarFallback>
+							</Avatar>
+							<span className="text-body-sm font-bold">Ada Lovelace</span>
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								className="text-muted-foreground size-3.5"
+								aria-hidden
+							>
+								<path
+									d="m6 9 6 6 6-6"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						</span>
 					) : null}
 				</div>
 			</nav>
