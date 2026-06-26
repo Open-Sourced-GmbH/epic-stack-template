@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 import { cn } from '#app/utils/misc.tsx'
 import { Button } from './button.tsx'
@@ -98,6 +98,13 @@ type TableProps<Row> = {
 	getRowLabel?: (row: Row) => string
 	/** Per-row overflow-menu content (a fragment of `DropdownMenuItem`s). */
 	rowActions?: (row: Row) => ReactNode
+	/**
+	 * Optional expandable detail rendered in a full-width row directly beneath its
+	 * row. Return `null`/`undefined` to leave a row un-expanded (the consumer owns
+	 * the open/closed state and the expand control in a cell). When any row has
+	 * detail the grid stays the same — the detail row spans every column.
+	 */
+	renderRowDetail?: (row: Row) => ReactNode
 	/** Accessible label for a row's ⋯ action trigger. @default 'Row actions' */
 	getRowActionsLabel?: (row: Row) => string
 	/**
@@ -126,6 +133,7 @@ function Table<Row>({
 	getRowLabel,
 	rowActions,
 	getRowActionsLabel,
+	renderRowDetail,
 	emptyState,
 	loading = false,
 	loadingRows = 3,
@@ -216,13 +224,15 @@ function Table<Row>({
 							: data.map((row) => {
 									const id = getRowId(row)
 									const isSelected = selection?.isSelected(id) ?? false
+									const detail = renderRowDetail?.(row)
 									return (
+										<Fragment key={id}>
 										<div
-											key={id}
 											role="row"
 											style={rowStyle}
 											className={cn(
-												'border-border hover:bg-accent text-body-sm grid items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0',
+												'border-border hover:bg-accent text-body-sm grid items-center gap-3 border-b px-4 py-3 transition-colors',
+												detail == null && 'last:border-b-0',
 												zebra && 'even:bg-muted/40',
 												isSelected && 'shadow-[inset_3px_0_0_0_var(--brand)]',
 											)}
@@ -269,6 +279,15 @@ function Table<Row>({
 												</div>
 											) : null}
 										</div>
+										{detail != null ? (
+											<div
+												role="row"
+												className="border-border bg-muted/30 border-b px-4 py-3 last:border-b-0"
+											>
+												<div role="cell">{detail}</div>
+											</div>
+										) : null}
+										</Fragment>
 									)
 								})}
 					</div>

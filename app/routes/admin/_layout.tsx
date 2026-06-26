@@ -41,10 +41,10 @@ const adminGroups: SidebarGroup[] = [
 ]
 
 /**
- * Build the access-management group — Users and Roles now, Audit as its slice
- * lands. Each item renders only for a viewer holding *its own* read permission, so
- * a plain user who somehow reaches an admin surface never sees a link they'd be
- * 403'd on, and the group itself disappears when it would be empty.
+ * Build the access-management group — Users, Roles, and the Audit log. Each item
+ * renders only for a viewer holding *its own* read permission, so a plain user who
+ * somehow reaches an admin surface never sees a link they'd be 403'd on, and the
+ * group itself disappears when it would be empty.
  */
 function accessGroupFor(
 	user: ReturnType<typeof useOptionalUser>,
@@ -55,6 +55,9 @@ function accessGroupFor(
 	}
 	if (userHasPermission(user, 'read:role:any')) {
 		items.push({ to: '/admin/roles', label: 'Roles', icon: 'lock-closed' })
+	}
+	if (userHasPermission(user, 'read:audit:any')) {
+		items.push({ to: '/admin/audit', label: 'Audit log', icon: 'clock' })
 	}
 	return items.length ? { label: 'Access', items } : null
 }
