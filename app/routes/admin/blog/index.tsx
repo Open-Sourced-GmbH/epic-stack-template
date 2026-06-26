@@ -240,7 +240,7 @@ function BulkActionBar({ selection }: { selection: BarSelection }) {
 	if (count === 0) return null
 
 	return (
-		<div className="bg-card border-border mb-4 flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3">
+		<div className="bg-card border-border mb-4 flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3">
 			<span className="text-body-sm font-medium" aria-live="polite">
 				{count} selected
 			</span>

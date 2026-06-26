@@ -120,7 +120,7 @@ export function ThemeCustomizer({
 					className="size-5 rounded-full"
 					style={{ backgroundColor: brandColor(draft) }}
 				/>
-				<span className="hidden text-sm font-medium sm:inline">
+				<span className="hidden text-body-xs font-medium sm:inline">
 					{accentName}
 				</span>
 			</button>
@@ -129,10 +129,10 @@ export function ThemeCustomizer({
 				<div
 					role="region"
 					aria-label="Theme customizer"
-					className="bg-card text-card-foreground border-border tc-pop absolute top-full right-0 z-50 mt-2 w-72 rounded-xl border p-4 shadow-xl"
+					className="bg-card text-card-foreground border-border tc-pop absolute top-full right-0 z-50 mt-2 w-72 rounded-lg border p-4 shadow-overlay"
 				>
 					<div className="flex items-center justify-between">
-						<p className="text-sm font-semibold">Customize</p>
+						<p className="text-body-xs font-semibold">Customize</p>
 						<button
 							type="button"
 							aria-label="Close customizer"
@@ -249,7 +249,7 @@ function AccentSlider({
 }) {
 	return (
 		<div className="grid gap-1.5">
-			<span className="text-muted-foreground text-xs font-medium">{label}</span>
+			<span className="text-muted-foreground text-body-2xs font-medium">{label}</span>
 			<Slider
 				aria-label={label}
 				value={value}
@@ -275,7 +275,7 @@ function Segment({
 }) {
 	return (
 		<div className={className}>
-			<span className="text-muted-foreground text-xs font-medium">{label}</span>
+			<span className="text-muted-foreground text-body-2xs font-medium">{label}</span>
 			<div
 				role="group"
 				aria-label={label}
@@ -302,7 +302,7 @@ function SegmentButton({
 			aria-pressed={active}
 			onClick={onClick}
 			className={cn(
-				'focus-visible:ring-ring flex flex-1 cursor-pointer items-center justify-center rounded-md px-2 py-1.5 text-xs font-medium focus-visible:ring-2 focus-visible:outline-hidden',
+				'focus-visible:ring-ring flex flex-1 cursor-pointer items-center justify-center rounded-md px-2 py-1.5 text-body-2xs font-medium focus-visible:ring-2 focus-visible:outline-hidden',
 				active
 					? 'bg-brand-soft text-brand'
 					: 'text-muted-foreground hover:text-foreground',

@@ -95,7 +95,7 @@ export function CommandShowpiece() {
 			className="container scroll-mt-20 py-24"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Command palette
 				</p>
 				<h2
@@ -106,7 +106,7 @@ export function CommandShowpiece() {
 				</h2>
 				<p className="text-muted-foreground mt-4 text-pretty">
 					Press{' '}
-					<kbd className="bg-muted text-muted-foreground border-border rounded-md border px-1.5 py-0.5 text-xs font-medium">
+					<kbd className="bg-muted text-muted-foreground border-border rounded-md border px-1.5 py-0.5 text-body-2xs font-medium">
 						⌘K
 					</kbd>{' '}
 					anywhere — or use the bar below — to jump between sections and switch
@@ -125,7 +125,7 @@ export function CommandShowpiece() {
 						<span className="text-body-sm flex-1">
 							Type a command or search…
 						</span>
-						<kbd className="bg-muted text-muted-foreground border-border rounded-md border px-1.5 py-0.5 text-xs font-medium">
+						<kbd className="bg-muted text-muted-foreground border-border rounded-md border px-1.5 py-0.5 text-body-2xs font-medium">
 							⌘K
 						</kbd>
 					</button>

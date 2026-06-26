@@ -47,7 +47,7 @@ export default function TwoFactorRoute({ loaderData }: Route.ComponentProps) {
 							You have not enabled two-factor authentication yet.
 						</Icon>
 					</p>
-					<p className="text-sm">
+					<p className="text-body-xs">
 						Two factor authentication adds an extra layer of security to your
 						account. You will need to enter a code from an authenticator app
 						like{' '}

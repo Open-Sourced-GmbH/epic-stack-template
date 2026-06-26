@@ -41,7 +41,7 @@ export function getPaginationRange(
 
 /** Shared chip skeleton for every pager cell (numbers + prev/next controls). */
 const pagerCellBase =
-	'focus-cosy border-border inline-flex size-[var(--pager-size)] items-center justify-center rounded-md border text-sm'
+	'focus-cosy border-border inline-flex size-[var(--pager-size)] items-center justify-center rounded-md border text-body-xs'
 /** Hover treatment shared by the navigable (non-active, non-disabled) cells. */
 const pagerInteractive = 'hover:bg-accent hover:text-accent-foreground'
 
@@ -126,7 +126,7 @@ export function Pagination({
 					<span
 						key={`ellipsis-${index}`}
 						aria-hidden="true"
-						className="text-muted-foreground inline-flex size-[var(--pager-size)] items-center justify-center text-sm"
+						className="text-muted-foreground inline-flex size-[var(--pager-size)] items-center justify-center text-body-xs"
 					>
 						…
 					</span>

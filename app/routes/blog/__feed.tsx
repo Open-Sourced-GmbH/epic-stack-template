@@ -166,7 +166,7 @@ export function HeroLead({ post }: { post: FeedPost }) {
 export function EmptyFeed() {
 	return (
 		<div className="flex flex-col items-center gap-4 py-20 text-center">
-			<div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
+			<div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-xl">
 				<Icon name="file-text" className="size-6" />
 			</div>
 			<div className="space-y-1">

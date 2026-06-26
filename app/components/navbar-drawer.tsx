@@ -162,7 +162,7 @@ export function NavbarDrawer({
 									<p className="text-body-sm truncate font-bold">
 										{user.name ?? user.username}
 									</p>
-									<p className="text-muted-foreground truncate text-xs">
+									<p className="text-muted-foreground truncate text-body-2xs">
 										{user.email}
 									</p>
 								</div>
@@ -184,7 +184,7 @@ export function NavbarDrawer({
 						) : null}
 
 						<div className="flex items-center justify-between gap-3">
-							<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+							<span className="text-muted-foreground text-body-2xs font-medium tracking-wide uppercase">
 								Darstellung
 							</span>
 							<div className="flex items-center gap-3">

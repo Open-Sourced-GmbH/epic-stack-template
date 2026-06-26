@@ -72,7 +72,7 @@ export function Work() {
 		>
 			<div className="container">
 				<div className="mx-auto max-w-2xl text-center">
-					<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 						Selected work
 					</p>
 					<h2
@@ -107,21 +107,21 @@ export function Work() {
 									className="border-border aspect-[8/5] w-full rounded-xl border object-cover transition group-hover:-translate-y-1 group-hover:shadow-lg"
 								/>
 								<div className="flex items-center justify-between gap-3">
-									<h3 className="text-base font-semibold tracking-tight">
+									<h3 className="text-body-sm font-semibold tracking-tight">
 										{project.title}
 									</h3>
-									<span className="bg-brand-soft text-brand shrink-0 rounded-full px-2.5 py-1 text-xs font-medium">
+									<span className="bg-brand-soft text-brand shrink-0 rounded-full px-2.5 py-1 text-body-2xs font-medium">
 										{project.tag}
 									</span>
 								</div>
-								<p className="text-muted-foreground text-sm leading-relaxed text-pretty">
+								<p className="text-muted-foreground text-body-xs leading-relaxed text-pretty">
 									{project.body}
 								</p>
 								<a
 									href={project.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-brand group/link inline-flex w-fit items-center gap-1.5 text-sm font-medium"
+									className="text-brand group/link inline-flex w-fit items-center gap-1.5 text-body-xs font-medium"
 								>
 									{project.domain}
 									<span

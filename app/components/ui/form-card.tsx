@@ -10,7 +10,7 @@ import { cn } from '#app/utils/misc.tsx'
  * a stronger danger hairline (`border-destructive/35`) — for "delete account"
  * style sections. Tokens only.
  */
-const formCardVariants = cva('rounded-xl border', {
+const formCardVariants = cva('rounded-lg border', {
 	variants: {
 		variant: {
 			default: 'bg-card text-card-foreground border-border',
@@ -30,7 +30,7 @@ export type FormCardVariant = NonNullable<
  * FormCard — a bespoke Foundation component (ADR 019): the one card surface that
  * frames both an auth form (header optional, centered) and a settings section
  * (header with title + description). `bg-card text-card-foreground border
- * border-border` at `rounded-xl`, with an optional header (title `text-h6` +
+ * border-border` at `rounded-lg`, with an optional header (title `text-h6` +
  * optional `text-muted-foreground` description, divided from the body by a
  * border) and padded body.
  *

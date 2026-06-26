@@ -15,7 +15,7 @@ import { Icon } from './icon.tsx'
  * and split by a `SelectSeparator`.
  *
  * The trigger matches `Input` exactly — same `border-input`/`bg-background`
- * surface, `h-10` height, and `focus-cosy` ring — and honours the same
+ * surface, `h-8` height, and `focus-cosy` ring — and honours the same
  * invalid-state contract: `aria-invalid` repaints the border with
  * `--input-invalid`. The panel is a token-styled popover (`bg-popover`/
  * `text-popover-foreground`), and the selected item shows a brand check.
@@ -51,7 +51,7 @@ function SelectTrigger({
 			className={cn(
 				// Mirror the Input surface: same border/background tokens, height,
 				// padding, focus ring, invalid border, and disabled treatment.
-				'focus-cosy border-input bg-background placeholder:text-muted-foreground aria-[invalid]:border-input-invalid flex h-10 w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-base outline-hidden disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground md:text-sm [&>span]:truncate',
+				'focus-cosy border-input bg-background placeholder:text-muted-foreground aria-[invalid]:border-input-invalid flex h-8 w-full items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-body-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground md:text-body-xs [&>span]:truncate',
 				className,
 			)}
 			{...props}
@@ -88,7 +88,7 @@ function SelectContent({
 			data-slot="select-content"
 			position={position}
 			className={cn(
-				'bg-popover text-popover-foreground border-border data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border shadow-md',
+				'bg-popover text-popover-foreground border-border data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border shadow-overlay',
 				position === 'popper' &&
 					'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
 				className,
@@ -116,7 +116,7 @@ function SelectLabel({
 		<SelectPrimitive.Label
 			data-slot="select-label"
 			className={cn(
-				'text-muted-foreground px-2 py-1.5 text-xs font-semibold',
+				'text-muted-foreground px-2 py-1.5 text-body-2xs font-semibold',
 				className,
 			)}
 			{...props}
@@ -133,7 +133,7 @@ function SelectItem({
 		<SelectPrimitive.Item
 			data-slot="select-item"
 			className={cn(
-				'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+				'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-body-xs outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50',
 				className,
 			)}
 			{...props}

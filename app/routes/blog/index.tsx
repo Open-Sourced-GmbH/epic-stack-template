@@ -52,7 +52,7 @@ export default function BlogIndex({ loaderData }: Route.ComponentProps) {
 	return (
 		<main className="container py-16 md:py-24">
 			<header className="mb-10 max-w-2xl">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					The Open Sourced journal
 				</p>
 				<h1 className="text-h2 mt-3 tracking-tight text-balance">

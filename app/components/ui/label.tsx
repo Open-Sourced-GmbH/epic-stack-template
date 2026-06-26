@@ -5,7 +5,7 @@ import * as React from 'react'
 import { cn } from '#app/utils/misc.tsx'
 
 const labelVariants = cva(
-	'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+	'text-body-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
 )
 
 const Label = ({

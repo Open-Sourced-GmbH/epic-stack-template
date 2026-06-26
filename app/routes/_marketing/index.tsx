@@ -36,7 +36,7 @@ function SectionStub({ id, title }: { id: string; title: string }) {
 			aria-labelledby={`${id}-heading`}
 			className="container scroll-mt-20 py-24"
 		>
-			<h2 id={`${id}-heading`} className="text-2xl font-semibold">
+			<h2 id={`${id}-heading`} className="text-body-lg font-semibold">
 				{title}
 			</h2>
 			<p className="text-muted-foreground mt-2">Coming soon.</p>

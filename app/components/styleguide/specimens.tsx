@@ -360,12 +360,12 @@ function BrandLockup() {
 		<span className="flex items-center gap-2.5">
 			<span
 				aria-hidden
-				className="bg-brand text-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg text-sm font-bold"
+				className="bg-brand text-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg text-body-xs font-bold"
 			>
 				▲
 			</span>
 			<span className="grid leading-snug">
-				<span className="text-foreground text-sm font-bold tracking-tight">open</span>
+				<span className="text-foreground text-body-xs font-bold tracking-tight">open</span>
 				<span className="text-muted-foreground text-[0.625rem] font-semibold tracking-[0.2em] uppercase">
 					sourced
 				</span>
@@ -394,7 +394,7 @@ function ShellNavbar({ variant }: { variant: 'minimal' | 'full' }) {
 				<div className="flex items-center gap-6">
 					<BrandLockup />
 					{variant === 'full' ? (
-						<span className="text-muted-foreground text-sm">
+						<span className="text-muted-foreground text-body-xs">
 							Zurück zur Website
 						</span>
 					) : null}
@@ -406,7 +406,7 @@ function ShellNavbar({ variant }: { variant: 'minimal' | 'full' }) {
 						   surfaces (ADR-062). */
 						<span className="bg-card text-card-foreground border-border flex items-center gap-2 rounded-full border py-1.5 pr-3 pl-1.5">
 							<span className="bg-brand size-5 rounded-full" />
-							<span className="text-sm font-medium">Teal</span>
+							<span className="text-body-xs font-medium">Teal</span>
 						</span>
 					) : (
 						/* Minimal (auth): a ghost theme toggle, the sun glyph inline (Icon
@@ -1898,11 +1898,11 @@ export const specimens: Specimen[] = [
 					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
 					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
 					<span className="size-3 rounded-full bg-[var(--code-comment)]" />
-					<span className="ml-2 font-mono text-xs text-[var(--code-comment)]">
+					<span className="ml-2 font-mono text-body-2xs text-[var(--code-comment)]">
 						markdown.server.ts
 					</span>
 				</div>
-				<pre className="overflow-x-auto p-4 text-sm leading-relaxed text-[var(--code-fg)]">
+				<pre className="overflow-x-auto p-4 text-body-xs leading-relaxed text-[var(--code-fg)]">
 					<HighlightedSnippet />
 				</pre>
 			</div>

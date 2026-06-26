@@ -130,7 +130,7 @@ export default function LoginPage({ actionData }: Route.ComponentProps) {
 	return (
 		<div className="w-full max-w-[360px]">
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Welcome back
 				</p>
 				<h1 className="text-h4">Sign in to your account</h1>
@@ -247,7 +247,7 @@ function DeactivatedNotice({ email }: { email: string }) {
 	return (
 		<div className="w-full max-w-[380px]">
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Account access
 				</p>
 				<h1 className="text-h4">This account is deactivated</h1>

@@ -169,7 +169,7 @@ function Verdict({
 			role="status"
 			aria-live="polite"
 			className={cn(
-				'flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm',
+				'flex items-start gap-2 rounded-lg border px-3 py-2.5 text-body-xs',
 				!verdict && 'text-muted-foreground border-dashed',
 				accepted &&
 					'border-emerald-600/30 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400',
@@ -187,7 +187,7 @@ function Verdict({
 					<Icon name="check" className="mt-0.5" aria-hidden />
 					<span>
 						<strong className="font-semibold">Accepted</strong> — passed{' '}
-						<code className="font-mono text-xs">honeypot.check()</code>.
+						<code className="font-mono text-body-2xs">honeypot.check()</code>.
 					</span>
 				</>
 			) : rejected ? (
@@ -195,7 +195,7 @@ function Verdict({
 					<Icon name="cross-1" className="mt-0.5" aria-hidden />
 					<span>
 						<strong className="font-semibold">Rejected (400)</strong> —{' '}
-						<code className="font-mono text-xs">SpamError</code>: {verdict.reason}
+						<code className="font-mono text-body-2xs">SpamError</code>: {verdict.reason}
 					</span>
 				</>
 			) : (
@@ -227,7 +227,7 @@ export function CodeSample() {
 			className="container scroll-mt-20 py-24"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Proof of craft
 				</p>
 				<h2

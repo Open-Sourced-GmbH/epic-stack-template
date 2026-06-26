@@ -43,7 +43,7 @@ function tagPageHref(slug: string, page: number) {
 function TagEmpty() {
 	return (
 		<div className="flex flex-col items-center gap-4 py-20 text-center">
-			<div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
+			<div className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-xl">
 				<Icon name="file-text" className="size-6" />
 			</div>
 			<div className="space-y-1">
@@ -82,7 +82,7 @@ export default function TagArchive({ loaderData }: Route.ComponentProps) {
 						<Icon name="arrow-left">Back to blog</Icon>
 					</Link>
 				</Button>
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Tag
 				</p>
 				<h1 className="text-h2 mt-3 tracking-tight text-balance">{tag.name}</h1>

@@ -76,7 +76,7 @@ export function UserDropdown() {
 						/>
 						<div className="min-w-0">
 							<p className="text-body-sm truncate font-bold">{displayName}</p>
-							<p className="text-muted-foreground truncate text-xs">
+							<p className="text-muted-foreground truncate text-body-2xs">
 								{user.email}
 							</p>
 						</div>

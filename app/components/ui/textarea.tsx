@@ -9,7 +9,7 @@ const Textarea = ({
 	return (
 		<textarea
 			className={cn(
-				'focus-cosy border-input bg-background placeholder:text-muted-foreground aria-[invalid]:border-input-invalid flex min-h-[80px] w-full rounded-md border px-3 py-2 text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+				'focus-cosy border-input bg-background placeholder:text-muted-foreground aria-[invalid]:border-input-invalid flex min-h-20 w-full rounded-md border px-3 py-2 text-body-sm disabled:cursor-not-allowed disabled:opacity-50 md:text-body-xs',
 				className,
 			)}
 			{...props}

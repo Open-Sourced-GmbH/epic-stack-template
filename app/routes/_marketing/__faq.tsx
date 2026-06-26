@@ -63,7 +63,7 @@ export function Faq() {
 		>
 			<div className="grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
 				<div data-reveal className="md:sticky md:top-24 md:self-start">
-					<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+					<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 						FAQ
 					</p>
 					<h2

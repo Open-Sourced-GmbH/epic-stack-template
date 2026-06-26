@@ -160,7 +160,7 @@ export default function Passkeys({ loaderData }: Route.ComponentProps) {
 											: 'Security Key'}
 									</span>
 								</div>
-								<div className="text-muted-foreground text-sm">
+								<div className="text-muted-foreground text-body-xs">
 									Registered {formatDistanceToNow(new Date(passkey.createdAt))}{' '}
 									ago
 								</div>

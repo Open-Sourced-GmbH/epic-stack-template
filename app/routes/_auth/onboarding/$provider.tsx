@@ -190,7 +190,7 @@ export default function OnboardingProviderRoute({
 	return (
 		<div className="w-full max-w-[400px]">
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Almost there
 				</p>
 				<h1 className="text-h4">Welcome aboard {loaderData.email}!</h1>

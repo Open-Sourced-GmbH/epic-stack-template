@@ -33,7 +33,7 @@ const Separator = ({
 					decorative
 					className="bg-border h-px flex-1"
 				/>
-				<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+				<span className="text-muted-foreground text-body-2xs font-medium tracking-wide uppercase">
 					{label}
 				</span>
 				<SeparatorPrimitive.Root

@@ -165,7 +165,7 @@ function Table<Row>({
 			aria-label={ariaLabel}
 			data-slot="table"
 			className={cn(
-				'bg-card border-border overflow-hidden rounded-xl border',
+				'bg-card border-border overflow-hidden rounded-lg border',
 				className,
 			)}
 		>
@@ -177,7 +177,7 @@ function Table<Row>({
 						<div
 							role="row"
 							style={rowStyle}
-							className="text-muted-foreground border-border text-body-2xs grid items-center gap-3 border-b px-4 py-2.5 font-medium tracking-wide uppercase"
+							className="text-muted-foreground border-border bg-muted/60 text-body-2xs grid items-center gap-3 border-b px-4 py-3 font-medium tracking-wide uppercase"
 						>
 							{selection ? (
 								<div role="columnheader">

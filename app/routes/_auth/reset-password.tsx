@@ -100,7 +100,7 @@ export default function ResetPasswordPage({
 	return (
 		<div className="w-full max-w-[360px]">
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Password reset
 				</p>
 				<h1 className="text-h4">Choose a new password</h1>

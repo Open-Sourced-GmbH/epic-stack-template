@@ -31,7 +31,7 @@ export function Logo({
 		>
 			<span
 				aria-hidden="true"
-				className="bg-brand text-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg text-sm font-bold"
+				className="bg-brand text-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg text-body-xs font-bold"
 			>
 				▲
 			</span>
@@ -41,7 +41,7 @@ export function Logo({
 					hideWordmarkOnMobile && 'hidden md:grid',
 				)}
 			>
-				<span className="text-foreground text-sm font-bold tracking-tight transition group-hover:-translate-x-0.5">
+				<span className="text-foreground text-body-xs font-bold tracking-tight transition group-hover:-translate-x-0.5">
 					open
 				</span>
 				<span className="text-muted-foreground text-[0.625rem] font-semibold tracking-[0.2em] uppercase transition group-hover:translate-x-0.5">

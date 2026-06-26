@@ -202,7 +202,7 @@ function AppNavbar({
 											// state is server-rendered, so the animation is pure
 											// enhancement on top of a plain coloured link.
 											className={cn(
-												'after:bg-brand hover:text-brand relative py-1 text-sm transition-colors',
+												'after:bg-brand hover:text-brand relative py-1 text-body-xs transition-colors',
 												'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:transition-transform hover:after:scale-x-100',
 												active
 													? 'text-brand after:scale-x-100'

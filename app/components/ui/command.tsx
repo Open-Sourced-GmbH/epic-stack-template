@@ -68,7 +68,7 @@ function Command({
 			data-slot="command"
 			loop
 			className={cn(
-				'bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-xl',
+				'bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-lg',
 				className,
 			)}
 			{...props}
@@ -296,7 +296,7 @@ function CommandPalette({
 
 	if (open === undefined) {
 		return (
-			<div className="border-border w-full max-w-lg overflow-hidden rounded-xl border shadow-md">
+			<div className="border-border w-full max-w-lg overflow-hidden rounded-lg border shadow-overlay">
 				{body}
 			</div>
 		)

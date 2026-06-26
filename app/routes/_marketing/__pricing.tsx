@@ -69,7 +69,7 @@ export function Pricing() {
 			className="container scroll-mt-20 py-24"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Pricing
 				</p>
 				<h2
@@ -98,7 +98,7 @@ export function Pricing() {
 						)}
 					>
 						{tier.featured ? (
-							<span className="bg-brand text-primary-foreground absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold">
+							<span className="bg-brand text-primary-foreground absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-body-2xs font-semibold">
 								{FEATURED_BADGE}
 							</span>
 						) : null}
@@ -108,15 +108,15 @@ export function Pricing() {
 							<span className="text-3xl font-semibold tracking-tight">
 								{tier.price}
 							</span>
-							<span className="text-muted-foreground text-sm">
+							<span className="text-muted-foreground text-body-xs">
 								{tier.cadence}
 							</span>
 						</p>
-						<p className="text-muted-foreground mt-3 text-sm text-pretty">
+						<p className="text-muted-foreground mt-3 text-body-xs text-pretty">
 							{tier.blurb}
 						</p>
 
-						<ul role="list" className="mt-6 flex flex-col gap-3 text-sm">
+						<ul role="list" className="mt-6 flex flex-col gap-3 text-body-xs">
 							{tier.features.map((feature) => (
 								<li key={feature} className="flex items-start gap-2.5">
 									<Icon

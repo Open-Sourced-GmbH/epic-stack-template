@@ -58,7 +58,7 @@ export function Hero() {
 
 			<div className="relative z-1 container grid items-center gap-[clamp(24px,4vw,56px)] py-[clamp(36px,6vw,76px)] min-[880px]:grid-cols-[0.95fr_1.05fr]">
 				<div>
-					<p className="anim d1 text-brand inline-flex items-center gap-2.5 text-sm font-semibold tracking-wide uppercase">
+					<p className="anim d1 text-brand inline-flex items-center gap-2.5 text-body-xs font-semibold tracking-wide uppercase">
 						<span className="bg-brand dotpulse h-[7px] w-[7px] rounded-full" />
 						Product engineering studio
 					</p>
@@ -81,7 +81,7 @@ export function Hero() {
 							<a href="#work">See the work</a>
 						</Button>
 					</div>
-					<div className="anim d5 text-muted-foreground mt-6 flex flex-wrap items-center gap-2.5 text-sm">
+					<div className="anim d5 text-muted-foreground mt-6 flex flex-wrap items-center gap-2.5 text-body-xs">
 						<span>Booking Q3 2026</span>
 						<Dot />
 						<span>Fixed-scope sprints</span>
@@ -110,7 +110,7 @@ export function Hero() {
 										Production deployment
 									</div>
 								</div>
-								<span className="bg-brand-soft text-brand ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium">
+								<span className="bg-brand-soft text-brand ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-body-2xs font-medium">
 									<span className="bg-brand h-1.5 w-1.5 rounded-full" />
 									Live
 								</span>

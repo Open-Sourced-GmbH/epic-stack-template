@@ -80,7 +80,7 @@ function SheetContent({
 			data-slot="sheet-content"
 			data-side={side}
 			className={cn(
-				'bg-popover text-popover-foreground border-border data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-y-0 z-50 flex h-full w-3/4 max-w-sm flex-col gap-4 p-6 shadow-lg data-[state=closed]:duration-200 data-[state=open]:duration-300',
+				'bg-popover text-popover-foreground border-border data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-y-0 z-50 flex h-full w-3/4 max-w-sm flex-col gap-4 p-6 shadow-overlay data-[state=closed]:duration-200 data-[state=open]:duration-300',
 				side === 'left'
 					? 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left left-0 border-r'
 					: 'data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right right-0 border-l',

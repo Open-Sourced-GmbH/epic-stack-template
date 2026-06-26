@@ -3,7 +3,7 @@ import { type GetSrcArgs, defaultGetSrc } from 'openimg/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFormAction, useNavigation } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
-import { twMerge } from 'tailwind-merge'
+import { extendTailwindMerge } from 'tailwind-merge'
 
 export function getUserImgSrc(objectKey?: string | null) {
 	return objectKey
@@ -73,6 +73,45 @@ export function getErrorMessage(error: unknown) {
 	console.error('Unable to get error message for error', error)
 	return 'Unknown Error'
 }
+
+/**
+ * tailwind-merge, taught about this app's custom display ramp. The semantic
+ * font-size tokens (`text-body-*`, `text-h*`, `text-caption`, `text-button`,
+ * `text-mega` from `app/styles/tailwind.css`) aren't in tailwind-merge's default
+ * config, so out of the box it misreads e.g. `text-body-sm` as a text *color*
+ * and, in a single `cn(...)` call, drops a real color token sitting beside it
+ * (`cn('text-muted-foreground text-body-sm')` → just `text-body-sm`). Registering
+ * them in the `font-size` group fixes the collision: a size and a color now
+ * coexist, while two sizes still resolve last-wins as expected.
+ */
+const twMerge = extendTailwindMerge({
+	extend: {
+		classGroups: {
+			'font-size': [
+				{
+					text: [
+						'mega',
+						'h1',
+						'h2',
+						'h3',
+						'h4',
+						'h5',
+						'h6',
+						'body-2xl',
+						'body-xl',
+						'body-lg',
+						'body-md',
+						'body-sm',
+						'body-xs',
+						'body-2xs',
+						'caption',
+						'button',
+					],
+				},
+			],
+		},
+	},
+})
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))

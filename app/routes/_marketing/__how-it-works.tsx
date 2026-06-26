@@ -62,7 +62,7 @@ export function HowItWorks() {
 			className="container scroll-mt-20 py-32"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					How it works
 				</p>
 				<h2
@@ -98,13 +98,13 @@ export function HowItWorks() {
 						</div>
 						<div className={index < STEPS.length - 1 ? 'pb-24' : ''}>
 							<div className="mb-3 flex flex-wrap items-baseline gap-3">
-								<span className="text-brand text-xs font-bold tracking-wider">
+								<span className="text-brand text-body-2xs font-bold tracking-wider">
 									{step.n}
 								</span>
-								<h3 className="text-xl font-semibold tracking-tight">
+								<h3 className="text-body-md font-semibold tracking-tight">
 									{step.title}
 								</h3>
-								<span className="text-brand bg-brand-soft border-border ml-auto rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide whitespace-nowrap">
+								<span className="text-brand bg-brand-soft border-border ml-auto rounded-full border px-2.5 py-1 text-body-2xs font-medium tracking-wide whitespace-nowrap">
 									{step.dur}
 								</span>
 							</div>

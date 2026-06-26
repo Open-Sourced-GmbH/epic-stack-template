@@ -264,7 +264,7 @@ export function Playground() {
 			className="container scroll-mt-20 py-24"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					Live components
 				</p>
 				<h2

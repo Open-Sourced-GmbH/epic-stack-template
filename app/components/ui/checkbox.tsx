@@ -17,7 +17,7 @@ const Checkbox = ({
 	<CheckboxPrimitive.Root
 		data-slot="checkbox"
 		className={cn(
-			'focus-cosy peer border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground aria-[invalid]:border-input-invalid size-4 shrink-0 rounded-sm border disabled:cursor-not-allowed disabled:opacity-50',
+			'focus-cosy peer border-input data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground aria-[invalid]:border-input-invalid size-4 shrink-0 rounded-sm border disabled:cursor-not-allowed disabled:opacity-50',
 			className,
 		)}
 		{...props}

@@ -54,7 +54,7 @@ export function MarketingFooter() {
 			<div className="container grid grid-cols-2 gap-8 py-12 sm:grid-cols-4">
 				<div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
 					<Logo />
-					<p className="text-muted-foreground text-sm text-pretty">
+					<p className="text-muted-foreground text-body-xs text-pretty">
 						Product engineering studio — design and ship production web apps.
 					</p>
 				</div>
@@ -62,7 +62,7 @@ export function MarketingFooter() {
 					<nav
 						key={column.heading}
 						aria-label={column.heading}
-						className="flex flex-col gap-3 text-sm"
+						className="flex flex-col gap-3 text-body-xs"
 					>
 						<h2 className="text-foreground/80 font-medium">{column.heading}</h2>
 						<ul className="flex flex-col gap-2">

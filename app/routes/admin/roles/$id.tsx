@@ -482,7 +482,7 @@ export default function RoleEditor({ loaderData }: Route.ComponentProps) {
 
 				{/* The sticky save bar: visible only when the form is dirty. */}
 				{dirty ? (
-					<div className="bg-card border-border sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-lg">
+					<div className="bg-card border-border sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-lg border px-4 py-3 shadow-overlay">
 						<span className="text-body-sm flex items-center gap-2 font-medium">
 							<span className="bg-brand size-2 rounded-full" aria-hidden />
 							Unsaved changes

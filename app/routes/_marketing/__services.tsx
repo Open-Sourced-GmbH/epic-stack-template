@@ -43,7 +43,7 @@ export function Services() {
 			className="container scroll-mt-20 py-24"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<p className="text-brand text-sm font-semibold tracking-wide uppercase">
+				<p className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 					What we do
 				</p>
 				<h2
@@ -75,7 +75,7 @@ export function Services() {
 							<h3 className="mb-2 text-lg font-semibold tracking-tight">
 								{service.title}
 							</h3>
-							<p className="text-muted-foreground text-sm leading-relaxed text-pretty">
+							<p className="text-muted-foreground text-body-xs leading-relaxed text-pretty">
 								{service.body}
 							</p>
 						</article>

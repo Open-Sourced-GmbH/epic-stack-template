@@ -200,7 +200,7 @@ export function TagInput({
 					onFocus={() => setOpen(true)}
 					onBlur={() => setOpen(false)}
 					onKeyDown={handleKeyDown}
-					className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-sm outline-hidden disabled:cursor-not-allowed"
+					className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-body-xs outline-hidden disabled:cursor-not-allowed"
 				/>
 			</div>
 
@@ -215,7 +215,7 @@ export function TagInput({
 				<ul
 					id={listboxId}
 					role="listbox"
-					className="bg-popover text-popover-foreground border-border absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border p-1 shadow-md"
+					className="bg-popover text-popover-foreground border-border absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border p-1 shadow-overlay"
 				>
 					{options.map((option, index) => {
 						const active = index === activeIndex
@@ -231,7 +231,7 @@ export function TagInput({
 								onMouseEnter={() => setActiveIndex(index)}
 								onClick={() => addTag(option.label)}
 								className={cn(
-									'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+									'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-body-xs',
 									active && 'bg-accent text-accent-foreground',
 									option.kind === 'create' && 'text-brand font-medium',
 								)}

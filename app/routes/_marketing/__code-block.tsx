@@ -71,13 +71,13 @@ export function CodeBlock({
 			)}
 		>
 			<div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
-				<span className="font-mono text-xs text-[color:var(--tk-punc)]">
+				<span className="font-mono text-body-2xs text-[color:var(--tk-punc)]">
 					{filename ?? 'example.tsx'}
 				</span>
 				<button
 					type="button"
 					onClick={copy}
-					className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-[color:var(--code-text)]/80 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-hidden"
+					className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-body-2xs font-medium text-[color:var(--code-text)]/80 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-hidden"
 				>
 					{copied ? (
 						<>
@@ -90,7 +90,7 @@ export function CodeBlock({
 				</button>
 			</div>
 
-			<pre className="overflow-x-auto p-4 text-sm leading-relaxed">
+			<pre className="overflow-x-auto p-4 text-body-xs leading-relaxed">
 				<code className="font-mono">
 					{lines.map((line, i) => (
 						<span key={i} className="block">

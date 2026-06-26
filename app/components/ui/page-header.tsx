@@ -39,7 +39,7 @@ const PageHeader = ({
 		>
 			<div className="flex flex-col gap-1">
 				{eyebrow != null && (
-					<span className="text-brand text-sm font-semibold tracking-wide uppercase">
+					<span className="text-brand text-body-xs font-semibold tracking-wide uppercase">
 						{eyebrow}
 					</span>
 				)}

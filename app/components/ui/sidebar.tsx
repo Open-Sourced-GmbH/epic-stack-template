@@ -120,7 +120,7 @@ export function SidebarNav({
 						{group.label ? (
 							<p
 								className={cn(
-									'px-3 pt-1 text-xs font-medium tracking-wide uppercase',
+									'px-3 pt-1 text-body-2xs font-medium tracking-wide uppercase',
 									groupActive ? 'text-foreground' : 'text-muted-foreground',
 								)}
 							>

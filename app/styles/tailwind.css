@@ -8,8 +8,9 @@
 
 	/* Pager cell size — the square tap target for each numbered page and the
 	   prev/next controls in the `Pagination` primitive (non-foundational layout
-	   token, GROUNDED-SPEC §Net-new). */
-	--pager-size: 2.35rem;
+	   token, GROUNDED-SPEC §Net-new). Sized to the h-8 (2rem) control height so
+	   pager cells match the tightened buttons/inputs. */
+	--pager-size: 2rem;
 
 	/* Min height of the post editor's body textarea and live-preview pane so the
 	   two columns of the split align (non-foundational layout token,
@@ -18,8 +19,9 @@
 
 	/* Min height of the `TagInput` combobox control so the chips-plus-input field
 	   matches the height of a populated, multi-line tag row (non-foundational
-	   layout token, GROUNDED-SPEC §Net-new). */
-	--combobox-min-h: 2.6rem;
+	   layout token, GROUNDED-SPEC §Net-new). Trimmed alongside the h-8 control
+	   tightening so a single-row combobox reads as one dense control. */
+	--combobox-min-h: 2.25rem;
 
 	/* Button cursor pref (ADR 062). The theme customizer's cursor segment flips
 	   this between `default` and `pointer`; root re-applies it via an inline
@@ -250,6 +252,15 @@
 	   The only genuinely new font need — body copy stays the system sans. */
 	--font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
 		'DejaVu Sans Mono', monospace;
+
+	/* Single elevation token for floating surfaces — dialogs, sheets, menus,
+	   tooltips, toasts, the command palette. A tight, low-spread shadow that
+	   reads crisp rather than as a soft bloom; the overlay's 1px border carries
+	   the edge and this just lifts it off the page (Linear-style elevation).
+	   Replaces the scattered `shadow-md`/`shadow-lg` those surfaces used to mix.
+	   Exposes a `shadow-overlay` utility via Tailwind v4's `--shadow-*` namespace. */
+	--shadow-overlay: 0 10px 30px -12px oklch(0% 0 0 / 0.22),
+		0 4px 10px -4px oklch(0% 0 0 / 0.12);
 
 	--animate-roll-reveal: roll-reveal 0.4s cubic-bezier(0.22, 1.28, 0.54, 0.99);
 	--animate-slide-left: slide-left 0.3s ease-out;
