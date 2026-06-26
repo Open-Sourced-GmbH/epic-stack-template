@@ -1,7 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { useEffect } from 'react'
-import { Form, data, useFetcher, useSubmit } from 'react-router'
+import { Form, Link, data, useFetcher, useSubmit } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Field } from '#app/components/forms.tsx'
 import { Alert, AlertDescription, AlertTitle } from '#app/components/ui/alert.tsx'
@@ -139,7 +139,10 @@ function displayName(user: AdminUser) {
 function UserCell({ user }: { user: AdminUser }) {
 	const name = displayName(user)
 	return (
-		<div className="flex min-w-0 items-center gap-3">
+		<Link
+			to={user.id}
+			className="focus-cosy-active group -mx-2 -my-1 flex min-w-0 items-center gap-3 rounded-md px-2 py-1 hover:bg-muted"
+		>
 			<UserAvatar
 				name={name}
 				imageObjectKey={user.image?.objectKey}
@@ -147,12 +150,14 @@ function UserCell({ user }: { user: AdminUser }) {
 				fallbackClassName="bg-brand-soft text-brand text-body-2xs"
 			/>
 			<div className="flex min-w-0 flex-col">
-				<span className="text-body-sm truncate font-semibold">{name}</span>
+				<span className="text-body-sm group-hover:underline truncate font-semibold">
+					{name}
+				</span>
 				<span className="text-muted-foreground text-body-2xs truncate">
 					{user.email}
 				</span>
 			</div>
-		</div>
+		</Link>
 	)
 }
 

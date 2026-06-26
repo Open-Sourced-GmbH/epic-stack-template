@@ -23,8 +23,8 @@ import {
 } from '#app/components/ui/tooltip.tsx'
 import { UserAvatar } from '#app/components/user-avatar.tsx'
 import { type AdminHeader } from '#app/routes/admin/_layout.tsx'
+import { AUDIT_EVENT_NAMES } from '#app/utils/audit.ts'
 import {
-	AUDIT_EVENT_NAMES,
 	getAuditEvents,
 	type AuditEventRecord,
 } from '#app/utils/audit.server.ts'

@@ -77,6 +77,15 @@ test('renders each user with name, email, role chip and a status pill', async ()
 	expect(screen.getByText(/2 users/i)).toBeInTheDocument()
 })
 
+test('links each row to its user detail page', async () => {
+	renderAdminUsers(
+		listData({ users: [makeAdminUser({ id: 'a', name: 'Ada Lovelace' })] }),
+	)
+
+	const link = await screen.findByRole('link', { name: /ada lovelace/i })
+	expect(link).toHaveAttribute('href', '/admin/users/a')
+})
+
 test('falls back to the username when a user has no name', async () => {
 	renderAdminUsers(
 		listData({

@@ -1,31 +1,17 @@
 import { type Prisma } from '@prisma/client'
+import {
+	AUDIT_EVENT_NAMES,
+	type AuditEventName,
+} from './audit.ts'
 import { prisma } from './db.server.ts'
+
+// The event vocabulary is client-safe (the viewer's filter Select iterates it),
+// so it lives in `audit.ts`; re-export it here so the write/read seam stays the
+// single import surface for server callers.
+export { AUDIT_EVENT_NAMES, type AuditEventName }
 
 /** Default page size for the audit viewer (admin Table, ADR-070). */
 export const AUDIT_EVENTS_PER_PAGE = 20
-
-/**
- * The vocabulary of audit events — every sensitive role/user mutation funnels
- * through `recordAuditEvent` with one of these names (ADR-070). Stored as plain
- * text in the DB so a new kind needs no migration, but enumerated here so callers
- * (and the viewer's event filter `Select`) can't drift onto a typo. `as const` so
- * {@link AuditEventName} stays in lockstep with the list the viewer iterates.
- */
-export const AUDIT_EVENT_NAMES = [
-	'role.granted',
-	'role.revoked',
-	'role.created',
-	'role.updated',
-	'role.deleted',
-	'role.permissions.changed',
-	'user.deactivated',
-	'user.reactivated',
-	'user.deleted',
-	'user.sessions.revoked',
-	'user.password.reset',
-] as const
-
-export type AuditEventName = (typeof AUDIT_EVENT_NAMES)[number]
 
 /**
  * The actor side of an event: any user-shaped record. Only the identity fields
