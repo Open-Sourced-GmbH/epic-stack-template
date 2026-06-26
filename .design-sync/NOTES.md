@@ -11,7 +11,12 @@ before re-running `/design-sync`.
   **21** on 2026-06-20 with the EPT-21–36 hardening: **Alert, Avatar, Badge,
   Card, Dialog, Field, Select, Skeleton, Spinner**, all synced 2026-06-20 →
   **23** on 2026-06-22 with Slice ②'s net-new primitives **Pagination**
-  (EPT-41) + **TagInput** (EPT-48), synced 2026-06-22).
+  (EPT-41) + **TagInput** (EPT-48), synced 2026-06-22 → **30** on 2026-06-25
+  with the AppShell/admin surfaces (**FormCard, PageHeader, Sheet, Sidebar,
+  Table**) → **31** on 2026-06-26 with **ToggleChip** (EPT-87, the permission
+  matrix's net-new primitive), synced 2026-06-26 via **EPT-91** — a clean
+  incremental ADD over the live 30 (no other component's source changed; the
+  global render-hash shift was just the refreshed compiled CSS + bundle).
 - The barrel is kept in lockstep with `app/components/styleguide/specimens.tsx`,
   enforced by `app/components/styleguide/design-sync.test.ts` (vitest, CI).
 - DropdownMenu / Tooltip / InputOTP / **Accordion** are **compound** — the barrel
@@ -158,6 +163,15 @@ before re-running `/design-sync`.
   `<Name>Props` here won't follow automatically; update by hand.
 - **StatusButton glyph** limitation above is environment-level; re-check only if
   claude.ai/design changes how it serves bundle assets.
+- **Headless render-check can't run in the agent sandbox** — Chromium aborts at
+  launch (SIGABRT, even with `--no-sandbox`), so `package-validate.mjs`'s render
+  check and `package-capture.mjs` won't run here. EPT-91 (2026-06-26) verified
+  the ToggleChip add via the `styleguide/` snapshot (light + dark static files),
+  the passing lockstep test, and a clean-add anchor diff instead, then reviewed
+  the card live in the Claude Design pane post-upload. A `node http-serve` of
+  `ds-bundle/` is reachable only within the same shell invocation (each agent
+  Bash call gets its own net namespace) — serve + review from one terminal, or
+  open `styleguide/{light,dark}/<name>.html` directly.
 
 ## Composition templates (`templates/` layer) — hand-authored, NOT converter output
 
