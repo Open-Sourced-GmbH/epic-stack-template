@@ -7,6 +7,7 @@ import { Field } from '#app/components/forms.tsx'
 import { Alert, AlertDescription, AlertTitle } from '#app/components/ui/alert.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { DropdownMenuItem } from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Pagination } from '#app/components/ui/pagination.tsx'
 import { useRowSelection } from '#app/components/ui/row-selection.ts'
@@ -214,6 +215,23 @@ const columns: Array<TableColumn<AdminUser>> = [
 /** `grid-template-columns`: User flexes widest, Roles flexes, the rest hug. */
 const columnTemplate = 'minmax(0,1.5fr) minmax(0,1fr) max-content max-content'
 
+/**
+ * Per-row overflow menu — the discoverable path from the list into a user's
+ * detail view, where every single-user action (roles, deactivate, force-logout,
+ * reset, delete) lives. Mirrors the Roles list affordance; the per-user
+ * mutations themselves stay on the detail surface this links to.
+ */
+function rowActions(user: AdminUser) {
+	return (
+		<DropdownMenuItem asChild>
+			<Link to={user.id}>
+				<Icon name="magnifying-glass" className="mr-2 size-4" />
+				View
+			</Link>
+		</DropdownMenuItem>
+	)
+}
+
 /** The slice of {@link useRowSelection} the bulk-action bar drives. */
 type BarSelection = Pick<
 	ReturnType<typeof useRowSelection>,
@@ -383,6 +401,8 @@ export default function AdminUsersIndex({ loaderData }: Route.ComponentProps) {
 				columnTemplate={columnTemplate}
 				selection={selection}
 				getRowLabel={(user) => displayName(user)}
+				rowActions={rowActions}
+				getRowActionsLabel={(user) => `Actions for ${displayName(user)}`}
 				emptyState={{
 					icon: <Icon name="avatar" className="size-6" />,
 					title: search ? 'No matching users' : 'No users yet',

@@ -120,22 +120,27 @@ test('F5/F33: deactivating a user blocks their sign-in with the suspended notice
 	await expect(page.getByText(/access suspended/i)).toBeVisible()
 })
 
-/**
- * KNOWN DEFECT (filed as a Bug): the Users list renders the Table without
- * `rowActions` and with no per-row link, so there is no UI path from the list to
- * `/admin/users/$id`. Every single-user management action (assign roles,
- * deactivate, force-logout, reset, delete-one) is therefore unreachable by a
- * human without typing the URL. The Roles list, by contrast, has the right
- * row-action Link. Un-`fixme` this once the Users list gains row navigation.
- */
-test.fixme(
-	'F3: an admin can open a user’s detail from the Users list',
-	async ({ page, login, insertNewUser }) => {
-		await loginAsAdmin(login)
-		const target = await insertNewUser({ username: `open${Date.now()}` })
-		await page.goto('/admin/users')
-		// Intended: a row action / link navigates to the detail view.
-		await page.getByRole('row', { name: new RegExp(target.username) }).click()
-		await expect(page).toHaveURL(new RegExp(`/admin/users/${target.id}`))
-	},
-)
+test('F3: an admin can open a user’s detail from the Users list', async ({
+	page,
+	login,
+	insertNewUser,
+}) => {
+	await loginAsAdmin(login)
+	const target = await insertNewUser({ username: `open${Date.now()}` })
+
+	await page.goto('/admin/users')
+	// Narrow to the target so its row is the only data row, regardless of how many
+	// other accounts exist (search filters by name/email — both rendered).
+	await page
+		.getByRole('searchbox', { name: /search users by name or email/i })
+		.fill(target.email)
+	await page.keyboard.press('Enter')
+
+	// The row-overflow menu (matching the Roles list affordance) carries View →
+	// the detail view, where the single-user actions live.
+	const row = page.getByRole('row', { name: new RegExp(target.name ?? '') })
+	await row.getByRole('button', { name: /actions for/i }).click()
+	await page.getByRole('menuitem', { name: 'View' }).click()
+
+	await expect(page).toHaveURL(new RegExp(`/admin/users/${target.id}`))
+})
