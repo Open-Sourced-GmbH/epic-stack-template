@@ -28,6 +28,7 @@ const adminUserSelect = {
 	image: { select: { objectKey: true } },
 	roles: {
 		select: {
+			id: true,
 			name: true,
 			permissions: { select: { entity: true, access: true } },
 		},
@@ -37,8 +38,8 @@ const adminUserSelect = {
 
 type AdminUserRow = Prisma.UserGetPayload<{ select: typeof adminUserSelect }>
 
-/** A role as the list renders it — its name plus whether it grants management. */
-export type AdminUserRole = { name: string; privileged: boolean }
+/** A role as the list renders it — its id/name plus whether it grants management. */
+export type AdminUserRole = { id: string; name: string; privileged: boolean }
 
 /** One row of the admin user list — the clean DTO the route renders. */
 export type AdminUser = {
@@ -102,6 +103,7 @@ function toAdminUser(row: AdminUserRow): AdminUser {
 		deactivatedAt: row.deactivatedAt,
 		image: row.image,
 		roles: row.roles.map((role) => ({
+			id: role.id,
 			name: role.name,
 			privileged: isPrivilegedRole(role.permissions),
 		})),

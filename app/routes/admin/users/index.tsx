@@ -136,33 +136,38 @@ function displayName(user: AdminUser) {
 	return user.name ?? user.username
 }
 
-/** The "User" cell — avatar + display name over the (ellipsized) email. */
+/**
+ * The "User" cell — avatar + display name over the (ellipsized) email. The row
+ * itself is the link to the detail view (Table's `getRowHref`), so this is plain
+ * content that just tracks the row's hover for the name underline.
+ */
 function UserCell({ user }: { user: AdminUser }) {
 	const name = displayName(user)
 	return (
-		<Link
-			to={user.id}
-			className="focus-cosy-active group -mx-2 -my-1 flex min-w-0 items-center gap-3 rounded-md px-2 py-1 hover:bg-muted"
-		>
+		<div className="flex min-w-0 items-center gap-2.5">
 			<UserAvatar
 				name={name}
 				imageObjectKey={user.image?.objectKey}
-				className="size-9"
+				className="size-7"
 				fallbackClassName="bg-brand-soft text-brand text-body-2xs"
 			/>
 			<div className="flex min-w-0 flex-col">
-				<span className="text-body-sm group-hover:underline truncate font-semibold">
+				<span className="text-body-xs truncate font-semibold">
 					{name}
 				</span>
 				<span className="text-muted-foreground text-body-2xs truncate">
 					{user.email}
 				</span>
 			</div>
-		</Link>
+		</div>
 	)
 }
 
-/** The role chips — privileged (management-granting) roles read in brand tonal. */
+/**
+ * The role chips — each links to its role's detail (raised above the row's
+ * stretched link so it stays independently clickable). Privileged
+ * (management-granting) roles read in brand tonal; hover lifts the chip's ring.
+ */
 function RolesCell({ user }: { user: AdminUser }) {
 	if (user.roles.length === 0) {
 		return <span className="text-muted-foreground text-body-sm">—</span>
@@ -170,12 +175,15 @@ function RolesCell({ user }: { user: AdminUser }) {
 	return (
 		<div className="flex flex-wrap gap-1.5">
 			{user.roles.map((role) => (
-				<Badge
-					key={role.name}
-					variant={role.privileged ? 'brand' : 'secondary'}
+				<Link
+					key={role.id}
+					to={`/admin/roles/${role.id}`}
+					className="focus-cosy relative z-10 rounded-full ring-offset-1 ring-offset-card transition-shadow hover:ring-2 hover:ring-border"
 				>
-					{role.name}
-				</Badge>
+					<Badge variant={role.privileged ? 'brand' : 'secondary'}>
+						{role.name}
+					</Badge>
+				</Link>
 			))}
 		</div>
 	)
@@ -398,6 +406,7 @@ export default function AdminUsersIndex({ loaderData }: Route.ComponentProps) {
 				columns={columns}
 				data={users}
 				getRowId={(user) => user.id}
+				getRowHref={(user) => user.id}
 				columnTemplate={columnTemplate}
 				selection={selection}
 				getRowLabel={(user) => displayName(user)}

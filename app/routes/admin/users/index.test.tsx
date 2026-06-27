@@ -20,7 +20,7 @@ function makeAdminUser(overrides: Partial<AdminUser> = {}): AdminUser {
 		createdAt: new Date('2026-02-01'),
 		deactivatedAt: null,
 		image: null,
-		roles: [{ name: 'user', privileged: false }],
+		roles: [{ id: 'r-user', name: 'user', privileged: false }],
 		...overrides,
 	}
 }
@@ -61,7 +61,7 @@ test('renders each user with name, email, role chip and a status pill', async ()
 					id: 'g',
 					name: 'Grace Hopper',
 					email: 'grace@x.com',
-					roles: [{ name: 'admin', privileged: true }],
+					roles: [{ id: 'r-admin', name: 'admin', privileged: true }],
 				}),
 			],
 			total: 2,

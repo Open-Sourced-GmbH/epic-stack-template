@@ -3,6 +3,7 @@
  */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createRoutesStub } from 'react-router'
 import { expect, test } from 'vitest'
 import { DropdownMenuItem } from './dropdown-menu.tsx'
 import { useRowSelection } from './row-selection.ts'
@@ -177,6 +178,64 @@ test('renders a footer slot (e.g. the pager) beneath the rows', () => {
 	)
 
 	expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
+})
+
+test('getRowHref makes the whole row a labelled link to the detail view', () => {
+	const Stub = createRoutesStub([
+		{
+			path: '/',
+			Component: () => (
+				<Table
+					aria-label="Keys"
+					columns={columns}
+					data={rows}
+					getRowId={(r) => r.id}
+					getRowHref={(r) => `/keys/${r.id}`}
+					getRowLabel={(r) => r.name}
+					columnTemplate="1fr auto"
+				/>
+			),
+		},
+	])
+	render(<Stub initialEntries={['/']} />)
+
+	const link = screen.getByRole('link', { name: 'alpha' })
+	expect(link).toHaveAttribute('href', '/keys/a')
+	// The anchor stretches to fill the row, which turns relative for it.
+	expect(link.closest('[role="row"]')).toHaveClass('relative')
+})
+
+test('a navigable row keeps its checkbox and ⋯ menu clickable above the overlay', async () => {
+	const user = userEvent.setup()
+	function NavigableTable() {
+		const selection = useRowSelection(rows.map((r) => r.id))
+		return (
+			<Table
+				aria-label="Keys"
+				columns={columns}
+				data={rows}
+				getRowId={(r) => r.id}
+				getRowHref={(r) => `/keys/${r.id}`}
+				getRowLabel={(r) => r.name}
+				selection={selection}
+				rowActions={(r) => <DropdownMenuItem>Delete {r.name}</DropdownMenuItem>}
+				getRowActionsLabel={(r) => `Actions for ${r.name}`}
+				columnTemplate="1fr auto"
+			/>
+		)
+	}
+	const Stub = createRoutesStub([{ path: '/', Component: NavigableTable }])
+	render(<Stub initialEntries={['/']} />)
+
+	// The selection checkbox still toggles despite the stretched row link.
+	await user.click(screen.getByRole('checkbox', { name: 'Select alpha' }))
+	expect(screen.getByRole('checkbox', { name: 'Select alpha' })).toBeChecked()
+
+	// The ⋯ menu still opens.
+	await user.click(screen.getByRole('button', { name: 'Actions for alpha' }))
+	expect(
+		screen.getByRole('menuitem', { name: 'Delete alpha' }),
+	).toBeInTheDocument()
 })
 
 test('applies zebra striping only when opted in', () => {

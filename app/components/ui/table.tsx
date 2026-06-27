@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import { cn } from '#app/utils/misc.tsx'
 import { Button } from './button.tsx'
@@ -85,6 +86,14 @@ type TableProps<Row> = {
 	/** Stable id for a row (drives React keys and selection). */
 	getRowId: (row: Row) => string
 	/**
+	 * When set, the whole row becomes a link to this href — its default action.
+	 * Rendered as a stretched overlay anchor (keyboard-focusable, supports
+	 * cmd/middle-click); the selection checkbox and ⋯ menu sit above it and stay
+	 * independently clickable. Pair with {@link getRowLabel} for the link's
+	 * accessible name.
+	 */
+	getRowHref?: (row: Row) => string
+	/**
 	 * `grid-template-columns` for the data columns. The selection and row-action
 	 * tracks (when enabled) are added automatically around it.
 	 */
@@ -128,6 +137,7 @@ function Table<Row>({
 	columns,
 	data,
 	getRowId,
+	getRowHref,
 	columnTemplate,
 	selection,
 	getRowLabel,
@@ -177,7 +187,7 @@ function Table<Row>({
 						<div
 							role="row"
 							style={rowStyle}
-							className="text-muted-foreground border-border bg-muted/60 text-body-2xs grid items-center gap-3 border-b px-4 py-3 font-medium tracking-wide uppercase"
+							className="text-muted-foreground border-border bg-muted/60 text-body-2xs grid items-center gap-2.5 border-b px-3 py-2 font-medium tracking-wide uppercase"
 						>
 							{selection ? (
 								<div role="columnheader">
@@ -212,7 +222,7 @@ function Table<Row>({
 										role="row"
 										aria-hidden="true"
 										style={rowStyle}
-										className="border-border grid items-center gap-3 border-b px-4 py-3 last:border-b-0"
+										className="border-border grid items-center gap-2.5 border-b px-3 py-2 last:border-b-0"
 									>
 										{Array.from({ length: cellCount }, (_, cellIndex) => (
 											<div key={cellIndex} role="cell">
@@ -225,20 +235,33 @@ function Table<Row>({
 									const id = getRowId(row)
 									const isSelected = selection?.isSelected(id) ?? false
 									const detail = renderRowDetail?.(row)
+									const href = getRowHref?.(row)
 									return (
 										<Fragment key={id}>
 										<div
 											role="row"
 											style={rowStyle}
 											className={cn(
-												'border-border hover:bg-accent text-body-sm grid items-center gap-3 border-b px-4 py-3 transition-colors',
+												'border-border hover:bg-accent text-body-sm grid items-center gap-2.5 border-b px-3 py-2 transition-colors',
 												detail == null && 'last:border-b-0',
 												zebra && 'even:bg-muted/40',
 												isSelected && 'shadow-[inset_3px_0_0_0_var(--brand)]',
+												href != null && 'group relative cursor-pointer',
 											)}
 										>
+											{href != null ? (
+												// Stretched overlay anchor: a real link covering the row so
+												// the whole row navigates (keyboard + cmd/middle-click), while
+												// the static cells below it pass clicks through and the
+												// z-raised checkbox / ⋯ menu stay independently clickable.
+												<Link
+													to={href}
+													aria-label={getRowLabel?.(row)}
+													className="focus-cosy absolute inset-0 rounded-md"
+												/>
+											) : null}
 											{selection ? (
-												<div role="cell">
+												<div role="cell" className="relative z-10 w-fit">
 													<Checkbox
 														checked={isSelected}
 														onCheckedChange={() => selection.toggle(id)}
@@ -256,7 +279,7 @@ function Table<Row>({
 												</div>
 											))}
 											{rowActions ? (
-												<div role="cell" className="justify-self-end">
+												<div role="cell" className="relative z-10 justify-self-end">
 													<DropdownMenu>
 														<DropdownMenuTrigger asChild>
 															<Button
@@ -282,7 +305,7 @@ function Table<Row>({
 										{detail != null ? (
 											<div
 												role="row"
-												className="border-border bg-muted/30 border-b px-4 py-3 last:border-b-0"
+												className="border-border bg-muted/30 border-b px-3 py-2.5 last:border-b-0"
 											>
 												<div role="cell">{detail}</div>
 											</div>
@@ -294,7 +317,7 @@ function Table<Row>({
 					{footer != null ? (
 						<div
 							data-slot="table-footer"
-							className="border-border flex items-center justify-end border-t px-4 py-3"
+							className="border-border flex items-center justify-end border-t px-3 py-2"
 						>
 							{footer}
 						</div>
